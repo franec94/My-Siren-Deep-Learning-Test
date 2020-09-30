@@ -5,6 +5,10 @@ from utils.pictures import show_training_loss_graph
 from utils.siren_model import Siren
 from utils.training import basic_traininig_loop, plane_traininig_loop
 
+# ============================================= #
+# Util Functions
+# ============================================= #
+
 
 def show_model_informations(model):
     numel_list = [p.numel() for p in model.parameters() if p.requires_grad == True]
@@ -25,6 +29,10 @@ def show_model_informations(model):
                 print("\t",name)
     pass
 
+
+# ============================================= #
+# Main Routine
+# ============================================= #
 
 def main(args):
 
@@ -103,6 +111,9 @@ def main(args):
 
     return 0
 
+# ============================================= #
+# Script entry point
+# ============================================= #
 
 if __name__ == "__main__":
 
