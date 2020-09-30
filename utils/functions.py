@@ -87,3 +87,9 @@ def pad_bits(bits, n):
     """Prefix list of bits with enough zeros to reach n digits"""
     assert(n >= len(bits))
     return ([0] * (n - len(bits)) + bits)
+
+
+def raw_size(width, height):
+    header_size = 2 * 16 # height and width as 16 bit values
+    pixels_size = 3 * 8 * width * height # 3 channels, 8 bits per channel
+    return (header_size + pixels_size) / 8

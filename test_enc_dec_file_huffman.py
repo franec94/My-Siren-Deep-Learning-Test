@@ -23,11 +23,6 @@ from utils.decompression import decompress_image
 # Util Function
 # =============================================================================================== #
 
-def raw_size(width, height):
-    header_size = 2 * 16 # height and width as 16 bit values
-    pixels_size = 3 * 8 * width * height # 3 channels, 8 bits per channel
-    return (header_size + pixels_size) / 8
-
 
 def images_equal(file_name_a, file_name_b):
     image_a = Image.open(file_name_a)
@@ -57,11 +52,11 @@ def main(args):
     # Image.open("dog.jpg").save("dog.bmp")
     # Image.open("dog.jpg").save("dog.png")
     """
-    
+
     file_name = args.input_file_path
 
-    file_name, file_extension = os.path.splitext(file_name)
-    file_out = os.path.join(args.output_path, f'flag_out_{file_name}' + file_extension)
+    base_file_name, file_extension = os.path.splitext(file_name)
+    file_out = os.path.join(args.output_path, f'flag_out' + file_extension)
 
     start = time.time()
 
@@ -93,6 +88,13 @@ if __name__ == "__main__":
     # Parse input arguments
     parser = get_custom_argparser()
     args, unknown = parser.parse_known_args()
+
+    print("-" * 40)
+    pprint(args)
+    print("-" * 40)
+    pprint(unknown)
+
+    print()
 
     # run main function
     exit_code = main(args)

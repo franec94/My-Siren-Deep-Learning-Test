@@ -14,7 +14,7 @@ from itertools import chain
 
 from pprint import pprint
 
-from classes import *
+from utils.classes import *
 from utils.functions import *
 
 # =============================================================================================== #

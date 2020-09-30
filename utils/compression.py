@@ -14,7 +14,7 @@ from itertools import chain
 
 from pprint import pprint
 
-from classes import *
+from utils.classes import *
 from utils.functions import *
 
 # =============================================================================================== #
@@ -42,6 +42,7 @@ def encode_header(image, bitstream):
     bitstream.write_bits(height_bits)    
     width_bits = pad_bits(to_binary_list(image.width), 16)
     bitstream.write_bits(width_bits)
+    pass
 
 
 def encode_tree(tree, bitstream):
@@ -53,12 +54,17 @@ def encode_tree(tree, bitstream):
         bitstream.write_bit(1)
         symbol_bits = pad_bits(to_binary_list(tree), 8)
         bitstream.write_bits(symbol_bits)
+        pass
+    pass
 
 
 def encode_pixels(image, codes, bitstream):
     for pixel in image.getdata():
         for value in pixel:
             bitstream.write_bits(codes[value])
+            pass
+        pass
+    pass
 
 
 def compress_image(in_file_name, out_file_name):
@@ -96,3 +102,4 @@ def compress_image(in_file_name, out_file_name):
 
     print('Estimate is %scorrect.' % ('' if size_estimate == size_real else 'in'))
     print('Compression ratio: %0.2f' % (float(size_raw) / size_real))
+    pass
