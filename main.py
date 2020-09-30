@@ -1,3 +1,7 @@
+# ============================================= #
+# Imports
+# ============================================= #
+
 from utils.libs import *
 
 from utils.custom_argparser import get_custom_argparser
@@ -8,7 +12,6 @@ from utils.training import basic_traininig_loop, plane_traininig_loop
 # ============================================= #
 # Util Functions
 # ============================================= #
-
 
 def show_model_informations(model):
     numel_list = [p.numel() for p in model.parameters() if p.requires_grad == True]
