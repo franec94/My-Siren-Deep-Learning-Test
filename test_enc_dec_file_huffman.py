@@ -37,21 +37,6 @@ def images_equal(file_name_a, file_name_b):
 # =============================================================================================== #
 
 def main(args):
-    
-    """
-    # image = Image.open('lenagray.bmp')
-    # image.show()
-
-    # Image.open("lenagray.bmp").save("lenagray.png")
-
-    Image.open("flag.bmp").save("flag.png")
-    Image.open("flag.bmp").save("flag.jpg")
-
-    # Image.open("image.png").save("image.bmp")
-
-    # Image.open("dog.jpg").save("dog.bmp")
-    # Image.open("dog.jpg").save("dog.png")
-    """
 
     file_name = args.input_file_path
 
