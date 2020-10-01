@@ -3,12 +3,12 @@
 # --------------------------------------------- #
 INTERPRETER = python3
 
-# File:main_test_txt2enc.py
+# File: main_test_txt2enc.py
 # --------------------------------------------- #
 SCRIPT_TXT_2_ENC = main_test_txt2enc.py
 ARGS_TXT_2_ENC = --input-file ./input.txt --output-dest ./out.txt
 
-# File:main_test_txt2enc.py
+# File: main_test_img2enc.py
 # --------------------------------------------- #
 SCRIPT_IMG_2_ENC = main_test_img2enc.py
 ARGS_IMG_2_ENC = --input-file ../../testsets/BSD68/test001.png --output-dest ./out.png --channels L
