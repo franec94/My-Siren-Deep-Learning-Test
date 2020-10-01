@@ -39,36 +39,15 @@ def get_stats_words_sorted(lines):
             words.setdefault(a_word, 0)
             words[a_word] += 1
 
-    sorted_words = dict(sorted(words.items(), key = lambda x: x[1], reverse = True))
+    sorted_words = dict(sorted(words.items(), key = lambda x: x[1], reverse = False))
     return sorted_words
-
-
-def get_code(tree, item):
-    if tree['l'] == None and tree['r'] == None:
-        if tree['item'] == item: return None, True
-        else: return None, False
-
-    if tree['l'] != None:
-        code, res = get_code(tree['l'], item)
-        if res == True:
-            if code is None:
-                return "0", True
-            else:
-                return "0" + code, True
-    if tree['r'] != None:
-        code, res = get_code(tree['r'], item)
-        if res == True:
-            if code is None:
-                return "1", True
-            else:
-                return "1" + code, True
-    return None, False
 
 
 def create_node(item):
     return {
         'item': item[0],
         'freq': item[1],
+        'code': None,
         'l': None,
         'r': None
     }
@@ -83,11 +62,20 @@ def create_pqueue(a_dict):
 def build_tree(p_queue):
     while len(p_queue) != 1:
         if len(p_queue) >= 2:
-            el0 = p_queue.pop()
-            el1 = p_queue.pop()
+            el0 = p_queue[0]
+            el1 = p_queue[1]
+
+            p_queue.remove(el0)
+            p_queue.remove(el1)
+
+            el0['code'] = "0"
+            el1['code'] = "1"
+
+            a_node = create_node((None, None))
 
             freq = el0['freq'] + el1['freq']
-            a_node = create_node((None, freq))
+            a_node['freq'] = freq
+
             a_node['l'] = el0
             a_node['r'] = el1
 
@@ -95,7 +83,7 @@ def build_tree(p_queue):
             for ii in range(len(p_queue)):
                 curr_node = p_queue[ii]
                 if curr_node['freq'] >= freq:
-                    p_queue.insert(ii - 1, a_node)
+                    p_queue.insert(ii, a_node)
                     flag_added = True
                     break
             if flag_added is False:
@@ -103,18 +91,30 @@ def build_tree(p_queue):
         else:
             break
     return p_queue[0]
-def main(args):
 
-    input_filename = args.input_file
-    output_filename = args.output_file
 
-    if os.path.exists(input_filename) is False:
-        print(f"Error: {input_filename} does not exists!", file=sys.stderr)
-        return -1
-    if os.path.isfile(input_filename) is False:
-        print(f"Error: {input_filename} is not a file!", file=sys.stderr)
-        return -1
-    
+def get_code(tree, item):
+    if tree['l'] == None and tree['r'] == None:
+        if tree['item'] == item: return tree['code']
+        else: return None
+
+    if tree['l'] != None:
+        code = get_code(tree['l'], item)
+        if code != None:
+            if tree['code'] != None:
+                return tree['code'] + code
+            else:
+                return code
+    if tree['r'] != None:
+        code = get_code(tree['r'], item)
+        if code != None:
+            if tree['code'] != None:
+                return tree['code'] + code
+            else:
+                return code
+    return None
+
+def compress_file(input_filename):
     lines = None
     with open(input_filename, "r") as f:
         lines = f.read().split("\n")
@@ -131,6 +131,22 @@ def main(args):
     for a_word in all_words:
         a_code = get_code(tree, a_word)
         print(a_word, "--->", a_code)
+    return
+
+
+def main(args):
+
+    input_filename = args.input_file
+    output_filename = args.output_file
+
+    if os.path.exists(input_filename) is False:
+        print(f"Error: {input_filename} does not exists!", file=sys.stderr)
+        return -1
+    if os.path.isfile(input_filename) is False:
+        print(f"Error: {input_filename} is not a file!", file=sys.stderr)
+        return -1
+    
+    compress_file(input_filename)
     
     return 0
 
