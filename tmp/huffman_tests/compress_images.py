@@ -127,18 +127,23 @@ def main(args):
         samples.append(compression_ratio)
         pass
 
-    filename = 'compression-ratio.png'
+    try: os.makedirs("res")
+    except: pass
+    
+    dataset_name = os.path.basename(in_dir_path)
+    filename = os.path.join("res", f'compression-ratio-{dataset_name}.png')
+
     title = 'Compression Ratio: n = %d samples' % len(images[:])
     samples = np.array(samples, dtype=np.float)
     show_hist_kde_compression_ratio(filename, title, samples, bins = 10)
 
     df = pd.DataFrame(data = samples[:, np.newaxis], columns = ["Compression Ratio"])
 
-    filename = 'compression-ratio-boxplot.png'
+    filename = os.path.join("res", f'compression-ratio-{dataset_name}.png')
     boxplot = df.boxplot(column = ['Compression Ratio'])
     plt.savefig(filename)
     plt.show()
-    
+
     df.to_csv(out_file_name)
     
     return 0

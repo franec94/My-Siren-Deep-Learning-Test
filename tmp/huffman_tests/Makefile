@@ -17,7 +17,7 @@ ARGS_IMG_2_ENC = --input-file ../../testsets/BSD68/test001.png --output-dest ./o
 # File: compress_images.py
 # --------------------------------------------- #
 SCRIPT_DIR_IMGS_2_ENC = compress_images.py
-ARGS_DIR_IMGS_2_ENC = --input-dir ../../testsets/BSD68/ --output-dest ./out.csv --channels L
+ARGS_DIR_IMGS_2_ENC = --input-dir ../../testsets/BSD68/ --output-dest ./out-BSD68.csv --channels L
 
 
 # --------------------------------------------- #
