@@ -33,7 +33,7 @@ parser.add_argument('--output-dest', type=str, dest="output_file",
 def get_stats_words_sorted(lines):
     words = dict()
     for a_line in lines:
-        tmp_words = a_line.split(" ")
+        tmp_words = list(a_line)
         for a_word in tmp_words:
             if len(a_word) == 0: continue
             words.setdefault(a_word, 0)
@@ -114,7 +114,7 @@ def get_code(tree, item):
                 return code
     return None
 
-def compress_file(input_filename):
+def compress_file(input_filename, output_filename):
     lines = None
     with open(input_filename, "r") as f:
         lines = f.read().split("\n")
@@ -131,6 +131,15 @@ def compress_file(input_filename):
     for a_word in all_words:
         a_code = get_code(tree, a_word)
         print(a_word, "--->", a_code)
+    with open(input_filename, "r") as fin:
+        with open(output_filename, "w") as fout:
+            for a_line in fin.read().split("\n"):
+                for a_word in a_line:
+                    a_code = get_code(tree, a_word)
+                    print(a_code, sep="", end="", file=fout)
+                    pass
+                pass
+            print("", file=fout)
     return
 
 
@@ -146,7 +155,7 @@ def main(args):
         print(f"Error: {input_filename} is not a file!", file=sys.stderr)
         return -1
     
-    compress_file(input_filename)
+    compress_file(input_filename, output_filename)
     
     return 0
 
