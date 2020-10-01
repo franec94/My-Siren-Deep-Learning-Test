@@ -32,7 +32,7 @@ from utils.decompression import decompress_image
 parser = argparse.ArgumentParser(description='Custom Huffman Encoding Script')
 parser.add_argument('--input-dir', type=str, dest="input_dir",
                     help='Location of input resource to be compressed, from local file system.')
-parser.add_argument('--output-dest', type=str, dest="output_file",
+parser.add_argument('--output-dest', type=str, dest="output_file", default="compression-ratio.csv",
                     help='Location of output compressed result stats, into local file system.')
 parser.add_argument('--channels', type=str, dest="channels", choices=["RGB", "L"],
                     help='Type Channels of input Image.')
@@ -138,9 +138,8 @@ def main(args):
     boxplot = df.boxplot(column = ['Compression Ratio'])
     plt.savefig(filename)
     plt.show()
-
-    full_stats_path = os.path.join(out_file_name, "compression-ratio.csv")
-    df.to_csv(full_stats_path)
+    
+    df.to_csv(out_file_name)
     
     return 0
 
