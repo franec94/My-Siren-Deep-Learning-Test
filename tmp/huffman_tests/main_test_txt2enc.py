@@ -44,6 +44,7 @@ def main(args):
         print(f"Error: {input_filename} is not a file!", file=sys.stderr)
         return -1
     
+    start = time.time()
     tree = crea_huffman_tree_from_file(input_filename)
 
     # pprint(tree)
@@ -60,6 +61,14 @@ def main(args):
     print('Dencoded File')
     print('-' * 40)
     decode_file(tree, output_filename)
+    print()
+
+    stop = time.time()
+    times = (stop - start) * 1000
+    print('-' * 40)
+    stop = time.time()
+    # Display Enc/Dec elapsed time
+    print('Run time takes %d miliseconds' % times)
     
     return 0
 
