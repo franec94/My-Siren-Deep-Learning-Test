@@ -114,7 +114,7 @@ def get_code(tree, item):
                 return code
     return None
 
-def compress_file(input_filename, output_filename):
+def encode_file(input_filename, output_filename):
     lines = None
     with open(input_filename, "r") as f:
         lines = f.read().split("\n")
@@ -140,8 +140,27 @@ def compress_file(input_filename, output_filename):
                     pass
                 pass
             print("", file=fout)
-    return
+    return tree
 
+
+def decode_stream(a_stream, tree, pos):
+    if tree['l'] == None and tree['r'] == None:
+        return pos, tree['item']
+    if a_stream[pos] == "0":
+        return decode_stream(a_stream, tree['l'], pos + 1)
+    return decode_stream(a_stream, tree['r'], pos + 1)
+
+def decode_file(tree, input_filename):
+    with open(input_filename, "r") as fin:
+        for a_line in fin.read().split("\n"):
+            print(a_line)
+            pos = 0
+            while len(a_line[pos:]) != 0:
+                pos, symbol = decode_stream(a_line, tree, pos)
+                print(symbol, sep="", end="")
+                if pos > len(a_line): break
+            print("")
+    pass
 
 def main(args):
 
@@ -155,7 +174,10 @@ def main(args):
         print(f"Error: {input_filename} is not a file!", file=sys.stderr)
         return -1
     
-    compress_file(input_filename, output_filename)
+    tree = encode_file(input_filename, output_filename)
+    # pprint(tree)
+
+    decode_file(tree, output_filename)
     
     return 0
 
