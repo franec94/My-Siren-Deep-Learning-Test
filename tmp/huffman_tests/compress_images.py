@@ -49,20 +49,22 @@ def images_equal(file_name_a, file_name_b):
 
     return diff.getbbox() is None
 
-def process_a_image(a_image):
+def process_a_image(a_image, verbose = 0):
     start = time.time()
 
     # Compress_image
     compression_ratio = compress_image(a_image, 'answer.txt')
 
-    print('-' * 40)
+    if verbose > 0:
+        print('-' * 40)
 
     stop = time.time()
     times = (stop - start) * 1000
-    print('-' * 40)
+    if verbose > 0:
+        print('-' * 40)
 
-    # Display Enc/Dec elapsed time
-    print('Run time takes %d miliseconds' % times)
+        # Display Enc/Dec elapsed time
+        print('Run time takes %d miliseconds' % times)
     return compression_ratio
 
 
@@ -129,6 +131,16 @@ def main(args):
     title = 'Compression Ratio: n = %d samples' % len(images[:])
     samples = np.array(samples, dtype=np.float)
     show_hist_kde_compression_ratio(filename, title, samples, bins = 10)
+
+    df = pd.DataFrame(data = samples[:, np.newaxis], columns = ["Compression Ratio"])
+
+    filename = 'compression-ratio-boxplot.png'
+    boxplot = df.boxplot(column = ['Compression Ratio'])
+    plt.savefig(filename)
+    plt.show()
+
+    full_stats_path = os.path.join(out_file_name, "compression-ratio.csv")
+    df.to_csv(full_stats_path)
     
     return 0
 

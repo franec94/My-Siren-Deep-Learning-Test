@@ -24,13 +24,16 @@ ARGS_DIR_IMGS_2_ENC = --input-dir ../../testsets/BSD68/ --output-dest ./out.csv 
 # Tasks
 # --------------------------------------------- #
 test_huffman_enc_txt2enc:
+	clear
 	chmod u+x $(SCRIPT_TXT_2_ENC)
 	$(INTERPRETER) $(SCRIPT_TXT_2_ENC) $(ARGS_TXT_2_ENC)
 
 test_huffman_enc_txt2enc:
+	clear
 	chmod u+x $(SCRIPT_IMG_2_ENC)
 	$(INTERPRETER) $(SCRIPT_IMG_2_ENC) $(ARGS_IMG_2_ENC)
 
 test_huffman_enc_txt2enc:
+    clear
 	chmod u+x $(SCRIPT_DIR_IMGS_2_ENC)
 	$(INTERPRETER) $(SCRIPT_DIR_IMGS_2_ENC) $(ARGS_DIR_IMGS_2_ENC)

@@ -110,25 +110,31 @@ def compress_image(in_file_name, out_file_name, verbose = 0):
         pass
 
     size_estimate = compressed_size(counts, codes)
-    print('Estimated size: %d bytes' % size_estimate)
+    if verbose == 2:
+        print('Estimated size: %d bytes' % size_estimate)
 
 
-    print('Writing...')
+    if verbose == 2:
+        print('Writing...')
     stream = OutputBitStream(out_file_name)
-    print('* Header offset: %d' % stream.bytes_written)
+    if verbose == 2:
+        print('* Header offset: %d' % stream.bytes_written)
     encode_header(image, stream)
     stream.flush() # Ensure next chunk is byte-aligned
-    print('* Tree offset: %d' % stream.bytes_written)
+    if verbose == 2:
+        print('* Tree offset: %d' % stream.bytes_written)
     encode_tree(trimmed_tree, stream)
     stream.flush() # Ensure next chunk is byte-aligned
-    print('* Pixel offset: %d' % stream.bytes_written)
+    if verbose == 2:
+        print('* Pixel offset: %d' % stream.bytes_written)
     encode_pixels(image, codes, stream)
     stream.close()
 
     size_real = stream.bytes_written
-    print('Wrote %d bytes.' % size_real)
-
-    print('Estimate is %scorrect.' % ('' if size_estimate == size_real else 'in'))
-    print('Compression ratio: %0.2f' % (float(size_raw) / size_real))
+    if verbose == 2:
+        print('Wrote %d bytes.' % size_real)
+    if verbose == 2:
+        print('Estimate is %scorrect.' % ('' if size_estimate == size_real else 'in'))
+        print('Compression ratio: %0.2f' % (float(size_raw) / size_real))
     
     return float(size_raw) / size_real
