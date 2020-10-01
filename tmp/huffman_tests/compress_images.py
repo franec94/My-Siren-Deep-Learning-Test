@@ -111,9 +111,13 @@ def main(args):
         print(f"Error: {in_dir_path} is not a file!", file=sys.stderr)
         return -1
 
+    dataset_name = os.path.split(os.path.dirname(in_dir_path))[1]
+
+    print("[*] Reading input data...")
     images = list()
-    bsd68_path = in_dir_path
-    for (dirpath, dirnames, filenames) in os.walk(bsd68_path):
+    # bsd68_path = in_dir_path
+    # for (dirpath, dirnames, filenames) in os.walk(bsd68_path):
+    for (dirpath, dirnames, filenames) in os.walk(in_dir_path):
         full_file_path_list = list()
         for a_file in sorted(filenames):
             full_file_path_list.append(os.path.join(dirpath, a_file))
@@ -122,6 +126,7 @@ def main(args):
         pass
 
     samples = list()
+    print("[*] Processing input data...")
     for _, a_image in enumerate(images[:]):
         compression_ratio = process_a_image(a_image)
         samples.append(compression_ratio)
@@ -129,17 +134,17 @@ def main(args):
 
     try: os.makedirs("res")
     except: pass
-    
-    dataset_name = os.path.basename(in_dir_path)
+
     filename = os.path.join("res", f'compression-ratio-{dataset_name}.png')
 
+    print("[*] Show some graphics.")
     title = 'Compression Ratio: n = %d samples' % len(images[:])
     samples = np.array(samples, dtype=np.float)
     show_hist_kde_compression_ratio(filename, title, samples, bins = 10)
 
     df = pd.DataFrame(data = samples[:, np.newaxis], columns = ["Compression Ratio"])
 
-    filename = os.path.join("res", f'compression-ratio-{dataset_name}.png')
+    filename = os.path.join("res", f'compression-ratio-{dataset_name}-boxplot.png')
     boxplot = df.boxplot(column = ['Compression Ratio'])
     plt.savefig(filename)
     plt.show()

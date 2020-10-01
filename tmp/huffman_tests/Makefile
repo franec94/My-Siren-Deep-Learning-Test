@@ -37,3 +37,16 @@ test_huffman_enc_txt2enc:
     clear
 	chmod u+x $(SCRIPT_DIR_IMGS_2_ENC)
 	$(INTERPRETER) $(SCRIPT_DIR_IMGS_2_ENC) $(ARGS_DIR_IMGS_2_ENC)
+
+# ----------------------------------------- #
+# Test Alls
+# ----------------------------------------- #
+test_huffman_enc_txt2enc_BSD68:
+    clear
+	chmod u+x $(SCRIPT_DIR_IMGS_2_ENC)
+	$(INTERPRETER) $(SCRIPT_DIR_IMGS_2_ENC) --input-dir ../../testsets/BSD68/ --output-dest ./out-BSD68.csv --channels L
+
+test_huffman_enc_txt2enc_LIVE1:
+    clear
+	chmod u+x $(SCRIPT_DIR_IMGS_2_ENC)
+	$(INTERPRETER) $(SCRIPT_DIR_IMGS_2_ENC) --input-dir ../../testsets/LIVE1/ --output-dest ./out-LIVE1.csv --channels RGB
