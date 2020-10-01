@@ -69,39 +69,49 @@ def encode_pixels(image, codes, bitstream):
 def compress_image(in_file_name, out_file_name, verbose = 0):
     if verbose > 0:
         print('Compressing "%s" -> "%s"' % (in_file_name, out_file_name))
+        pass
     
     image = Image.open(in_file_name)
     if verbose > 0:    
         print('Image shape: (height=%d, width=%d)' % (image.height, image.width))
         print('Image mode: %s' % (image.mode))
+        pass
     
     if image.mode == 'L': channels = 1
     else: channels = 3
     size_raw = raw_size(image.height, image.width, channels = channels)
     if verbose > 0:
         print('RAW image size: %d bytes' % size_raw)
+        pass
 
     counts = count_symbols(image)
     if verbose == 2:
         print('Counts:')
         pprint(counts)
+        pass
 
     tree = build_tree(counts)
     if verbose == 2:
         print('Tree:')
         print(str(tree))
+        pass
 
     trimmed_tree = trim_tree(tree)
     if verbose == 2:
         print('Trimmed tree:')
         print(str(trimmed_tree))
+        pass
 
+    
     codes = assign_codes(trimmed_tree)
-    print('Codes:')
-    print(codes)
+    if verbose == 2:
+        print('Codes:')
+        print(codes)
+        pass
 
     size_estimate = compressed_size(counts, codes)
     print('Estimated size: %d bytes' % size_estimate)
+
 
     print('Writing...')
     stream = OutputBitStream(out_file_name)
@@ -120,4 +130,5 @@ def compress_image(in_file_name, out_file_name, verbose = 0):
 
     print('Estimate is %scorrect.' % ('' if size_estimate == size_real else 'in'))
     print('Compression ratio: %0.2f' % (float(size_raw) / size_real))
-    pass
+    
+    return float(size_raw) / size_real
