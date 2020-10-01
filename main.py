@@ -142,4 +142,5 @@ if __name__ == "__main__":
     # run main function
     exit_code = main(args)
 
-    return sys.exit(exit_code)
+    sys.exit(exit_code)
+    pass

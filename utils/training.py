@@ -49,8 +49,11 @@ class ImageFitting(Dataset):
     pass
 
 
-def get_cameraman_tensor(sidelength):
-    img = Image.fromarray(skimage.data.camera())        
+def get_cameraman_tensor(sidelength, image_path = None):
+    if image_path is None:
+        img = Image.fromarray(skimage.data.camera())        
+    else:
+        img = Image.open(image_path)
     transform = Compose([
         Resize(sidelength),
         ToTensor(),
