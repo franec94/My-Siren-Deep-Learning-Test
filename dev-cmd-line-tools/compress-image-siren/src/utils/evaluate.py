@@ -17,7 +17,8 @@ def eval(model, test_dataloader, device = 'cpu'):
     ground_thruth = ground_thruth['img'].to(device)
     predicted_image, predicted_coords = model(test_data)
 
-    predicted_grad_image = gradient(predicted_image, predicted_coords)
-    predicted_laplacian_image = laplace(predicted_image, predicted_coords)
+    # predicted_grad_image = gradient(predicted_image, predicted_coords)
+    # predicted_laplacian_image = laplace(predicted_image, predicted_coords)
     
-    return predicted_image, ground_thruth, predicted_image, predicted_grad_image, predicted_laplacian_image
+    # return predicted_image, ground_thruth, predicted_image, predicted_grad_image, predicted_laplacian_image
+    return predicted_image, ground_thruth, predicted_image, None, None
