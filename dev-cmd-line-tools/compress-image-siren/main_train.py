@@ -264,7 +264,7 @@ def main():
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
 
         metrics_txt = msg = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
-        graphics.show_image_with_metrcis_scores(image, metrics_txt)
+        graphics.show_image_with_metrcis_scores(image, metrics_txt, device)
         pass
     pass
 
