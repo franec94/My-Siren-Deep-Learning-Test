@@ -34,7 +34,9 @@ def get_cmd_line_opts():
     p.add_argument('--model_type', type=str, default='sine',
                help='Options currently are "sine" (all sine activations), "relu" (all relu activations,'
                     '"nerf" (relu activations and positional encoding as in NeRF), "rbf" (input rbf layer, rest relu),'
-                    'and in the future: "mixed" (first layer sine, other layers tanh)')
+                    'and in the future: "mixed" (first layer sine, other layers tanh)'
+                    'and "siren" (for Siren based neural network architectures)'
+                    )
 
     p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()
