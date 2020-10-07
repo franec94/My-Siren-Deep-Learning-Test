@@ -217,6 +217,8 @@ def main():
         summary_fn=summary_fn)
 
     if opt.evaluate:
+        predicted_image_path = os.path.join(root_path, 'predicted_images.png')
+
         # Initialize the model
         print('Evaluate on device: ', device)
         model = Siren(
@@ -266,10 +268,11 @@ def main():
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
 
         metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
-        graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt)
+        graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt,  predicted_image_path)
         pass
 
     if opt.show_graphics:
+        train_metrics_trend = os.path.join(root_path, 'train_metrics_trend.png')
         history_data_path = os.path.join(root_path, 'checkpoints', 'train_losses_final.txt')
         data = np.loadtxt(history_data_path)
         
@@ -284,6 +287,7 @@ def main():
         graphics.plot_series_graphic_by_config(history_df['train_loss'].values, config_plot_loss)
         graphics.plot_series_graphic_by_config(history_df['train_psnr'].values, config_plot_psnr)
         graphics.plot_series_graphic_by_config(history_df['train_ssim'].values, config_plot_ssim)
+        plt.savefig('train_metrics_trend')
         pass
     pass
 

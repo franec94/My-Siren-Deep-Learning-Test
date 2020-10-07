@@ -180,7 +180,7 @@ def plot_psnr_graphic(psnr_data, config):
     )
     pass
 
-def show_image_with_metrcis_scores(image, sidelenght, metrics_txt):
+def show_image_with_metrcis_scores(image, sidelenght, metrics_txt, image_name_path = '/content/predicted_images.png'):
     fig = plt.figure(figsize = (10, 9))
 
     # build a rectangle in axes coords
@@ -199,6 +199,6 @@ def show_image_with_metrcis_scores(image, sidelenght, metrics_txt):
         verticalalignment='bottom', horizontalalignment='right',)
 
     plt.imshow(image)
-    plt.savefig('/content/predicted_images.png')
+    plt.savefig(image_name_path)
     plt.show()
     pass
