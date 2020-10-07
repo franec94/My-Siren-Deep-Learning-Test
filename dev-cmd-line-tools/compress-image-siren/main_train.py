@@ -59,6 +59,7 @@ from skimage.metrics import mean_squared_error
 
 
 from src.utils.custom_argparser import get_cmd_line_opts
+from src.utils.siren import Siren
 
 import src.utils.dataio as dataio
 import src.utils.loss_functions as loss_functions
@@ -129,6 +130,13 @@ def main():
         # raise NotImplementedError
     elif opt.model_type == 'rbf' or opt.model_type == 'nerf':
         model = modules.SingleBVPNet(type='relu', mode=opt.model_type, sidelength=image_resolution)
+    elif opt.model_type == 'siren':
+        model = Siren(
+            in_features = 2,
+            out_features = 1,
+            hidden_features = sidelength, 
+            hidden_layers = 3,
+            outermost_linear=True)
     else:
         raise NotImplementedError
 
