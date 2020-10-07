@@ -62,14 +62,65 @@ from src.utils.custom_argparser import get_cmd_line_opts
 from src.utils.siren import Siren
 
 import src.utils.dataio as dataio
+import src.utils.evaluate as evaluate
 import src.utils.loss_functions as loss_functions
 import src.utils.modules as modules
 import src.utils.training as training
 import src.utils.utils as utils
+import src.utils.graphics as graphics
 
+
+class Config:  
+    def __init__(self, **kwargs):
+      for key, value in kwargs.items():
+          setattr(self, key, value)
+      pass
+    pass
+
+class PlotConfig(Config):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        pass
+    pass
 
 
 device, opt, parser = None, None, None
+
+config_plot_loss = PlotConfig(
+    image_path = None, # loss_image_path,
+    figsize = (10, 7),
+    title = "Train - Loss vs Epochs",
+    xlabel = "Epochs",
+    ylabel = "Loss",
+    label = "train loss",
+    color = "orange",
+    show_min_max = True,
+    ax = None
+)
+
+config_plot_psnr = PlotConfig(
+    image_path = None, # psnr_image_path,
+    figsize = (10, 7),
+    title = "Train - PSNR (db) vs Epochs",
+    xlabel = "Epochs",
+    ylabel = "PSNR (db)",
+    label = "train PSNR (db)",
+    color = "green",
+    show_min_max = True,
+    ax = None
+)
+
+config_plot_ssim = PlotConfig(
+    image_path = None, # psnr_image_path,
+    figsize = (10, 7),
+    title = "Train - SSIM vs Epochs",
+    xlabel = "Epochs",
+    ylabel = "SSIM",
+    label = "train SSIM",
+    color = "red",
+    show_min_max = True,
+    ax = None
+)
 
 def check_cmd_line_options():
 
@@ -103,7 +154,7 @@ def main():
 
     # Get cmd line options and parser objects.
     global device, opt, parser
-    check_cmd_line_options()
+    # check_cmd_line_options()
 
     # Get input image to be compressed.
     if opt.image_filepath is None:
@@ -164,6 +215,57 @@ def main():
         device = device,
         summary_fn=summary_fn)
 
+    if opt.evaluate:
+        # Initialize the model
+        print('Computation device: ', device)
+        model = Siren(
+            in_features = 2,
+            hidden_features = image_resolution[0],
+            hidden_layers = 3,
+            out_features = 1,
+            outermost_linear = True, 
+            first_omega_0 = 30,
+            hidden_omega_0 = 30.
+        )
+        print(model)
+
+        model_state_path = os.path.join(root_path, 'checkpoints', 'model_final.pth')
+        model.load_state_dict(torch.load(model_state_path, map_location=device))
+        
+        test_dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
+        #predicted_image, ground_thruth, predicted_image, predicted_grad_image, predicted_laplacian_image = evaluate.eval(model, test_dataloader)
+        predicted_image, ground_thruth, predicted_image, _, _ = evaluate.eval(model, test_dataloader)
+
+        sidelenght = image_resolution[0]
+        # Metric: MSE
+        val_mse = \
+            mean_squared_error(
+                ground_thruth.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy())
+
+        # Metric: PSNR
+        val_psnr = \
+            psnr(
+                ground_thruth.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                data_range=1.0)
+
+        # Metric: SSIM
+        # skmetrics.structural_similarity(
+        val_mssim = \
+            ssim(
+                ground_thruth.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                data_range=1.0)
+
+        image = predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy()
+
+        data = np.array([val_mse, val_psnr, val_mssim])
+        columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
+
+        metrics_txt = msg = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
+        graphics.show_image_with_metrcis_scores(image, metrics_txt)
+        pass
     pass
 
 
