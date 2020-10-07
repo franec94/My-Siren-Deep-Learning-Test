@@ -231,6 +231,7 @@ def main():
         print(model)
 
         model_state_path = os.path.join(root_path, 'checkpoints', 'model_final.pth')
+        model = model.to(device)
         model.load_state_dict(torch.load(model_state_path, map_location=device))
         
         test_dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
@@ -266,6 +267,23 @@ def main():
 
         metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
         graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt)
+        pass
+
+    if opt.show_graphics:
+        history_data_path = os.path.join(root_path, 'checkpoints', 'train_losses_final.txt')
+        data = np.loadtxt(history_data_path)
+        
+        history_df = pd.DataFrame(data = data, columns = ['train_loss', 'train_psnr', 'train_ssim'])
+        fig, axes = plt.subplots(3, figsize=(10, 10))
+        fig.tight_layout(pad=5.0)
+
+        config_plot_loss.ax = axes[0]
+        config_plot_psnr.ax = axes[1]
+        config_plot_ssim.ax = axes[2]
+
+        graphics.plot_series_graphic_by_config(history_df['train_loss'].values, config_plot_loss)
+        graphics.plot_series_graphic_by_config(history_df['train_psnr'].values, config_plot_psnr)
+        graphics.plot_series_graphic_by_config(history_df['train_ssim'].values, config_plot_ssim)
         pass
     pass
 
