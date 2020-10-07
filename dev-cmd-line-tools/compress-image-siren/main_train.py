@@ -203,6 +203,7 @@ def main():
     summary_fn = partial(utils.write_image_summary, image_resolution)
 
     # Performe training.
+    print('Train on device: ', device)
     training.train(
         model=model,
         train_dataloader=dataloader,
@@ -217,7 +218,7 @@ def main():
 
     if opt.evaluate:
         # Initialize the model
-        print('Computation device: ', device)
+        print('Evaluate on device: ', device)
         model = Siren(
             in_features = 2,
             hidden_features = image_resolution[0],
@@ -234,7 +235,7 @@ def main():
         
         test_dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
         #predicted_image, ground_thruth, predicted_image, predicted_grad_image, predicted_laplacian_image = evaluate.eval(model, test_dataloader)
-        predicted_image, ground_thruth, predicted_image, _, _ = evaluate.eval(model, test_dataloader)
+        predicted_image, ground_thruth, predicted_image, _, _ = evaluate.eval(model, test_dataloader, device)
 
         sidelenght = image_resolution[0]
         # Metric: MSE
@@ -264,7 +265,7 @@ def main():
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
 
         metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
-        graphics.show_image_with_metrcis_scores(image, metrics_txt, device)
+        graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt)
         pass
     pass
 
