@@ -16,6 +16,7 @@ import h5py
 import math
 import os
 import random
+import shutil
 import sys
 import time
 # import visdom
@@ -207,10 +208,12 @@ def main():
     if os.path.exists(root_path):
         if opt.y is None and opt.n is None:
             val = input("The model directory %s exists. Overwrite? (y/n)" % root_path)
+            if val not in ['y', 'n']:
+                raise ValueError
             if val == 'y':
                 shutil.rmtree(root_path)
         elif opt.y is True:
-            shutil.rmtree(model_dir)
+            shutil.rmtree(root_path)
             pass
     training.train(
         model=model,
