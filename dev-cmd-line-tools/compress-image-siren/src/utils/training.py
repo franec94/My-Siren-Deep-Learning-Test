@@ -2,7 +2,7 @@
 '''
 
 import torch
-import utils
+import src.utils.utils as utils
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.autonotebook import tqdm
 import time
