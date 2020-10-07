@@ -123,6 +123,8 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 writer.add_scalar("total_train_loss", train_loss, total_steps)
                 """
 
+                train_losses.append(np.array([train_loss, batch_psnr, batch_mssim]))
+
                 if not total_steps % steps_til_summary:
                     torch.save(model.state_dict(),
                                os.path.join(checkpoints_dir, 'model_current.pth'))
