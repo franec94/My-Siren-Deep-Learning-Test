@@ -4,7 +4,7 @@
 import torch
 from torch import nn
 from collections import OrderedDict
-import modules
+import src.utils.modules as modules
 
 
 class HyperNetwork(nn.Module):
