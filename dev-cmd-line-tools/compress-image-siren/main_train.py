@@ -122,8 +122,6 @@ def main():
 
     dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
 
-    return
-
     # Define the model.
     if opt.model_type == 'sine' or opt.model_type == 'relu' or opt.model_type == 'tanh' or opt.model_type == 'selu' or opt.model_type == 'elu'\
         or opt.model_type == 'softplus':
