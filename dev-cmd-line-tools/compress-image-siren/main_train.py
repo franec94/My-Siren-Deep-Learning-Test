@@ -204,6 +204,14 @@ def main():
 
     # Performe training.
     print('Train on device: ', device)
+    if os.path.exists(root_path):
+        if opt.y is None and opt.n is None:
+            val = input("The model directory %s exists. Overwrite? (y/n)" % root_path)
+            if val == 'y':
+                shutil.rmtree(root_path)
+        elif opt.y is True:
+            shutil.rmtree(model_dir)
+            pass
     training.train(
         model=model,
         train_dataloader=dataloader,

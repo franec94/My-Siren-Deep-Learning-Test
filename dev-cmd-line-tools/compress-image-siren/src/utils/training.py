@@ -31,11 +31,6 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
         optim = torch.optim.LBFGS(lr=lr, params=model.parameters(), max_iter=50000, max_eval=50000,
                                   history_size=50, line_search_fn='strong_wolfe')
 
-    if os.path.exists(model_dir):
-        val = input("The model directory %s exists. Overwrite? (y/n)" % model_dir)
-        if val == 'y':
-            shutil.rmtree(model_dir)
-
     os.makedirs(model_dir)
 
     summaries_dir = os.path.join(model_dir, 'summaries')

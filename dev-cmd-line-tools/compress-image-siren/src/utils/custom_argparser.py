@@ -6,6 +6,8 @@ def get_cmd_line_opts():
     p.add('-c', '--config_filepath', required=False, is_config_file=True, help='Path to config file.')
 
     p.add_argument('--evaluate', default=False, action='store_true', help='Include this option in order to evaluate model against input file.')
+    p.add_argument('--y', default=None, action='store_true', help='Include this option in order to erase content from output dir.')
+    p.add_argument('--n', default=None, action='store_true', help='Include this option in order to do not erase content from output dir.')
     p.add_argument('--show_graphics', default=False, action='store_true', help='Include this option in order to display graphics results.')
 
     p.add_argument('--seed', default=0, type=int, help='Seed for re-running experiments (default: 0).')
