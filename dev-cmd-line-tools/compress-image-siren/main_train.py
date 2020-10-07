@@ -112,7 +112,7 @@ def main():
     else:
         img_dataset =  np.asarray(Image.open(opt.image_filepath))
         if opt.sidelength is None:
-            opt.sidelength = min(img_dataset.size)
+            opt.sidelength = min(img_dataset.shape)
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
         image_resolution = (opt.sidelength, opt.sidelength)
 
