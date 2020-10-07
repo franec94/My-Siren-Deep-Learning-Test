@@ -170,9 +170,12 @@ def main():
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
         image_resolution = (opt.sidelength, opt.sidelength)
 
+        """
         fig = plt.figure()
         Image.open(opt.image_filepath).show()
         plt.show()
+        """
+        pass
 
     dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
 
@@ -228,7 +231,7 @@ def main():
         summary_fn=summary_fn)
 
     if opt.evaluate:
-        predicted_image_path = os.path.join(root_path, 'predicted_images.png')
+        
 
         # Initialize the model
         print('Evaluate on device: ', device)
@@ -278,6 +281,13 @@ def main():
         data = np.array([val_mse, val_psnr, val_mssim])
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
 
+
+        predicted_image_name_path = os.path.join(root_path, 'predicted_image.png')
+        plt.imshow(image)
+        plt.savefig(predicted_image_name_path)
+        plt.show()
+
+        predicted_image_path = os.path.join(root_path, 'predicted_image_plus_text.png')
         metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
         graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt,  predicted_image_path)
         pass
