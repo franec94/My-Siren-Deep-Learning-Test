@@ -64,7 +64,7 @@ import src.utils.dataio as dataio
 import src.utils.loss_functions as loss_functions
 import src.utils.modules as modules
 import src.utils.training as training
-import src.utils.uitls as utils
+import src.utils.utils as utils
 
 
 
@@ -116,6 +116,10 @@ def main():
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
         image_resolution = (opt.sidelength, opt.sidelength)
 
+    fig = plt.figure()
+    img_dataset.show()
+    plt.show()
+    
     dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
 
     return
