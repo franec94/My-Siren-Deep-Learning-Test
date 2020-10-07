@@ -110,16 +110,16 @@ def main():
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
         image_resolution = (512, 512)
     else:
-        img_dataset = Image.open(opt.image_filepath)
+        img_dataset =  np.asarray(Image.open(opt.image_filepath))
         if opt.sidelength is None:
             opt.sidelength = min(img_dataset.size)
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
         image_resolution = (opt.sidelength, opt.sidelength)
 
-    fig = plt.figure()
-    img_dataset.show()
-    plt.show()
-    
+        fig = plt.figure()
+        Image.open(opt.image_filepath).show()
+        plt.show()
+
     dataloader = DataLoader(coord_dataset, shuffle=True, batch_size=opt.batch_size, pin_memory=True, num_workers=0)
 
     return
