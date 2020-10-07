@@ -3,9 +3,9 @@ import pytest
 import torch
 from torch.utils.data import DataLoader
 
-from torchmeta.toy import Sinusoid
-from torchmeta.transforms import ClassSplitter
-from torchmeta.utils.data import Task, MetaDataLoader, BatchMetaDataLoader
+from src.utils.torchmeta.toy import Sinusoid
+from src.utils.torchmeta.transforms import ClassSplitter
+from src.utils.torchmeta.utils.data import Task, MetaDataLoader, BatchMetaDataLoader
 
 
 def test_meta_dataloader():

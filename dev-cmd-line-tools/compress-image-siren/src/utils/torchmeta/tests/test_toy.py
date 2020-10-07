@@ -3,9 +3,9 @@ import pytest
 import numpy as np
 from collections import OrderedDict
 
-from torchmeta.utils.data import Task, MetaDataset
-from torchmeta.toy import Sinusoid, Harmonic, SinusoidAndLine
-from torchmeta.toy import helpers
+from src.utils.torchmeta.utils.data import Task, MetaDataset
+from src.utils.torchmeta.toy import Sinusoid, Harmonic, SinusoidAndLine
+from src.utils.torchmeta.toy import helpers
 
 
 @pytest.mark.parametrize('dataset_class',

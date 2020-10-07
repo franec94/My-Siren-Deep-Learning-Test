@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from collections import OrderedDict
-from torchmeta.modules.module import MetaModule
+from src.utils.torchmeta.modules.module import MetaModule
 
 class MetaLayerNorm(nn.LayerNorm, MetaModule):
     __doc__ = nn.LayerNorm.__doc__

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from torchmeta.utils.prototype import get_prototypes
+from src.utils.torchmeta.utils.prototype import get_prototypes
 
 __all__ = ['hardness_metric']
 

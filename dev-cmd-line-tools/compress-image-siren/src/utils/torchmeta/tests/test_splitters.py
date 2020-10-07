@@ -3,9 +3,9 @@ import pytest
 import numpy as np
 from collections import OrderedDict
 
-from torchmeta.transforms.splitters import ClassSplitter
-from torchmeta.toy import Sinusoid
-from torchmeta.utils.data import Task
+from src.utils.torchmeta.transforms.splitters import ClassSplitter
+from src.utils.torchmeta.toy import Sinusoid
+from src.utils.torchmeta.utils.data import Task
 
 def test_seed_class_splitter():
     dataset_transform = ClassSplitter(shuffle=True,

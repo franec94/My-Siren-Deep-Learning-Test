@@ -5,7 +5,7 @@ import h5py
 from PIL import Image
 
 from torchvision.datasets.utils import check_integrity, download_url
-from torchmeta.utils.data import Dataset, ClassDataset
+from src.utils.torchmeta.utils.data import Dataset, ClassDataset
 
 
 class CIFAR100ClassDataset(ClassDataset):

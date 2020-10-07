@@ -1,6 +1,6 @@
 import numpy as np
 
-from torchmeta.utils.data import Task, MetaDataset
+from src.utils.torchmeta.utils.data import Task, MetaDataset
 
 
 class Harmonic(MetaDataset):

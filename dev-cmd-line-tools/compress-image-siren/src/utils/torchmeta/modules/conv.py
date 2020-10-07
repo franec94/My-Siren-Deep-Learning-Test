@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 from collections import OrderedDict
 from torch.nn.modules.utils import _single, _pair, _triple
-from torchmeta.modules.module import MetaModule
+from src.utils.torchmeta.modules.module import MetaModule
 
 class MetaConv1d(nn.Conv1d, MetaModule):
     __doc__ = nn.Conv1d.__doc__

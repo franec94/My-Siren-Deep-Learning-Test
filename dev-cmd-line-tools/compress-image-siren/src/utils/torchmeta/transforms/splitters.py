@@ -2,8 +2,8 @@ import torch
 import numpy as np
 
 from collections import OrderedDict, defaultdict
-from torchmeta.utils.data.task import Task, ConcatTask, SubsetTask
-from torchmeta.transforms.utils import apply_wrapper
+from src.utils.torchmeta.utils.data.task import Task, ConcatTask, SubsetTask
+from src.utils.torchmeta.transforms.utils import apply_wrapper
 
 __all__ = ['Splitter', 'ClassSplitter', 'WeightedClassSplitter']
 

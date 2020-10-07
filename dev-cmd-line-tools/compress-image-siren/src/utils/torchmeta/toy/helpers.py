@@ -1,7 +1,7 @@
 import warnings
 
-from torchmeta.toy import Sinusoid, Harmonic
-from torchmeta.transforms import ClassSplitter
+from src.utils.torchmeta.toy import Sinusoid, Harmonic
+from src.utils.torchmeta.transforms import ClassSplitter
 
 def sinusoid(shots, shuffle=True, test_shots=None, seed=None, **kwargs):
     """Helper function to create a meta-dataset for the Sinusoid toy dataset.

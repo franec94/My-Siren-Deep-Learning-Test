@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 from collections import OrderedDict
 from torch.nn.modules.batchnorm import _BatchNorm
-from torchmeta.modules.module import MetaModule
+from src.utils.torchmeta.modules.module import MetaModule
 
 class _MetaBatchNorm(_BatchNorm, MetaModule):
     def forward(self, input, params=None):
