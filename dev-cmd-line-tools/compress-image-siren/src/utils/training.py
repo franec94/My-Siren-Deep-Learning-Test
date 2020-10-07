@@ -143,7 +143,7 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 pbar.update(1)
 
                 if not total_steps % steps_til_summary:
-                    tqdm.write("Epoch %d, Total loss %0.6f, iteration time %0.6f" % (epoch, train_loss, time.time() - start_time))
+                    tqdm.write("Epoch %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f" % (epoch, train_loss, batch_psnr, batch_mssim, time.time() - start_time))
 
                     """
                     if val_dataloader is not None:
