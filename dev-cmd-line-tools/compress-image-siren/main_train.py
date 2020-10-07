@@ -126,7 +126,7 @@ def main():
     if opt.model_type == 'sine' or opt.model_type == 'relu' or opt.model_type == 'tanh' or opt.model_type == 'selu' or opt.model_type == 'elu'\
         or opt.model_type == 'softplus':
         model = modules.SingleBVPNet(type=opt.model_type, mode='mlp', sidelength=image_resolution)
-        raise NotImplementedError
+        # raise NotImplementedError
     elif opt.model_type == 'rbf' or opt.model_type == 'nerf':
         model = modules.SingleBVPNet(type='relu', mode=opt.model_type, sidelength=image_resolution)
     else:
