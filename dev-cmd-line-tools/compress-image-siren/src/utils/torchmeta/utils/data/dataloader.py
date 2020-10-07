@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 from torch.utils.data.dataset import Dataset as TorchDataset
 
-from torchmeta.utils.data.dataset import CombinationMetaDataset
-from torchmeta.utils.data.sampler import (CombinationSequentialSampler,
+from src.utils.torchmeta.utils.data.dataset import CombinationMetaDataset
+from src.utils.torchmeta.utils.data.sampler import (CombinationSequentialSampler,
                                           CombinationRandomSampler)
 
 def batch_meta_collate(collate_fn):

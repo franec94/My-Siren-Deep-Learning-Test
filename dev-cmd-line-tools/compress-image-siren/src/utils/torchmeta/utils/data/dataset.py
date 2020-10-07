@@ -5,9 +5,9 @@ from copy import deepcopy
 from itertools import combinations
 from torchvision.transforms import Compose
 
-from torchmeta.utils.data.task import ConcatTask
-from torchmeta.transforms import FixedCategory, Categorical, DefaultTargetTransform
-from torchmeta.transforms.utils import wrap_transform
+from src.utils.torchmeta.utils.data.task import ConcatTask
+from src.utils.torchmeta.transforms import FixedCategory, Categorical, DefaultTargetTransform
+from src.utils.torchmeta.transforms.utils import wrap_transform
 
 __all__ = ['ClassDataset', 'MetaDataset', 'CombinationMetaDataset']
 
