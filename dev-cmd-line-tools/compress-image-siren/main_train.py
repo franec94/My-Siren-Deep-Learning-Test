@@ -134,7 +134,7 @@ def main():
         model = Siren(
             in_features = 2,
             out_features = 1,
-            hidden_features = sidelength, 
+            hidden_features = image_resolution, 
             hidden_layers = 3,
             outermost_linear=True)
     else:
