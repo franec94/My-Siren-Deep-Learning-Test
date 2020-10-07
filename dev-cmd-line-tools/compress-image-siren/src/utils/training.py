@@ -11,6 +11,12 @@ import numpy as np
 import os
 import shutil
 
+# skimage
+import skimage
+import skimage.metrics as skmetrics
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import mean_squared_error
 
 def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_checkpoint, model_dir, loss_fn,
           summary_fn, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device = 'cpu'):
@@ -78,8 +84,25 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 model_output, coords = model(model_input)
                 # losses = loss_fn(model_output, gt)
                 train_loss = loss_fn(model_output, gt)
-
                 writer.add_scalar("total_train_loss", train_loss.item(), total_steps)
+
+                batch_psnr = \
+                    psnr(
+                        model_output.cpu().view(256,256).detach().numpy(),
+                        gt.cpu().view(256,256).detach().numpy(),
+                    data_range=1.0)
+                # running_psnr += batch_psnr
+                writer.add_scalar("total_train_psnr", batch_psnr, total_steps)
+
+                # Metric: SSIM
+                # skmetrics.structural_similarity(
+                batch_mssim = \
+                    ssim(
+                        model_output.cpu().view(256,256).detach().numpy(),
+                        gt.cpu().view(256,256).detach().numpy(),
+                        data_range=1.0)
+                # running_ssim += batch_mssim
+                writer.add_scalar("total_train_ssim", batch_mssim, total_steps)
 
                 """
                 train_loss = 0.
@@ -135,11 +158,15 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                     """
 
                 total_steps += 1
+                pass
+            pass
 
         torch.save(model.state_dict(),
                    os.path.join(checkpoints_dir, 'model_final.pth'))
         np.savetxt(os.path.join(checkpoints_dir, 'train_losses_final.txt'),
                    np.array(train_losses))
+        pass
+    pass
 
 
 class LinearDecaySchedule():
