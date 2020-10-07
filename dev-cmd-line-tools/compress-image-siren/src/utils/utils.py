@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import dataio
+import src.utils.dataio as dataio
 import os
 import src.utils.diff_operators as diff_operators
 from torchvision.utils import make_grid, save_image
