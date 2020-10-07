@@ -263,7 +263,7 @@ def main():
         data = np.array([val_mse, val_psnr, val_mssim])
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
 
-        metrics_txt = msg = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
+        metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
         graphics.show_image_with_metrcis_scores(image, metrics_txt, device)
         pass
     pass
