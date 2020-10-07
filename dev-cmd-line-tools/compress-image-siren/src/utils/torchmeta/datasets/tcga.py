@@ -5,8 +5,8 @@ import numpy as np
 import torch
 import copy
 
-from torchmeta.utils.data import Task, MetaDataset
-from torchmeta.datasets.utils import get_asset
+from src.utils.torchmeta.utils.data import Task, MetaDataset
+from src.utils.torchmeta.datasets.utils import get_asset
 
 
 class TCGA(MetaDataset):

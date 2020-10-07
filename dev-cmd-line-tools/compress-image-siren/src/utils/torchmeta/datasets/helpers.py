@@ -1,7 +1,7 @@
 import warnings
 
-from torchmeta.datasets import Omniglot, MiniImagenet, TieredImagenet, CIFARFS, CUB, DoubleMNIST, TripleMNIST
-from torchmeta.transforms import Categorical, ClassSplitter, Rotation
+from src.utils.torchmeta.datasets import Omniglot, MiniImagenet, TieredImagenet, CIFARFS, CUB, DoubleMNIST, TripleMNIST
+from src.utils.torchmeta.transforms import Categorical, ClassSplitter, Rotation
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor
 
 __all__ = [

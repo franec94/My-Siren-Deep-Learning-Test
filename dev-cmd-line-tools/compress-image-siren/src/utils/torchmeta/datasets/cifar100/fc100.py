@@ -1,9 +1,9 @@
 import os
 import json
 
-from torchmeta.datasets.cifar100.base import CIFAR100ClassDataset
-from torchmeta.datasets.utils import get_asset
-from torchmeta.utils.data import ClassDataset, CombinationMetaDataset
+from src.utils.torchmeta.datasets.cifar100.base import CIFAR100ClassDataset
+from src.utils.torchmeta.datasets.utils import get_asset
+from src.utils.torchmeta.utils.data import ClassDataset, CombinationMetaDataset
 
 
 class FC100(CombinationMetaDataset):

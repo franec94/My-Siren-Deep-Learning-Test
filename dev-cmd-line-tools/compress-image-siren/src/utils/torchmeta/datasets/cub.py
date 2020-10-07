@@ -6,9 +6,9 @@ import json
 import glob
 import h5py
 
-from torchmeta.utils.data import Dataset, ClassDataset, CombinationMetaDataset
+from src.utils.torchmeta.utils.data import Dataset, ClassDataset, CombinationMetaDataset
 from torchvision.datasets.utils import download_url
-from torchmeta.datasets.utils import get_asset
+from src.utils.torchmeta.datasets.utils import get_asset
 
 
 class CUB(CombinationMetaDataset):

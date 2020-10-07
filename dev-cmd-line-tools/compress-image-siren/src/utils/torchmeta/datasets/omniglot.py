@@ -4,9 +4,9 @@ import glob
 import h5py
 from PIL import Image, ImageOps
 
-from torchmeta.utils.data import Dataset, ClassDataset, CombinationMetaDataset
+from src.utils.torchmeta.utils.data import Dataset, ClassDataset, CombinationMetaDataset
 from torchvision.datasets.utils import list_dir, download_url
-from torchmeta.datasets.utils import get_asset
+from src.utils.torchmeta.datasets.utils import get_asset
 
 
 class Omniglot(CombinationMetaDataset):
