@@ -160,6 +160,7 @@ def main():
         epochs_til_checkpoint=opt.epochs_til_ckpt,
         model_dir=root_path,
         loss_fn=loss_fn,
+        device = device,
         summary_fn=summary_fn)
 
     pass
