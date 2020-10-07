@@ -5,7 +5,7 @@ def get_cmd_line_opts():
     p = configargparse.ArgumentParser()
     p.add('-c', '--config_filepath', required=False, is_config_file=True, help='Path to config file.')
 
-    p.add_argument('--evaluate', default=False, type=bool, action='store_true', help='Include this option in order to evaluate model against input file.')
+    p.add_argument('--evaluate', default=False, action='store_true', help='Include this option in order to evaluate model against input file.')
     p.add_argument('--seed', default=0, type=int, help='Seed for re-running experiments (default: 0).')
     p.add_argument('--logging_root', type=str, default='./logs', help='root for logging')
     p.add_argument('--experiment_name', type=str, required=True,
