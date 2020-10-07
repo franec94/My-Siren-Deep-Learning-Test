@@ -2,7 +2,7 @@ import torch
 from src.utils.torchmeta.transforms.utils import apply_wrapper
 from collections import defaultdict
 
-from torchmeta.transforms.target_transforms import TargetTransform
+from src.utils.torchmeta.transforms.target_transforms import TargetTransform
 
 
 class Categorical(TargetTransform):
