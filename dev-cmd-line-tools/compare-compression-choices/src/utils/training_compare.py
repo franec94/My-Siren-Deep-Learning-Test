@@ -150,7 +150,7 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = N
     history_combs = []
 
     model, dataloader = None, None
-    for _, (hidden_features, hidden_layers) in enumerate(arch_hyperparams):
+    for _, (hidden_layers, hidden_features) in enumerate(arch_hyperparams):
         # print(hidden_features, hidden_layers)
 
         sidelength = hidden_features
