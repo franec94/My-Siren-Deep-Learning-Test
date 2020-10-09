@@ -128,7 +128,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary =
     return train_losses[-1]
 
 
-def train_protocol_compare_archs(arch_hyperparams, coord_dataset, opt, loss_fn = None, summary_fn = None, root_path = None, device = 'cpu'):
+def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = None, summary_fn = None, root_path = None, device = 'cpu'):
 
     """
     dataloader = DataLoader(
@@ -152,7 +152,10 @@ def train_protocol_compare_archs(arch_hyperparams, coord_dataset, opt, loss_fn =
     model, dataloader = None, None
     for _, (hidden_features, hidden_layers) in enumerate(arch_hyperparams):
         # print(hidden_features, hidden_layers)
-        model = None
+
+        sidelength = hidden_features
+
+        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=sidelength, compute_diff='all')
 
         dataloader = DataLoader(
             coord_dataset,

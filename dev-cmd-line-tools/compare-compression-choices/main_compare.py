@@ -160,15 +160,15 @@ def main():
     # Get input image to be compressed.
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
-        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
-        image_resolution = (512, 512)
+        # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
+        # image_resolution = (512, 512)
     else:
         img_dataset =  dataio.ImageFile(opt.image_filepath)
         img = Image.open(opt.image_filepath)
-        if opt.sidelength is None:
-            opt.sidelength = min(img.size)
-        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
-        image_resolution = (opt.sidelength, opt.sidelength)
+        # if opt.sidelength is None:
+        #     opt.sidelength = min(img.size)
+        # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
+        # image_resolution = (opt.sidelength, opt.sidelength)
 
         """
         fig = plt.figure()
@@ -186,7 +186,7 @@ def main():
 
     training_compare.train_protocol_compare_archs(
         arch_hyperparams=arch_hyperparams,
-        coord_dataset=coord_dataset,
+        img_dataset=img_dataset,
         opt=opt
     )
     
