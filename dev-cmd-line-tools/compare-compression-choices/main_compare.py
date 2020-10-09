@@ -199,15 +199,19 @@ if __name__ == "__main__":
     opt, parser = get_cmd_line_opts()
     
     # Set seeds for experiment re-running.
-    """
-    seed = opt.seed
+    
+    if hasattr(opt, 'seed'):
+        seed = opt.seed
+    else:
+        seed = 0
+    
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
 
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    """
+    
 
     device = None
     try:
