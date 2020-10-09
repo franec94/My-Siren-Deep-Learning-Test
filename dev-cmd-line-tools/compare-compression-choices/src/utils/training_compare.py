@@ -153,7 +153,7 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = N
     for _, (hidden_layers, hidden_features) in enumerate(arch_hyperparams):
         # print(hidden_features, hidden_layers)
 
-        sidelength = hidden_features
+        sidelength = int(hidden_features)
 
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=sidelength, compute_diff='all')
 
@@ -166,9 +166,11 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = N
         model = Siren(
             in_features = 2,
             out_features = 1,
-            hidden_features = hidden_features, 
-            hidden_layers = hidden_layers,
+            hidden_features = int(hidden_features),
+            hidden_layers = int(hidden_layers),
             outermost_linear=True)
+        
+        print(model)
         
         
         train_losses = train_compare_archs(
