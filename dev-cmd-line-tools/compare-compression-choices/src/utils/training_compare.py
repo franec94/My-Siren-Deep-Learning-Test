@@ -33,8 +33,8 @@ class LinearDecaySchedule():
         return self.start_val + (self.final_val - self.start_val) * min(iter / self.num_steps, 1.)
 
 
-def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_checkpoint, model_dir, loss_fn,
-          summary_fn, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device = 'cpu'):
+def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary = None, epochs_til_checkpoint = None, model_dir = None, loss_fn = None,
+          summary_fn = None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device = 'cpu'):
 
     optim = torch.optim.Adam(lr=lr, params=model.parameters())
     loss_fn = nn.MSELoss()
@@ -173,8 +173,8 @@ def train_protocol_compare_archs(arch_hyperparams, coord_dataset, opt, loss_fn =
             train_dataloader=dataloader,
             epochs=opt.num_epochs,
             lr=opt.lr,
-            steps_til_summary=opt.steps_til_summary,
-            epochs_til_checkpoint=opt.epochs_til_ckpt,
+            # steps_til_summary=opt.steps_til_summary,
+            # epochs_til_checkpoint=opt.epochs_til_ckpt,
             model_dir=root_path,
             loss_fn=loss_fn,
             device = device,
