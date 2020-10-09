@@ -50,7 +50,7 @@ def train_protocol_compare_archs(arch_hyperparams, coord_dataset, opt):
         outermost_linear=True)
     """
 
-    for _, (hidden_features, hidden_layers) in enumerate(arch_hyperparams):
+    for _, (_, hidden_features, hidden_layers) in enumerate(arch_hyperparams):
         print(hidden_features, hidden_layers)
         """
         model = Siren(
