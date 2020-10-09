@@ -20,8 +20,8 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import mean_squared_error
 
+import src.utils.dataio as dataio
 from src.utils.siren import Siren
-
 
 class LinearDecaySchedule():
     def __init__(self, start_val, final_val, num_steps):
