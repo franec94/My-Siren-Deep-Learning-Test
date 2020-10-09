@@ -180,8 +180,9 @@ def main():
 
     arch_hyperparams = np.loadtxt(opt.comb_archs_path,
         delimiter=',',
-         skiprows=1,
-        dtype=np.int)
+        usecols=(2, 3),  # Extract just (hidden_features, hidden_layers) columns. Skip (index, # params) columns.
+        skiprows=1,      # Skip first row which contains header, that is, columns names that are string.
+        dtype=np.int)    # Cast to int since (hidden_features, hidden_layers) are integer quantities.
 
     training_compare.train_protocol_compare_archs(
         arch_hyperparams=arch_hyperparams,
