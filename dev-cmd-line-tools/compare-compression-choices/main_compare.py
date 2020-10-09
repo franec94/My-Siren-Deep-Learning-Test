@@ -178,10 +178,13 @@ def main():
         pass
 
 
-    arch_hyperparams = np.loadtxt(opt.comb_archs_path, delimiter=';', dtype=np.int)
+    arch_hyperparams = np.loadtxt(opt.comb_archs_path,
+        delimiter=',',
+         skiprows=1,
+        dtype=np.int)
 
     training_compare.train_protocol_compare_archs(
-        arch_hyperparams=None,
+        arch_hyperparams=arch_hyperparams,
         coord_dataset=coord_dataset,
         opt=opt
     )
