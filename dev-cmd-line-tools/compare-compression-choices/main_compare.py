@@ -195,6 +195,7 @@ if __name__ == "__main__":
     opt, parser = get_cmd_line_opts()
     
     # Set seeds for experiment re-running.
+    """
     seed = opt.seed
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -202,6 +203,7 @@ if __name__ == "__main__":
 
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    """
 
     device = None
     try:
