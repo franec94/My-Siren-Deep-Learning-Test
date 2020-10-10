@@ -162,6 +162,8 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary =
     model.eval()
     with torch.no_grad():
         (val_input, val_gt) = next(iter(val_dataloader))
+        model_input = val_input['coords'].to(device)
+        val_gt = val_gt['img'].to(device)
         val_output, val_coords = model(val_input)
 
         sidelenght = int(math.sqrt(val_output.size()[1]))
