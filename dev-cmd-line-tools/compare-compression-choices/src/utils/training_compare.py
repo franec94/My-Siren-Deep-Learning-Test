@@ -256,7 +256,7 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.
                 hidden_layers=int(hidden_layers),
                 outermost_linear=True).to(device=device)
 
-            # print(model)
+            print(model)
 
             # Train model.
             train_losses = train_compare_archs(
