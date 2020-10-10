@@ -70,7 +70,7 @@ import src.utils.training_compare as training_compare
 import src.utils.utils as utils
 import src.utils.graphics as graphics
 
-
+"""
 class Config:  
     def __init__(self, **kwargs):
       for key, value in kwargs.items():
@@ -122,6 +122,7 @@ config_plot_ssim = PlotConfig(
     show_min_max = True,
     ax = None
 )
+"""
 
 def check_cmd_line_options():
 
@@ -199,11 +200,8 @@ if __name__ == "__main__":
     opt, parser = get_cmd_line_opts()
     
     # Set seeds for experiment re-running.
-    
-    if hasattr(opt, 'seed'):
-        seed = opt.seed
-    else:
-        seed = 0
+    if hasattr(opt, 'seed'): seed = opt.seed
+    else: seed = 0
     
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -212,13 +210,15 @@ if __name__ == "__main__":
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     
-
+    # Set device upon which compute model's fitting
+    # or evaluation, depending on the current desired task.
     device = None
     try:
         device = (torch.device('cuda:0') if torch.cuda.is_available()
         else torch.device('gpu'))
     except:
         device = torch.device('cpu')
+        pass
     print(f"Training on device {device}.")
     print(f"# cuda device: {torch.cuda.device_count()}")
     if torch.cuda.device_count() > 0:
