@@ -164,7 +164,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
 
         val_input = val_input['coords'].to(device)
         val_gt = val_gt['img'].to(device)
-        
+
         val_output, val_coords = model(val_input)
 
         sidelenght = int(math.sqrt(val_output.size()[1]))
@@ -279,10 +279,10 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.
 
             # Record performance metrices for later investigations.
             history_combs.append(train_losses)
-            pass
 
-        # Update counter used to handle processing bar.
-        pbar.update(1)
+            # Update counter used to handle processing bar.
+            pbar.update(1)
+            pass
         pass
 
     # Save into output file recorded metrices across different trials.
