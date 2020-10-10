@@ -255,7 +255,8 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.
                 hidden_features=int(hidden_features),
                 hidden_layers=int(hidden_layers),
                 outermost_linear=True).to(device=device)
-
+            
+            tot_weights_model = sum(p.numel() for p in model.parameters())
             print(model)
 
             # Train model.
@@ -273,12 +274,22 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.
                 summary_fn=summary_fn)
 
             # Show some output.
+            stop_time = time.time() - start_time
             tqdm.write(
                 "Arch no. %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f"
-                % (arch_no, train_losses[0], train_losses[1], train_losses[2], time.time() - start_time))
+                % (arch_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
 
             # Record performance metrices for later investigations.
-            history_combs.append(train_losses)
+            # history_combs.append(np.concat(train_losses, [stop_time]))
+            history_combs.append(
+                np.concatenate(
+                    (
+                        [tot_weights_model, hidden_layers, hidden_features],
+                        train_losses,
+                        [stop_time]
+                    ),
+                    axis=None)
+            )
 
             # Update counter used to handle processing bar.
             pbar.update(1)
