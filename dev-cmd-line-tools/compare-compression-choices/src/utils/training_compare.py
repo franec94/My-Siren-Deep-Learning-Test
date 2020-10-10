@@ -23,6 +23,7 @@ from skimage.metrics import mean_squared_error
 import src.utils.dataio as dataio
 from src.utils.siren import Siren
 
+
 class LinearDecaySchedule():
     def __init__(self, start_val, final_val, num_steps):
         self.start_val = start_val
@@ -33,22 +34,21 @@ class LinearDecaySchedule():
         return self.start_val + (self.final_val - self.start_val) * min(iter / self.num_steps, 1.)
 
 
-def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary = None, epochs_til_checkpoint = None, model_dir = None, loss_fn = None,
-          summary_fn = None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device = 'cpu'):
-        
+def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=None, epochs_til_checkpoint=None, model_dir=None, loss_fn=None,
+                        summary_fn=None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device='cpu'):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
     """
 
     # Set model into train mode, for safe reasons.
     model.train()
-    
+
     # Define some objects necessary to lead the protocol
     # which is in charge of let the model to be trained.
     optim = torch.optim.Adam(lr=lr, params=model.parameters())
     loss_fn = nn.MSELoss()
 
-    # copy settings from Raissi et al. (2019) and here 
+    # copy settings from Raissi et al. (2019) and here
     # https://github.com/maziarraissi/PINNs
     if use_lbfgs:
         optim = torch.optim.LBFGS(lr=lr, params=model.parameters(), max_iter=50000, max_eval=50000,
@@ -56,106 +56,105 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary =
 
     # Local variables.
     # total_steps = 0 # used for show output depending on 'steps_til_summary' function's input argument.
-    train_losses = [] # used for recording metrices when evaluated.
+    train_losses = []  # used for recording metrices when evaluated.
 
     # Processing Bar to control the workout.
-    with tqdm(total=len(train_dataloader) * epochs) as pbar:
-        
-        # Number of interation for current image.
-        for epoch in range(epochs):
-            # Loop for let model's arch be improved, updateding weights values.
-            for step, (model_input, gt) in enumerate(train_dataloader):
-                """
-                # Start time: it's the point in time from which the current train
-                # start_time = time.time()
+    # with tqdm(total=len(train_dataloader) * epochs) as pbar:
+
+    # Number of interation for current image.
+    for epoch in range(epochs):
+        # Loop for let model's arch be improved, updateding weights values.
+        for step, (model_input, gt) in enumerate(train_dataloader):
+            """
+            # Start time: it's the point in time from which the current train
+            # start_time = time.time()
             
-                # model_input = {key: value.cuda() for key, value in model_input.items()}
-                # gt = {key: value.cuda() for key, value in gt.items()}
-                
-                if double_precision:
-                    # model_input = {key: value.double() for key, value in model_input.items()}
-                    # gt = {key: value.double() for key, value in gt.items()}
-                    pass
-                """
-                # Get input data and set it to desired device
-                # for computation reasons.
-                model_input = model_input['coords'].to(device)
-                gt = gt['img'].to(device)
+            # model_input = {key: value.cuda() for key, value in model_input.items()}
+            # gt = {key: value.cuda() for key, value in gt.items()}
 
-                # sidelenght = int(math.sqrt(model_input.size()[1]))
+            if double_precision:
+            # model_input = {key: value.double() for key, value in model_input.items()}
+            # gt = {key: value.double() for key, value in gt.items()}
+            pass
+            """
+            # Get input data and set it to desired device
+            # for computation reasons.
+            model_input = model_input['coords'].to(device)
+            gt = gt['img'].to(device)
 
-                if use_lbfgs:
-                    def closure():
-                        optim.zero_grad()
-                        model_output = model(model_input)
-                        losses = loss_fn(model_output, gt)
-                        train_loss = 0.
-                        for loss_name, loss in losses.items():
-                            train_loss += loss.mean() 
-                        train_loss.backward()
-                        return train_loss
-                    optim.step(closure)
+            # sidelenght = int(math.sqrt(model_input.size()[1]))
 
-                # Compute forward pass.
-                model_output, coords = model(model_input)
-                # losses = loss_fn(model_output, gt)
-                train_loss = loss_fn(model_output, gt)
-
-                
-                """
-                # Other metrices.
-                batch_psnr = \
-                    psnr(
-                        model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                    data_range=1.0)
-                # running_psnr += batch_psnr
-
-                # Metric: SSIM
-                # skmetrics.structural_similarity(
-                batch_mssim = \
-                    ssim(
-                        model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                        data_range=1.0)
-                # running_ssim += batch_mssim
-                """
-                
-                """
-                # Record metrices.
-                # writer.add_scalar("total_train_ssim", batch_mssim, total_steps)
-                # train_losses.append(np.array([train_loss, batch_psnr, batch_mssim]))
-                """
-
-                # Backward pass.
-                if not use_lbfgs:
+            if use_lbfgs:
+                def closure():
                     optim.zero_grad()
+                    model_output = model(model_input)
+                    losses = loss_fn(model_output, gt)
+                    train_loss = 0.
+                    for loss_name, loss in losses.items():
+                        train_loss += loss.mean()
                     train_loss.backward()
+                    return train_loss
+                optim.step(closure)
 
-                    if clip_grad:
-                        if isinstance(clip_grad, bool):
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.)
-                        else:
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=clip_grad)
-                            pass
+            # Compute forward pass.
+            model_output, coords = model(model_input)
+            # losses = loss_fn(model_output, gt)
+            train_loss = loss_fn(model_output, gt)
+
+            """
+            # Other metrices.
+            batch_psnr = \
+                psnr(
+                    model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                    gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                data_range=1.0)
+            # running_psnr += batch_psnr
+
+            # Metric: SSIM
+            # skmetrics.structural_similarity(
+            batch_mssim = \
+                ssim(
+                model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                    gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                    data_range=1.0)
+            # running_ssim += batch_mssim
+            """
+
+            """
+            # Record metrices.
+            # writer.add_scalar("total_train_ssim", batch_mssim, total_steps)
+            # train_losses.append(np.array([train_loss, batch_psnr, batch_mssim]))
+            """
+
+            # Backward pass.
+            if not use_lbfgs:
+                optim.zero_grad()
+                train_loss.backward()
+
+                if clip_grad:
+                    if isinstance(clip_grad, bool):
+                        torch.nn.utils.clip_grad_norm_(
+                            model.parameters(), max_norm=1.)
+                    else:
+                        torch.nn.utils.clip_grad_norm_(
+                            model.parameters(), max_norm=clip_grad)
                         pass
                     pass
-                    optim.step()
-
-                # Update counter used to handle processing bar.
-                pbar.update(1)
-
-                
-                """
-                # Show some output.
-                if not total_steps % steps_til_summary:
-                    # tqdm.write("Epoch %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f" % (epoch, train_loss, batch_psnr, batch_mssim, time.time() - start_time))
-                    pass                
-                # total_steps += 1
-                """
                 pass
-            pass
+                optim.step()
 
+            # Update counter used to handle processing bar.
+            # pbar.update(1)
+
+            """
+            # Show some output.
+            if not total_steps % steps_til_summary:
+                # tqdm.write("Epoch %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f" % (epoch, train_loss, batch_psnr, batch_mssim, time.time() - start_time))
+                pass
+            # total_steps += 1
+            """
+            pass
+        # pass
         pass
 
     # Evaluate model's on validation data
@@ -172,17 +171,17 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary =
 
         val_psnr = \
             psnr(
-                val_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
-                # running_psnr += batch_psnr
+            # running_psnr += batch_psnr
 
         # Metric: SSIM
         # skmetrics.structural_similarity(
         val_mssim = \
             ssim(
-                val_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
         train_losses = np.array([[train_loss, val_psnr, val_mssim]])
         pass
@@ -191,7 +190,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary =
     return train_losses[-1]
 
 
-def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = nn.MSELoss(), summary_fn = None, root_path = None, device = 'cpu'):
+def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu'):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
@@ -217,11 +216,11 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = n
     # Local variables.
     history_combs = []
     model, train_dataloader, val_dataloader = None, None, None
-    
+
     # Processing Bar to control the workout.
     with tqdm(total=len(arch_hyperparams)) as pbar:
 
-        # For loop for performing different training depending on the 
+        # For loop for performing different training depending on the
         # chosen hyper-params.
         for arch_no, (hidden_layers, hidden_features) in enumerate(arch_hyperparams):
             # Start time: it's the point in time from which the current train
@@ -231,7 +230,8 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = n
 
             # Rescale image to be correctly processed by the net.
             sidelength = int(hidden_features)
-            coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=sidelength, compute_diff='all')
+            coord_dataset = dataio.Implicit2DWrapper(
+                img_dataset, sidelength=sidelength, compute_diff='all')
 
             # Prepare dataloaders for train and eval phases.
             train_dataloader = DataLoader(
@@ -239,23 +239,23 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = n
                 shuffle=True,
                 batch_size=opt.batch_size,
                 pin_memory=True, num_workers=0)
-            
+
             val_dataloader = DataLoader(
                 coord_dataset,
                 shuffle=False,
                 batch_size=opt.batch_size,
                 pin_memory=True, num_workers=0)
-            
+
             # Prepare siren model.
             model = Siren(
-                in_features = 2,
-                out_features = 1,
-                hidden_features = int(hidden_features),
-                hidden_layers = int(hidden_layers),
+                in_features=2,
+                out_features=1,
+                hidden_features=int(hidden_features),
+                hidden_layers=int(hidden_layers),
                 outermost_linear=True).to(device=device)
-        
+
             # print(model)
-        
+
             # Train model.
             train_losses = train_compare_archs(
                 model=model,
@@ -267,18 +267,18 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn = n
                 # epochs_til_checkpoint=opt.epochs_til_ckpt,
                 model_dir=root_path,
                 loss_fn=loss_fn,
-                device = device,
+                device=device,
                 summary_fn=summary_fn)
-            
+
             # Show some output.
             tqdm.write(
-                "Arch no. %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f" \
-                    % (arch_no, train_losses[0], train_losses[1], train_losses[2], time.time() - start_time))
-            
+                "Arch no. %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f"
+                % (arch_no, train_losses[0], train_losses[1], train_losses[2], time.time() - start_time))
+
             # Record performance metrices for later investigations.
             history_combs.append(train_losses)
             pass
-        
+
         # Update counter used to handle processing bar.
         pbar.update(1)
         pass
