@@ -170,7 +170,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     history_combs = []
     step = 0
     arch_step = 0
-    steps_til_summary = len(opt.seeds) * opt.num_attempts * len(opt.hidden_layers)
+    steps_til_summary = len(opt.seeds) * len(opt.hidden_layers)
     model, train_dataloader, val_dataloader = None, None, None
 
     # Processing Bar to control the workout.
@@ -178,7 +178,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
         # For loop for performing different training depending on the
         # chosen hyper-params.
-        print()
+        # print()
         for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
             # Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
@@ -207,7 +207,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
-                print(f"Arch no.={arch_no} | trial no.={trial_no} running...")
+                tqdm.write(f"Arch no.={arch_no} | trial no.={trial_no} running...")
                 start_time_to = time.time()
                 torch.manual_seed(seed)
                 np.random.seed(seed)
