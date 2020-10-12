@@ -136,14 +136,12 @@ def get_arch_hyperparams(opt, image_resolution):
     hidden_layers_list = opt.hidden_layers
     num_hidden_features = opt.num_hidden_features
 
-    np.log2()
-
     start_hf = int(2 ** (np.log2(sidelength)))
     if start_hf == sidelength:
         start_hf = int(2 ** (np.log2(sidelength)-1))
-    hidden_features_arr = np.linspace(start_hf, sidelength, num=num_hidden_features)
+    hidden_features_arr = np.linspace(start_hf, sidelength, num=num_hidden_features, dtype=np.int)
 
-    pprint(hidden_features_arr)
+    # pprint(hidden_features_arr)
 
     param_grid = {
         'seeds': seeds_list,
@@ -208,15 +206,32 @@ def main():
         """
         pass
 
-    arch_hyperparams = get_arch_hyperparams(opt, image_resolution)
+    grid_arch_hyperparams = get_arch_hyperparams(opt, image_resolution)
+    if opt.show_timetable_estimate:    
+        print(f'Total number of trials (with 1 attempts per arch):', len(grid_arch_hyperparams))
+    
+        tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
+        print(f'Total number of trials (with {opt.num_attempts} attempts per arch):', tot_trials)
 
-    """
-    training_compare.train_protocol_compare_archs(
-        arch_hyperparams=arch_hyperparams,
+        estimated_time_30s = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 30))
+        estimated_time_1m = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 60))
+        estimated_time_3m = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 60 * 3))
+        estimated_time_5m = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 60 * 5))
+
+        print("Overall Estimated timetable H:M:S):")
+        print(f"Estimated time (considering 30 seconds and {opt.num_attempts} attempts per arch):", estimated_time_30s)
+        print(f"Estimated time (considering 1 minute and {opt.num_attempts} attempts per arch):", estimated_time_1m)
+        print(f"Estimated time (considering 3 minutes and {opt.num_attempts} attempts per arch):", estimated_time_3m)
+        print(f"Estimated time (considering 5 minutes and {opt.num_attempts} attempts per arch):", estimated_time_5m)
+        pass
+
+    
+    train_extended_compare.train_extended_protocol_compare_archs(
+        grid_arch_hyperparams=grid_arch_hyperparams,
         img_dataset=img_dataset,
-        opt=opt
+        opt=opt,
+        verbose=2,
     )
-    """
     
     pass
 

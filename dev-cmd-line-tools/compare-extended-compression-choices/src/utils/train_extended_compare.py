@@ -10,6 +10,7 @@ from tqdm.autonotebook import tqdm
 import time
 import numpy as np
 import os
+import random
 import math
 import shutil
 
@@ -135,29 +136,32 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
     return train_losses
 
 
-def train_extended_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
+def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
 
     # Local variables.
     history_combs = []
+    step = 0
+    arch_step = 0
+    steps_til_summary = len(opt.seeds) * opt.num_attempts * len(opt.hidden_layers)
     model, train_dataloader, val_dataloader = None, None, None
 
     # Processing Bar to control the workout.
-    with tqdm(total=len(arch_hyperparams)) as pbar:
+    with tqdm(total=len(grid_arch_hyperparams)) as pbar:
 
         # For loop for performing different training depending on the
         # chosen hyper-params.
-        for arch_no, (hidden_layers, hidden_features) in enumerate(arch_hyperparams):
+        for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
             # Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
             if verbose == 1:
-                start_time = time.time()
+                start_time_ao = time.time()
             # print(hidden_features, hidden_layers)
 
             # Rescale image to be correctly processed by the net.
-            sidelength = int(hidden_features)
+            sidelength = int(arch_hyperparams['hidden_features'])
             coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=sidelength, compute_diff='all')
 
@@ -174,50 +178,84 @@ def train_extended_protocol_compare_archs(arch_hyperparams, img_dataset, opt, lo
                 batch_size=opt.batch_size,
                 pin_memory=True, num_workers=0)
 
-            # Prepare siren model.
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(hidden_features),
-                hidden_layers=int(hidden_layers),
-                outermost_linear=True).to(device=device)
+            seed = int(arch_hyperparams['seeds'])
+            avg_train_losses = None
+            for trial_no in range(opt.num_attempts):
+                start_time_to = time.time()
+                torch.manual_seed(seed)
+                np.random.seed(seed)
+                random.seed(seed)
+                # Prepare siren model.
+                model = Siren(
+                    in_features=2,
+                    out_features=1,
+                    hidden_features=int(arch_hyperparams['hidden_features']),
+                    hidden_layers=int(arch_hyperparams['hidden_layers']),
+                    outermost_linear=True).to(device=device)
             
-            tot_weights_model = sum(p.numel() for p in model.parameters())
-            print(model)
+                tot_weights_model = sum(p.numel() for p in model.parameters())
+                # print(model)
 
-            # Train model.
-            train_losses = train_extended_compare_loop(
-                model=model,
-                train_dataloader=train_dataloader,
-                epochs=opt.num_epochs,
-                lr=opt.lr,
-                val_dataloader=val_dataloader,
-                # steps_til_summary=opt.steps_til_summary,
-                # epochs_til_checkpoint=opt.epochs_til_ckpt,
-                model_dir=root_path,
-                loss_fn=loss_fn,
-                device=device,
-                summary_fn=summary_fn)
+                # Train model.
+                train_losses = train_extended_compare_loop(
+                    model=model,
+                    train_dataloader=train_dataloader,
+                    epochs=opt.num_epochs,
+                    lr=opt.lr,
+                    val_dataloader=val_dataloader,
+                    # steps_til_summary=opt.steps_til_summary,
+                    # epochs_til_checkpoint=opt.epochs_til_ckpt,
+                    model_dir=root_path,
+                    loss_fn=loss_fn,
+                    device=device,
+                    summary_fn=summary_fn)
+                if avg_train_losses is None:
+                    avg_train_losses = train_losses
+                else:
+                    avg_train_losses = np.concatenate(([avg_train_losses], [train_losses]), axis=0)
+                
+                # Show some output per arch per trial.
+                if verbose == 1:
+                    stop_time = time.time() - start_time_to
+                    tqdm.write(
+                        "Arch no.=%d, Trial no.%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
+                        % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                    pass
 
-            # Show some output.
-            if verbose == 1:
-                stop_time = time.time() - start_time
+                # Record performance metrices for later investigations.
+                # history_combs.append(np.concat(train_losses, [stop_time]))
+                history_combs.append(
+                    np.concatenate(
+                        (
+                            [tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],
+                            train_losses,
+                            [stop_time]
+                        ),
+                        axis=None)
+                )
+                pass
+            
+            # Show AVG stats per Arch.
+            if verbose > 1:
+                stop_time = time.time() - start_time_ao
+                avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                    "Arch no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
-                    % (arch_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
-
-            # Record performance metrices for later investigations.
-            # history_combs.append(np.concat(train_losses, [stop_time]))
-            history_combs.append(
-                np.concatenate(
-                    (
-                        [tot_weights_model, hidden_layers, hidden_features],
-                        train_losses,
-                        [stop_time]
-                    ),
-                    axis=None)
-            )
-
+                        "Arch no.=%d, avg_loss=%0.6f, avg_PSNR=%0.6f, avg_SSIM=%0.6f, iteration time=%0.6f"
+                        % (arch_no, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+                pass
+            
+            if step == steps_til_summary:
+                # Save into output file recorded metrices across different trials.
+                path_result_comb_train = f'/content/result_comb_train_{arch_step}.txt'
+                result = np.array(history_combs)
+                np.savetxt(
+                    path_result_comb_train,
+                    result
+                )
+                step = -1
+                arch_step += 1
+                pass
+            step += 1
             # Update counter used to handle processing bar.
             pbar.update(1)
             pass

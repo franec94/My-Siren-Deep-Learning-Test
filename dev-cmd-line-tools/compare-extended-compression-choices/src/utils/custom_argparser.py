@@ -28,15 +28,22 @@ def get_cmd_line_opts():
         help='File path containing combinations for creating different archs for the given input image.'
     )
     """
-    p.add_argument('--seeds', type=list, required=False, default=[0, 42, 123, 1234],
+    p.add_argument('--seeds',  nargs='+', type=int, required=False, default=[0, 42, 123, 1234],
         help='List of seeds (default: [0, 42, 123, 1234]).'
     )
     p.add_argument('--num_hidden_features', type=int, required=False, default=5,
         help='Number of hidden features to be employed across differen trials (default: 5).'
     )
-    p.add_argument('--hidden_layers', type=list, required=False, default=[1,2,3,4,5],
+    p.add_argument('--hidden_layers',  nargs='+', type=int, required=False, default=[1,2,3,4,5],
         help='List of hidden layers (default: [1,2,3,4,5]).'
     )
+    p.add_argument('--num_attempts', type=int, required=False, default=5,
+        help='Number of attempts per architecture sticking a particular seed value (default: 5).'
+    )
+    p.add_argument('--show_timetable_estimate', required=False, action='store_true',
+        help='Flag to display timetable estimate.'
+    )
+    
 
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
