@@ -43,6 +43,9 @@ def get_cmd_line_opts():
     p.add_argument('--show_timetable_estimate', required=False, action='store_true',
         help='Flag to display timetable estimate.'
     )
+    p.add_argument('--verbose', required=False, type=int, default=0,
+        help='Verbose style logging (default: 0, a.k.a silent mode), allowed: [0 for silent, 1 for complete, 2 for minimal].'
+    )
     
 
 

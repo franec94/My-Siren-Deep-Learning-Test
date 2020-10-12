@@ -223,14 +223,17 @@ def main():
         print(f"Estimated time (considering 1 minute and {opt.num_attempts} attempts per arch):", estimated_time_1m)
         print(f"Estimated time (considering 3 minutes and {opt.num_attempts} attempts per arch):", estimated_time_3m)
         print(f"Estimated time (considering 5 minutes and {opt.num_attempts} attempts per arch):", estimated_time_5m)
+        print()
         pass
 
-    
+    if opt.verbose not in [0, 1, 2]:
+        raise ValueError
+
     train_extended_compare.train_extended_protocol_compare_archs(
         grid_arch_hyperparams=grid_arch_hyperparams,
         img_dataset=img_dataset,
         opt=opt,
-        verbose=2,
+        verbose=opt.verbose,
     )
     
     pass
