@@ -26,7 +26,7 @@ from src.utils.siren import Siren
 
 
 def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_summary=None, epochs_til_checkpoint=None, model_dir=None, loss_fn=None,
-                        summary_fn=None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device='cpu'):
+                        summary_fn=None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device='cpu', debug_mode = False):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
     """
@@ -54,9 +54,11 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
     train_losses = []  # used for recording metrices when evaluated.
 
     # Number of interation for current image.
-    for _ in range(epochs):
+    for epoch in range(epochs):
         # Loop for let model's arch be improved, updateding weights values.
         for _, (model_input, gt) in enumerate(train_dataloader):
+            if debug_mode:
+                start_time = time.time()
             # Get input data and set it to desired device
             # for computation reasons.
             model_input = model_input['coords'].to(device)
@@ -80,6 +82,29 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
             model_output, _ = model(model_input)
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
+
+            if debug_mode:
+                stop_time = time.time() - start_time
+                sidelenght = int(math.sqrt(model_output.size()[1]))
+                val_psnr = \
+                    psnr(
+                        model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        data_range=1.0)
+                # running_psnr += batch_psnr
+
+                # Metric: SSIM
+                # skmetrics.structural_similarity(
+                val_mssim = \
+                        ssim(
+                        model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        data_range=1.0)
+                train_losses = [train_loss, val_psnr, val_mssim]
+                tqdm.write(
+                    "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
+                        % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                pass
 
             # Backward pass.
             if not use_lbfgs:
@@ -181,6 +206,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
+                print(f"Arch step {arch_step} | trial no.{trial_no}")
                 start_time_to = time.time()
                 torch.manual_seed(seed)
                 np.random.seed(seed)
@@ -241,7 +267,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
                         "Arch no.=%d, avg_loss=%0.6f, avg_PSNR=%0.6f, avg_SSIM=%0.6f, iteration time=%0.6f"
-                        % (arch_no, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
             
             if step == steps_til_summary:
