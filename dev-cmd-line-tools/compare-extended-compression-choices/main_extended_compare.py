@@ -232,8 +232,12 @@ def main():
     if opt.verbose not in [0, 1, 2]:
         raise ValueError
 
+    num_seeds = len(opt.seeds)
+    num_hidden_layers = len(opt.hidden_layers)
+    
+    pos = opt.resume_from * (num_seeds * num_hidden_layers)
     train_extended_compare.train_extended_protocol_compare_archs(
-        grid_arch_hyperparams=grid_arch_hyperparams,
+        grid_arch_hyperparams=grid_arch_hyperparams[pos:],
         img_dataset=img_dataset,
         opt=opt,
         verbose=opt.verbose,

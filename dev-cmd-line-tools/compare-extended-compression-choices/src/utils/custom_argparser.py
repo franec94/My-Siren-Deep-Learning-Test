@@ -46,7 +46,9 @@ def get_cmd_line_opts():
     p.add_argument('--verbose', required=False, type=int, default=0,
         help='Verbose style logging (default: 0, a.k.a silent mode), allowed: [0 for silent, 1 for complete, 2 for minimal].'
     )
-    
+    p.add_argument('--resume_from', required=False, type=int, default=0,
+        help='Ordinal number representing position within array of hidden features'
+    )
 
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
