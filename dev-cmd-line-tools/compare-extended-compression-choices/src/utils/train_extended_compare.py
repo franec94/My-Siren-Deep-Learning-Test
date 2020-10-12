@@ -236,6 +236,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     loss_fn=loss_fn,
                     device=device,
                     summary_fn=summary_fn)
+                
+                # record train_loss for later average computations.
                 if avg_train_losses is None:
                     avg_train_losses = train_losses
                 else:
