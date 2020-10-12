@@ -130,6 +130,7 @@ config_plot_ssim = PlotConfig(
 
 def get_arch_hyperparams(opt, image_resolution):
     param_grid = None
+    sidelength = min(image_resolution)
 
     seeds_list = opt.seeds
     hidden_layers_list = opt.hidden_layers
@@ -137,10 +138,10 @@ def get_arch_hyperparams(opt, image_resolution):
 
     np.log2()
 
-    start_hf = int(2 ** (np.log2(min(image_resolution))))
-    if start_hf == min(image_resolution):
-        start_hf = int(2 ** (np.log2(min(image_resolution))) - 1)
-    hidden_features_arr = np.linspace(start_hf, min(image_resolution), num=num_hidden_features)
+    start_hf = int(2 ** (np.log2(sidelength)))
+    if start_hf == sidelength:
+        start_hf = int(2 ** (np.log2(sidelength)-1))
+    hidden_features_arr = np.linspace(start_hf, sidelength, num=num_hidden_features)
 
     pprint(hidden_features_arr)
 

@@ -31,7 +31,7 @@ def get_cmd_line_opts():
     p.add_argument('--seeds', type=list, required=False, default=[0, 42, 123, 1234],
         help='List of seeds (default: [0, 42, 123, 1234]).'
     )
-    p.add_argument('--num_hidden_features', type=int, required=True, default=5,
+    p.add_argument('--num_hidden_features', type=int, required=False, default=5,
         help='Number of hidden features to be employed across differen trials (default: 5).'
     )
     p.add_argument('--hidden_layers', type=list, required=False, default=[1,2,3,4,5],
