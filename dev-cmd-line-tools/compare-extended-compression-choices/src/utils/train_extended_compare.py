@@ -24,17 +24,7 @@ import src.utils.dataio as dataio
 from src.utils.siren import Siren
 
 
-class LinearDecaySchedule():
-    def __init__(self, start_val, final_val, num_steps):
-        self.start_val = start_val
-        self.final_val = final_val
-        self.num_steps = num_steps
-
-    def __call__(self, iter):
-        return self.start_val + (self.final_val - self.start_val) * min(iter / self.num_steps, 1.)
-
-
-def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=None, epochs_til_checkpoint=None, model_dir=None, loss_fn=None,
+def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_summary=None, epochs_til_checkpoint=None, model_dir=None, loss_fn=None,
                         summary_fn=None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device='cpu'):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
@@ -51,32 +41,21 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
     # copy settings from Raissi et al. (2019) and here
     # https://github.com/maziarraissi/PINNs
     if use_lbfgs:
-        optim = torch.optim.LBFGS(lr=lr, params=model.parameters(), max_iter=50000, max_eval=50000,
-                                  history_size=50, line_search_fn='strong_wolfe')
+        optim = torch.optim.LBFGS(
+            lr=lr,
+            params=model.parameters(),
+            max_iter=50000,
+            max_eval=50000,
+            history_size=50, line_search_fn='strong_wolfe')
+        pass
 
     # Local variables.
-    # total_steps = 0 # used for show output depending on 'steps_til_summary' function's input argument.
     train_losses = []  # used for recording metrices when evaluated.
 
-    # Processing Bar to control the workout.
-    # with tqdm(total=len(train_dataloader) * epochs) as pbar:
-
     # Number of interation for current image.
-    for epoch in range(epochs):
+    for _ in range(epochs):
         # Loop for let model's arch be improved, updateding weights values.
-        for step, (model_input, gt) in enumerate(train_dataloader):
-            """
-            # Start time: it's the point in time from which the current train
-            # start_time = time.time()
-            
-            # model_input = {key: value.cuda() for key, value in model_input.items()}
-            # gt = {key: value.cuda() for key, value in gt.items()}
-
-            if double_precision:
-            # model_input = {key: value.double() for key, value in model_input.items()}
-            # gt = {key: value.double() for key, value in gt.items()}
-            pass
-            """
+        for _, (model_input, gt) in enumerate(train_dataloader):
             # Get input data and set it to desired device
             # for computation reasons.
             model_input = model_input['coords'].to(device)
@@ -90,41 +69,16 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
                     model_output = model(model_input)
                     losses = loss_fn(model_output, gt)
                     train_loss = 0.
-                    for loss_name, loss in losses.items():
+                    for _, loss in losses.items():
                         train_loss += loss.mean()
                     train_loss.backward()
                     return train_loss
                 optim.step(closure)
 
             # Compute forward pass.
-            model_output, coords = model(model_input)
+            model_output, _ = model(model_input)
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
-
-            """
-            # Other metrices.
-            batch_psnr = \
-                psnr(
-                    model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                    gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                data_range=1.0)
-            # running_psnr += batch_psnr
-
-            # Metric: SSIM
-            # skmetrics.structural_similarity(
-            batch_mssim = \
-                ssim(
-                model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                    gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                    data_range=1.0)
-            # running_ssim += batch_mssim
-            """
-
-            """
-            # Record metrices.
-            # writer.add_scalar("total_train_ssim", batch_mssim, total_steps)
-            # train_losses.append(np.array([train_loss, batch_psnr, batch_mssim]))
-            """
 
             # Backward pass.
             if not use_lbfgs:
@@ -142,19 +96,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
                     pass
                 pass
                 optim.step()
-
-            # Update counter used to handle processing bar.
-            # pbar.update(1)
-
-            """
-            # Show some output.
-            if not total_steps % steps_til_summary:
-                # tqdm.write("Epoch %d, Total loss %0.6f, Total PSNR %0.6f, Total SSIM %0.6f, iteration time %0.6f" % (epoch, train_loss, batch_psnr, batch_mssim, time.time() - start_time))
-                pass
-            # total_steps += 1
-            """
             pass
-        # pass
         pass
 
     # Evaluate model's on validation data
@@ -165,7 +107,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
         val_input = val_input['coords'].to(device)
         val_gt = val_gt['img'].to(device)
 
-        val_output, val_coords = model(val_input)
+        val_output, _ = model(val_input)
 
         sidelenght = int(math.sqrt(val_output.size()[1]))
 
@@ -174,7 +116,7 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
         val_psnr = \
             psnr(
                 val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
             # running_psnr += batch_psnr
 
@@ -183,36 +125,19 @@ def train_compare_archs(model, train_dataloader, epochs, lr, steps_til_summary=N
         val_mssim = \
             ssim(
                 val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
-        train_losses = np.array([[train_loss, val_psnr, val_mssim]])
+        # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
+        train_losses = np.array([train_loss, val_psnr, val_mssim])
         pass
 
     # Return best metrices.
-    return train_losses[-1]
+    return train_losses
 
 
-def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
+def train_extended_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
-    """
-
-    # Blueprint code.
-    """
-    dataloader = DataLoader(
-        coord_dataset,
-        shuffle=True,
-        batch_size=opt.batch_size,
-        pin_memory=True, num_workers=0)
-    """
-
-    """
-    model = Siren(
-        in_features = 2,
-        out_features = 1,
-        hidden_features = image_resolution[0], 
-        hidden_layers = 3,
-        outermost_linear=True)
     """
 
     # Local variables.
@@ -261,7 +186,7 @@ def train_protocol_compare_archs(arch_hyperparams, img_dataset, opt, loss_fn=nn.
             print(model)
 
             # Train model.
-            train_losses = train_compare_archs(
+            train_losses = train_extended_compare_loop(
                 model=model,
                 train_dataloader=train_dataloader,
                 epochs=opt.num_epochs,
