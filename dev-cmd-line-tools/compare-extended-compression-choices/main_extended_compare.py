@@ -136,9 +136,9 @@ def get_arch_hyperparams(opt, image_resolution):
     hidden_layers_list = opt.hidden_layers
     num_hidden_features = opt.num_hidden_features
 
-    start_hf = int(2 ** (np.log2(sidelength)))
+    start_hf = int(2 ** int(np.log2(sidelength)))
     if start_hf == sidelength:
-        start_hf = int(2 ** (np.log2(sidelength)-1))
+        start_hf = int(2 ** int(np.log2(sidelength)-1))
     hidden_features_arr = np.linspace(start_hf, sidelength, num=num_hidden_features, dtype=np.int)
 
     # pprint(hidden_features_arr)
