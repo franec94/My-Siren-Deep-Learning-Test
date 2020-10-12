@@ -207,7 +207,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
-                print(f"Arch no. {arch_no} | trial no.{trial_no} running...")
+                print(f"Arch no.={arch_no} | trial no.={trial_no} running...")
                 start_time_to = time.time()
                 torch.manual_seed(seed)
                 np.random.seed(seed)
@@ -245,7 +245,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 if verbose == 1:
                     stop_time = time.time() - start_time_to
                     tqdm.write(
-                        "Arch no.=%d, Trial no.%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
+                        "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
                         % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
                     pass
 
