@@ -260,8 +260,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
 
-                model_dir = os.path.join(root_path, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
-                try: os.makedirs(model_dir)
+                tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
+                try: os.makedirs(tmp_model_dir)
                 except: pass
 
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no}/{opt.num_attempts}) running...")
@@ -289,7 +289,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     val_dataloader=val_dataloader,
                     # steps_til_summary=opt.steps_til_summary,
                     epochs_til_checkpoint=opt.epochs_til_ckpt,
-                    model_dir=model_dir,
+                    model_dir=tmp_model_dir,
                     loss_fn=loss_fn,
                     device=device,
                     summary_fn=summary_fn)
