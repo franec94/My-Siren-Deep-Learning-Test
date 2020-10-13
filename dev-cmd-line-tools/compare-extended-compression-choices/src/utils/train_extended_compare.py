@@ -265,7 +265,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 try: os.makedirs(tmp_model_dir)
                 except: pass
 
-                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no}/{opt.num_attempts}) running...")
+                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 start_time_to = time.time()
                 torch.manual_seed(seed)
                 np.random.seed(seed)
