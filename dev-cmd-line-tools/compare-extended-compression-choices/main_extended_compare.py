@@ -274,6 +274,8 @@ def main():
         pass
 
     # --- Start training.
+    start_time = time.time()
+    print(f"Start training [{curr_date}][timestamp={curr_timestamp}] ...")
     train_extended_compare.train_extended_protocol_compare_archs(
         grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
         img_dataset=img_dataset,
@@ -281,6 +283,7 @@ def main():
         model_dir=root_path,
         verbose=opt.verbose,
     )
+    print(f"End training [{curr_date}][timestamp={curr_timestamp}] eta: {time.time() - start_time} seconds.")
     
     pass
 
