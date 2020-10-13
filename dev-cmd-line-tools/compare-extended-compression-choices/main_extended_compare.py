@@ -273,6 +273,8 @@ def main():
         f.write(parser.format_values())
         pass
 
+    return
+
     # --- Start training.
     train_extended_compare.train_extended_protocol_compare_archs(
         grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
