@@ -304,14 +304,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 
                 # record train_loss for later average computations.
                 if avg_train_losses is None:
-                    avg_train_losses = train_losses
+                    avg_train_losses = [train_losses]
                 else:
-                    avg_train_losses = np.concatenate(([avg_train_losses], [train_losses]), axis=0)
+                    avg_train_losses = np.concatenate((avg_train_losses, [train_losses]), axis=0)
                     pass
                 if global_avg_train_losses is None:
-                    global_avg_train_losses = train_losses
+                    global_avg_train_losses = [train_losses]
                 else:
-                    global_avg_train_losses = np.concatenate(([global_avg_train_losses], [train_losses]), axis=0)
+                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_losses]), axis=0)
                 # Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
