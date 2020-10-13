@@ -286,7 +286,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
-                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...", end=' ')
+                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 train_losses = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -300,7 +300,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     device=device,
                     summary_fn=summary_fn)
                 stop_time = time.time() - start_time_to
-                tqdm.write(f"eta: {stop_time}")
+                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 
                 # record train_loss for later average computations.
                 if avg_train_losses is None:
