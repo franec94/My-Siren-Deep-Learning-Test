@@ -25,8 +25,21 @@ import src.utils.dataio as dataio
 from src.utils.siren import Siren
 
 
-def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_summary=None, epochs_til_checkpoint=None, model_dir=None, loss_fn=None,
-                        summary_fn=None, val_dataloader=None, double_precision=False, clip_grad=False, use_lbfgs=False, loss_schedules=None, device='cpu', debug_mode = False):
+def train_extended_compare_loop(
+    model, train_dataloader,
+    epochs, lr,
+    steps_til_summary=None,
+    epochs_til_checkpoint=None,
+    model_dir=None,
+    loss_fn=None,
+    summary_fn=None,
+    val_dataloader=None,
+    double_precision=False,
+    clip_grad=False,
+    use_lbfgs=False,
+    loss_schedules=None,
+    device='cpu', 
+    save_metrices = False):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
     """
@@ -52,13 +65,35 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
 
     # Local variables.
     train_losses = []  # used for recording metrices when evaluated.
+    os.makedirs(model_dir)
+
+    """
+    summaries_dir = os.path.join(model_dir, 'summaries')
+    utils.cond_mkdir(summaries_dir)
+    """
+
+    checkpoints_dir = os.path.join(model_dir, 'checkpoints')
+    utils.cond_mkdir(checkpoints_dir)
 
     # Number of interation for current image.
     for epoch in range(epochs):
+        # Save partial results as checkpoints.
+        if not epoch % epochs_til_checkpoint and epoch:
+            try:
+                model_name_path = os.path.join(checkpoints_dir, 'model_epoch_%04d.pth' % epoch)
+                tmp_file_path = model_name_path
+                torch.save(model.state_dict(),
+                           model_name_path)
+                
+                data_name_path = os.path.join(checkpoints_dir, 'train_losses_epoch_%04d.txt' % epoch)
+                tmp_file_path = data_name_path
+                np.savetxt(data_name_path,
+                           np.array(train_losses))
+            except Exception as _:
+                raise Exception(f"Error when saving file: filename={tmp_file_path} .")
         # Loop for let model's arch be improved, updateding weights values.
         for _, (model_input, gt) in enumerate(train_dataloader):
-            if debug_mode:
-                start_time = time.time()
+            # if save_metrices: start_time = time.time()
             # Get input data and set it to desired device
             # for computation reasons.
             model_input = model_input['coords'].to(device)
@@ -83,8 +118,8 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
 
-            if debug_mode:
-                stop_time = time.time() - start_time
+            if save_metrices:
+                # stop_time = time.time() - start_time
                 sidelenght = int(math.sqrt(model_output.size()[1]))
                 val_psnr = \
                     psnr(
@@ -100,10 +135,14 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
                         model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         data_range=1.0)
-                train_losses = [train_loss, val_psnr, val_mssim]
+                train_losses.append([train_loss, val_psnr, val_mssim])
+                """
                 tqdm.write(
                     "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
                         % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                """
+            else:
+                train_losses.append(train_loss)
                 pass
 
             # Backward pass.
@@ -125,7 +164,19 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
             pass
         pass
 
-    # Evaluate model's on validation data
+    # Save overall training results.
+    try:
+        tmp_file_path = os.path.join(checkpoints_dir, 'model_final.pth')
+        torch.save(model.state_dict(),
+                  tmp_file_path)
+        tmp_file_path = os.path.join(checkpoints_dir, 'train_losses_final.txt')
+        np.savetxt(tmp_file_path,
+                   np.array(train_losses))
+    except Exception as _:
+                raise Exception(f"Error when saving file: filename={tmp_file_path} .")
+
+    
+    # Evaluate model's on validation data.
     model.eval()
     with torch.no_grad():
         val_input, val_gt = next(iter(val_dataloader))
@@ -161,16 +212,17 @@ def train_extended_compare_loop(model, train_dataloader, epochs, lr, steps_til_s
     return train_losses
 
 
-def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
+def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, root_path = None, device = 'cpu', verbose = 0):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
 
     # Local variables.
     history_combs = []
-    step = 0
+    step = 1
     arch_step = 0
-    steps_til_summary = len(opt.seeds) * len(opt.hidden_layers)
+    # steps_til_summary = len(opt.seeds) * len(opt.hidden_layers)
+    steps_til_summary = 1
     model, train_dataloader, val_dataloader = None, None, None
 
     # Processing Bar to control the workout.
@@ -207,7 +259,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
-                tqdm.write(f"Arch no.={arch_no} | trial no.={trial_no} running...")
+
+                model_dir = os.path.join(root_path, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
+                try: os.makedirs(model_dir)
+                except: pass
+
+                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no}/{opt.num_attempts}) running...")
                 start_time_to = time.time()
                 torch.manual_seed(seed)
                 np.random.seed(seed)
@@ -231,8 +288,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     lr=opt.lr,
                     val_dataloader=val_dataloader,
                     # steps_til_summary=opt.steps_til_summary,
-                    # epochs_til_checkpoint=opt.epochs_til_ckpt,
-                    model_dir=root_path,
+                    epochs_til_checkpoint=opt.epochs_til_ckpt,
+                    model_dir=model_dir,
                     loss_fn=loss_fn,
                     device=device,
                     summary_fn=summary_fn)
@@ -274,15 +331,25 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
             
-            if step == steps_til_summary:
+            # Save data following step strategy.
+            if step // steps_til_summary == step:
                 # Save into output file recorded metrices across different trials.
-                path_result_comb_train = f'/content/result_comb_train_{arch_step}.txt'
-                result = np.array(history_combs)
-                np.savetxt(
-                    path_result_comb_train,
-                    result
-                )
-                step = -1
+                try:
+                    path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
+                    result = np.array(history_combs)
+                    np.savetxt(
+                        path_result_comb_train,
+                        result
+                    )
+                    path_result_comb_train = os.path.join(root_path, f'result_comb_train_{arch_step + opt.resume_from}.txt')
+                    result = np.array(history_combs)
+                    np.savetxt(
+                        path_result_comb_train,
+                        result
+                    )
+                except Exception as _:
+                    raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
+                step = 0
                 arch_step += 1
                 pass
             step += 1
@@ -292,11 +359,21 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
         pass
 
     # Save into output file recorded metrices across different trials.
-    path_result_comb_train = '/content/result_comb_train.txt'
-    result = np.array(history_combs)
-    np.savetxt(
+    try:
+        path_result_comb_train = os.path.join(root_path, 'result_comb_train.txt')
+        result = np.array(history_combs)
+        np.savetxt(
         path_result_comb_train,
         result
-    )
+        )
+
+        path_result_comb_train = '/content/result_comb_train.txt'
+        result = np.array(history_combs)
+        np.savetxt(
+            path_result_comb_train,
+            result
+        )
+    except Exception as _:
+        raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
 
     pass

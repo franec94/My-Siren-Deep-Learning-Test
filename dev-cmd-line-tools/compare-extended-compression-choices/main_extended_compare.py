@@ -21,6 +21,7 @@ import os
 import random
 import shutil
 import sys
+import re
 import time
 # import visdom
 
@@ -184,11 +185,11 @@ def show_model_summary(model):
 
 def main():
 
-    # Get cmd line options and parser objects.
+    # --- Get cmd line options and parser objects.
     global device, opt, parser
     # check_cmd_line_options()
 
-    # Get input image to be compressed.
+    # --- Get input image to be compressed.
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
         # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
@@ -209,6 +210,7 @@ def main():
         """
         pass
 
+    # --- Get Hyper-params list.
     grid_arch_hyperparams = get_arch_hyperparams(opt, image_resolution)
     if opt.show_timetable_estimate:    
         print(f'Total number of trials (with 1 attempts per arch):', len(grid_arch_hyperparams))
@@ -216,6 +218,7 @@ def main():
         tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
         print(f'Total number of trials (with {opt.num_attempts} attempts per arch):', tot_trials)
 
+        """
         estimated_time_30s = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 30))
         estimated_time_1m = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 60))
         estimated_time_3m = time.strftime("%H:%M:%S", time.gmtime(tot_trials * 60 * 3))
@@ -227,19 +230,55 @@ def main():
         print(f"Estimated time (considering 3 minutes and {opt.num_attempts} attempts per arch):", estimated_time_3m)
         print(f"Estimated time (considering 5 minutes and {opt.num_attempts} attempts per arch):", estimated_time_5m)
         print()
+        """
         pass
 
+    # --- Check verbose style.
     if opt.verbose not in [0, 1, 2]:
-        raise ValueError
+        raise ValueError(f"opt.verbose = {opt.verbose} not allowed!")
+
+    # --- Set Hyper-params to be tested.
+    if opt.end_to is None:
+        opt.end_to = len(grid_arch_hyperparams)
+    if opt.end_to > len(grid_arch_hyperparams):
+        raise ValueError(f'opt.end_to = {opt.end_to} not allowed!')
+    if opt.resume_from < 0 or opt.resume_from > opt.end_to:
+        raise ValueError(f'opt.resume_from = {opt.resume_from} not allowed!')
+
 
     num_seeds = len(opt.seeds)
     num_hidden_layers = len(opt.hidden_layers)
+
+    pos_start = opt.resume_from * (num_seeds * num_hidden_layers)
+    pos_end = opt.end_to * (num_seeds * num_hidden_layers)
+
+    # --- Create logging dirs.
+    p = re.compile(r'\.')
+    curr_time = datetime.datetime.now()
+    curr_date = curr_time.strftime("%d-%m-%Y")
+
+    curr_time_str = str(curr_time.timestamp())
+    curr_timestamp = p.sub('-', curr_time_str)
+
+    root_path = os.path.join(opt.logging_root,
+        curr_date,
+        curr_timestamp,
+        opt.experiment_name)
     
-    pos = opt.resume_from * (num_seeds * num_hidden_layers)
+    try: os.makedirs(root_path)
+    except: pass
+
+    parser_logged = os.path.join(root_path, 'parser_logged.txt')
+    with open(parser_logged, "w") as f:
+        f.write(parser.format_values())
+        pass
+
+    # --- Start training.
     train_extended_compare.train_extended_protocol_compare_archs(
-        grid_arch_hyperparams=grid_arch_hyperparams[pos:],
+        grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
         img_dataset=img_dataset,
         opt=opt,
+        model_dir=root_path,
         verbose=opt.verbose,
     )
     
