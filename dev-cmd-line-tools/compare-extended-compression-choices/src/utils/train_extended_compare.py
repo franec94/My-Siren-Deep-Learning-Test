@@ -360,7 +360,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
     # Save into output file recorded metrices across different trials.
     try:
-        path_result_comb_train = os.path.join(root_path, 'result_comb_train.txt')
+        path_result_comb_train = os.path.join(model_dir, 'result_comb_train.txt')
         result = np.array(history_combs)
         np.savetxt(
         path_result_comb_train,
