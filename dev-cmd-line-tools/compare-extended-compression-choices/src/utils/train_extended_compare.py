@@ -65,7 +65,8 @@ def train_extended_compare_loop(
 
     # Local variables.
     train_losses = []  # used for recording metrices when evaluated.
-    os.makedirs(model_dir)
+    try: os.makedirs(model_dir)
+    except: pass
 
     """
     summaries_dir = os.path.join(model_dir, 'summaries')
