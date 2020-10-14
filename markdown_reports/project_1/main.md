@@ -33,8 +33,11 @@ Date: 10-14-2020.
 * [Notebooks details](#notebooks-details)
 	* [Notebook siren_test_cmd_line_tool_from_github.ipynb](#notebook-siren_test_cmd_line_tool_from_githubipynb)
 	* [Notebook siren_history_train_a_posteriori_analysis.ipynb](#notebook-siren_history_train_a_posteriori_analysisipynb)
+		* [Images](#images)
 		* [History analyses](#history-analyses)
 		* [Benford Law's applied to images](#benford-laws-applied-to-images)
+* [Second week (from 9th October 2020 to 15th October 2020)](#second-week-from-9th-october-2020-to-15th-october-2020)
+	* [Siren net's Locus of Point Analysis](#siren-nets-locus-of-point-analysis)
 * [Citations](#citations)
 
 <!-- End Document Outline -->
@@ -58,7 +61,45 @@ Here, in this section I will describe a bit into details some aspects of the not
 The first notebook, named [*siren_test_cmd_line_tool_from_github.ipynb*](https://colab.research.google.com/drive/1_fUXGPYtXPUe6xT7A2cex6Ir1bpYYIMY), contains a command line tool, that is a command line python script referred to as **main_train.py**, whose main goal is to carry out a single one shot training against user provided input image, or alternative against [**cameramen**](https://scikit-image.org/docs/0.13.x/api/skimage.data.html#skimage.data.camera) default image, in order to evaluate compression performance by means of some major metrices that are, respectively, **MSE, PSNR, and SSIM**, as well as recording training scores within a **history.txt** output file for later investigation and  furher analyses a posteriori. In particular the tool can accept some input options as shwon below by running the command followed by `--help` swith:
 ```	
 	!python main_train.py --help
-	usage: main_train.py [-h] [-c CONFIG_FILEPATH] [--evaluate] [--y] [--n] [--show_graphics] [--seed SEED] [--logging_root LOGGING_ROOT] --experiment_name EXPERIMENT_NAME [--image_filepath IMAGE_FILEPATH] [--sidelength SIDELENGTH] [--batch_size BATCH_SIZE] [--lr LR] [--num_epochs NUM_EPOCHS] [--epochs_til_ckpt EPOCHS_TIL_CKPT] [--steps_til_summary STEPS_TIL_SUMMARY] [--model_type MODEL_TYPE] [--checkpoint_path CHECKPOINT_PATH] Args that start with '--' (eg. --evaluate) can also be set in a config file (specified via -c). Config file syntax allows: key=value, flag=true, stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is specified in more than one place, then commandline values override config file values which override defaults. optional arguments: -h, --help show this help message and exit -c CONFIG_FILEPATH, --config_filepath CONFIG_FILEPATH Path to config file. --evaluate Include this option in order to evaluate model against input file. --y Include this option in order to erase content from output dir. --n Include this option in order to do not erase content from output dir. --show_graphics Include this option in order to display graphics results. --seed SEED Seed for re-running experiments (default: 0). --logging_root LOGGING_ROOT root for logging --experiment_name EXPERIMENT_NAME Name of subdirectory in logging_root where summaries and checkpoints will be saved. --image_filepath IMAGE_FILEPATH Path to input image to be compressed (default: None).If not specified, It is used cameramen image as target image to be compressed. --sidelength SIDELENGTH Sidelength to which resize input image to be compressed. --batch_size BATCH_SIZE --lr LR learning rate. default=1e-4 --num_epochs NUM_EPOCHS Number of epochs to train for. --epochs_til_ckpt EPOCHS_TIL_CKPT Time interval in seconds until checkpoint is saved. --steps_til_summary STEPS_TIL_SUMMARY Time interval in seconds until tensorboard summary is saved. --model_type MODEL_TYPE Options currently are "sine" (all sine activations), "relu" (all relu activations,"nerf" (relu activations and positional encoding as in NeRF), "rbf" (input rbf layer, rest relu),and in the future: "mixed" (first layer sine, other layers tanh)and "siren" (for Siren based neural network architectures) --checkpoint_path CHECKPOINT_PATH Checkpoint to trained model.
+	    usage: main_train.py [-h] [-c CONFIG_FILEPATH] [--evaluate] [--y] [--n] [--show_graphics] [--seed SEED] [--logging_root LOGGING_ROOT] --experiment_name EXPERIMENT_NAME [--image_filepath IMAGE_FILEPATH] [--sidelength SIDELENGTH] [--batch_size BATCH_SIZE] [--lr LR] [--num_epochs NUM_EPOCHS] [--epochs_til_ckpt EPOCHS_TIL_CKPT] [--steps_til_summary STEPS_TIL_SUMMARY] [--model_type MODEL_TYPE] [--checkpoint_path CHECKPOINT_PATH]
+	    
+	    Args that start with '--' (eg. --evaluate) can also be set in a config file (specified via -c).
+	    Config file syntax allows: key=value, flag=true, stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is specified in more than one place, then commandline values override config file values which override defaults.
+	    
+	    optional arguments:
+	        -h, --help show this help message and exit
+	    
+	        -c CONFIG_FILEPATH, --config_filepath CONFIG_FILEPATH Path to config file.
+	    
+	        --evaluate Include this option in order to evaluate model against input file.
+	    
+	        --y Include this option in order to erase content from output dir.
+	    
+	        --n Include this option in order to do not erase content from output dir. --show_graphics Include this option in order to display graphics results.
+	    
+	        --seed SEED Seed for re-running experiments (default: 0).
+	    
+	        --logging_root LOGGING_ROOT root for logging
+	    
+	        --experiment_name EXPERIMENT_NAME Name of subdirectory in logging_root where summaries and checkpoints will be saved.
+	    
+	        --image_filepath IMAGE_FILEPATH Path to input image to be compressed (default: None).If not specified, It is used cameramen image as target image to be compressed.
+	    
+	        --sidelength SIDELENGTH Sidelength to which resize input image to be compressed.
+	    
+	        --batch_size BATCH_SIZE
+	    
+	        --lr LR learning rate. default=1e-4
+	    
+	        --num_epochs NUM_EPOCHS Number of epochs to train for.
+	    
+	        --epochs_til_ckpt EPOCHS_TIL_CKPT Time interval in seconds until checkpoint is saved. 
+	    
+	        --steps_til_summary STEPS_TIL_SUMMARY Time interval in seconds until tensorboard summary is saved.
+	    
+	        --model_type MODEL_TYPE Options currently are "sine" (all sine activations), "relu" (all relu activations,"nerf" (relu activations and positional encoding as in NeRF), "rbf" (input rbf layer, rest relu),and in the future: "mixed" (first layer sine, other layers tanh)and "siren" (for Siren based neural network architectures)
+	    
+	        --checkpoint_path CHECKPOINT_PATH Checkpoint to trained model.
 ```
 While, an example of running might be, having provided a desired input image within /content colab subdir, as follows:
 
@@ -178,9 +219,38 @@ Looking at the images reported just above, which have been made combining leadin
 Finally, the model trained onto that specific image, which a particular hyper-parameter setting shown us that the effect on the input was of shifting the probability of occurring mostly on leading digit 2, that corresponds to making more likely those values either within $$[20, 30) \cup [200, 255]$$.
 
 
- 
+## Second week (from 9^th^ October 2020 to 15^th^ October 2020)
+----
+
+In the subsequent week, from 9^th^ October 2020 to 15^th^ October 2020, I spent instead the avialable time trying to develop a set of colab notebooks that allow me to firstly record the needed data and then to analyze this collected data in order to understand how major computer vision metrices exploited for measuring algorithm performances at processing images data - such as **MSE, PSNR, and SSIM** amongst the others - vary when increasing number of parameters, that are model's weights, depending on the different combination of hyper-parameters that correspond principally to combining number of **hidden features** against **number of hidden layers**, in addition to setting different **seeds** responsible for different model's weight initialization at the very beginning of the train phase.
+
+However, before going ahead with the core part of such analyses, I've spent some time looking at how the number of weights is affected when changing the number of **hidden features** against **number of hidden layers** when someone has to establish and then set those hyper-params before carrying out the fit. In other words I've looked at the so called **Locus of Point** related to the mechanism that construct the net model itself.
+
+In order to achieve all of those goals stated just above, I've developed the following set of colab based notebooks, which are:
+
+- [siren_study_hyper_params_comb_for_weights.ipynb](https://colab.research.google.com/drive/1nGUy5EwUFl1YDqWq9XfhXoYvX0Fu7GD2) -  for studying how **Locus of Point** for a Siren Based Net is affected by combining **hidden features** against **number of hidden layers**, when we allow both to change.
+- [siren_extended_arch_comb_comparing.ipynb](https://colab.research.google.com/drive/1TcBIXwccsid_L_26TDG8Esrb2geHVAv8) - for collecting data, exploited later for doing analyses about how the trend of MSE, PSNR and SSIM changes while different **hidden features**, **number of hidden layers** pairs are tested for training purposes.
+- [siren_analyses_extended_v-1.0.0.ipynb](https://colab.research.google.com/drive/1VBTmGIhH1egf-9-59iX_MfQ39EuzDtGa) -  for producing useful summarizing plots that allow us meaningful isights about collected metrices.
+
+### Siren net's Locus of Point Analysis
+
+![](test-siren-arch.png)
+
+Starting our analysis related to **Siren net's Locus of Point Analysis** that will lead somehow also the choice of different pairs made from **hidden features**, **number of hidden layers** hyper-parameters, we can deriving a general math formula functions of two input arguments which are precisely **hidden features**, **number of hidden layers**, so that $$\#Params(\#hf,\#hl)$$ or more shortly $$Params(hf,hl)$$, which is shaped as follow, considering the different contributes due to the input, hidden, and output layers that generally characterize the basic scheme of each neural net:
+
+- $I = 2 \cdot h_{f} + h_{f} = 3 \cdot h_{f}$
+- $H = h_{f}^{2} \cdot h_{l} + h_{f} \cdot h_{l}$
+- $O = h_{f} + 1$
+
+- $Params = I + H + O$:
+  - $$Params = h_{f}^{2} \cdot h_{l} + h_{f} \cdot (h_{l} + 4) + 1$$
+
+We can end up saying that representing **#Parameters**, **hidden features**, and **number of hidden layers** by means of a 3D-reference system, the final locus of point might be as follows, hypothezing that $$hl \in {2, \dots, 7} \cap hf \in {64, \dots 512}$$, that lead $$Parameters \in {\approx 4e+4, \dots, \approx 4e+5}$$:
+
+![](locus_of_point_siren.png)
 
 ## Citations
+----
 
 ```
 @inproceedings{sitzmann2019siren,
@@ -198,4 +268,17 @@ Finally, the model trained onto that specific image, which a particular hyper-pa
 
 ```
 Stéfan van der Walt, Johannes L. Schönberger, Juan Nunez-Iglesias, François Boulogne, Joshua D. Warner, Neil Yager, Emmanuelle Gouillart, Tony Yu, and the scikit-image contributors. scikit-image: Image processing in Python. PeerJ 2:e453 (2014) https://doi.org/10.7717/peerj.453
+```
+```
+@InProceedings{MartinFTM01,
+  author = {D. Martin and C. Fowlkes and D. Tal and J. Malik},
+  title = {A Database of Human Segmented Natural Images and its
+           Application to Evaluating Segmentation Algorithms and
+           Measuring Ecological Statistics},
+  booktitle = {Proc. 8th Int'l Conf. Computer Vision},
+  year = {2001},
+  month = {July},
+  volume = {2},
+  pages = {416--423}
+}
 ```
