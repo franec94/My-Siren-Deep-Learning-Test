@@ -90,7 +90,7 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                     psnr(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        model_output.cpu().vew(sidelenght).detach().numpy(),
+                        model_output.cpu().view(sidelenght).detach().numpy(),
                         gt.cpu().view(sidelenght).detach().numpy(),
                     data_range=1.0)
                 # running_psnr += batch_psnr
@@ -100,7 +100,7 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 # skmetrics.structural_similarity(
                 batch_mssim = \
                     ssim(
-                        model_output.cpu().vew(sidelenght).detach().numpy(),
+                        model_output.cpu().view(sidelenght).detach().numpy(),
                         gt.cpu().view(sidelenght).detach().numpy(),
                         data_range=1.0)
                 # running_ssim += batch_mssim
