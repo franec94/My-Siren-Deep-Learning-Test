@@ -73,23 +73,25 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                         model_output = model(model_input)
                         losses = loss_fn(model_output, gt)
                         train_loss = 0.
-                        for loss_name, loss in losses.items():
+                        for _, loss in losses.items(): # loss_name
                             train_loss += loss.mean() 
                         train_loss.backward()
                         return train_loss
                     optim.step(closure)
 
-                model_output, coords = model(model_input)
+                model_output, _ = model(model_input) # coords
                 # losses = loss_fn(model_output, gt)
                 train_loss = loss_fn(model_output, gt)
                 writer.add_scalar("total_train_loss", train_loss.item(), total_steps)
+
+                sidelenght = model_output.size()[1]
 
                 batch_psnr = \
                     psnr(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        model_output.cpu().detach().numpy(),
-                        gt.cpu().detach().numpy(),
+                        model_output.cpu().vew(sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght).detach().numpy(),
                     data_range=1.0)
                 # running_psnr += batch_psnr
                 writer.add_scalar("total_train_psnr", batch_psnr, total_steps)
@@ -98,8 +100,8 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 # skmetrics.structural_similarity(
                 batch_mssim = \
                     ssim(
-                        model_output.cpu().detach().numpy(),
-                        gt.cpu().detach().numpy(),
+                        model_output.cpu().vew(sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght).detach().numpy(),
                         data_range=1.0)
                 # running_ssim += batch_mssim
                 writer.add_scalar("total_train_ssim", batch_mssim, total_steps)
