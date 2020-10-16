@@ -163,14 +163,14 @@ def main():
     # Get input image to be compressed.
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
-        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
+        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff=None)
         image_resolution = (512, 512)
     else:
         img_dataset =  dataio.ImageFile(opt.image_filepath)
         img = Image.open(opt.image_filepath)
         if opt.sidelength is None:
             opt.sidelength = min(img.size)
-        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
+        coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff=None)
         image_resolution = (opt.sidelength, opt.sidelength)
 
         """
@@ -193,8 +193,8 @@ def main():
         model = Siren(
             in_features = 2,
             out_features = 1,
-            hidden_features = image_resolution[0], 
-            hidden_layers = 3,
+            hidden_features = opt.hidden_features, 
+            hidden_layers = opt.hidden_layers,
             outermost_linear=True)
     else:
         raise NotImplementedError

@@ -246,7 +246,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # Rescale image to be correctly processed by the net.
             sidelength = int(arch_hyperparams['hidden_features'])
             coord_dataset = dataio.Implicit2DWrapper(
-                img_dataset, sidelength=sidelength, compute_diff='all')
+                img_dataset, sidelength=sidelength, compute_diff=None)
 
             # Prepare dataloaders for train and eval phases.
             train_dataloader = DataLoader(

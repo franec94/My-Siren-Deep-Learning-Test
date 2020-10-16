@@ -65,7 +65,7 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 model_input = model_input['coords'].to(device)
                 gt = gt['img'].to(device)
 
-                sidelenght = int(math.sqrt(model_input.size()[1]))
+                # sidelenght = int(math.sqrt(model_input.size()[1]))
 
                 if use_lbfgs:
                     def closure():
@@ -86,8 +86,10 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
 
                 batch_psnr = \
                     psnr(
-                        model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        model_output.cpu().detach().numpy(),
+                        gt.cpu().detach().numpy(),
                     data_range=1.0)
                 # running_psnr += batch_psnr
                 writer.add_scalar("total_train_psnr", batch_psnr, total_steps)
@@ -96,8 +98,8 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                 # skmetrics.structural_similarity(
                 batch_mssim = \
                     ssim(
-                        model_output.cpu().view(sidelenght,sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght,sidelenght).detach().numpy(),
+                        model_output.cpu().detach().numpy(),
+                        gt.cpu().detach().numpy(),
                         data_range=1.0)
                 # running_ssim += batch_mssim
                 writer.add_scalar("total_train_ssim", batch_mssim, total_steps)

@@ -21,8 +21,13 @@ def get_cmd_line_opts():
                help='Path to input image to be compressed (default: None).'
                 'If not specified, It is used cameramen image as target image to be compressed.',
                )
-    p.add_argument('--sidelength', type=int, required=False,
+    p.add_argument('--sidelength', type=int, required=False, default=None,
                help='Sidelength to which resize input image to be compressed.')
+    p.add_argument('--hidden_features', type=int, required=True,
+               help='Number of hidden features.')
+    p.add_argument('--hidden_layers', type=int, required=True,
+               help='Number of hidden layers.')
+
 
     
     # General training options

@@ -14,7 +14,7 @@ import skvideo.io
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision.transforms import Resize, Compose, ToTensor, Normalize
+from torchvision.transforms import Resize, Compose, ToTensor, CenterCrop, Normalize
 
 
 def get_mgrid(sidelen, dim=2):
@@ -582,7 +582,8 @@ class Implicit2DWrapper(torch.utils.data.Dataset):
         self.sidelength = sidelength
 
         self.transform = Compose([
-            Resize(sidelength),
+            # Resize(sidelength),
+            CenterCrop(sidelength),
             ToTensor(),
             Normalize(torch.Tensor([0.5]), torch.Tensor([0.5]))
         ])
