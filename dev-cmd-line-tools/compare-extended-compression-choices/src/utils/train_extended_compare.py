@@ -318,7 +318,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
-                        "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
+                        "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
                         % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
                     pass
                 
@@ -342,12 +342,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Show Average stats about current arch
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "Arch no.=%d, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, iteration time=%0.6f"
+                        "[*] Arch no.=%d, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 # Show Global Average stats about training process.
                 avg_train_losses = global_avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "Global stats(through all archs.): loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, iteration time=%0.6f"
+                        "[*] Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
             
