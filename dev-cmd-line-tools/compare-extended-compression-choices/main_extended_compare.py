@@ -148,12 +148,14 @@ def get_arch_hyperparams(opt, image_resolution):
     hidden_features_arr = np.linspace(start_hf, sidelength, num=num_hidden_features, dtype=np.int)
     """
 
-    pprint(hidden_features_arr)
+    # pprint(hidden_features_arr)
+    pprint(hidden_features_list)
 
     param_grid = {
         'seeds': seeds_list,
         'hidden_layers': hidden_layers_list,
-        'hidden_features': hidden_features_arr
+        # 'hidden_features': hidden_features_arr
+        'hidden_features': hidden_features_list
     }
 
     return list(ParameterGrid(param_grid))
