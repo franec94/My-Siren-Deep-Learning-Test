@@ -168,8 +168,7 @@ def main():
     else:
         img_dataset =  dataio.ImageFile(opt.image_filepath)
         img = Image.open(opt.image_filepath)
-        if opt.sidelength is None:
-            opt.sidelength = min(img.size)
+        # if opt.sidelength is None: opt.sidelength = min(img.size)
         coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff=None)
         image_resolution = (opt.sidelength, opt.sidelength)
 
@@ -276,7 +275,11 @@ def main():
                 predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
 
-        image = predicted_image.cpu().view(sidelenght, sidelenght).detach().numpy()
+        if opt.sidelength is None:
+            predicted_image_shape = Image.open(opt.image_filepath).size
+        else:
+            predicted_image_shape = (opt.sidelength, opt.sidelength)
+        image = predicted_image.cpu().view(predicted_image_shape).detach().numpy()
 
         data = np.array([val_mse, val_psnr, val_mssim])
         columns = [f"predicted_{metric}" for metric in "mse;psnr;mssim".split(";")]
