@@ -240,13 +240,10 @@ def main():
         print('Evaluate on device: ', device)
         model = Siren(
             in_features = 2,
-            hidden_features = image_resolution[0],
-            hidden_layers = 3,
             out_features = 1,
-            outermost_linear = True, 
-            first_omega_0 = 30,
-            hidden_omega_0 = 30.
-        )
+            hidden_features = opt.hidden_features, 
+            hidden_layers = opt.hidden_layers,
+            outermost_linear=True)
         print(model)
 
         model_state_path = os.path.join(root_path, 'checkpoints', 'model_final.pth')
