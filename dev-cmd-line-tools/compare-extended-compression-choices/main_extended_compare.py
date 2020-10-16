@@ -203,6 +203,8 @@ def main():
         img_dataset =  dataio.ImageFile(opt.image_filepath)
         img = Image.open(opt.image_filepath)
         image_resolution = img.size
+        if opt.sidelength is None:
+            opt.sidelength = min(image_resolution)
         # if opt.sidelength is None:
         #     opt.sidelength = min(img.size)
         # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')

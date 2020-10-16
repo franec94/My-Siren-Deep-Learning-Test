@@ -38,6 +38,8 @@ def get_cmd_line_opts():
         help='Number of hidden features to be employed across differen trials (default: 5).'
     )
     """
+    p.add_argument('--sidelength', type=int, required=False, default=None,
+               help='Sidelength to which resize input image to be compressed.')
     p.add_argument('--hidden_features', nargs='+', type=int, required=False, default=[64, 128, 256, 512],
         help='List of hidden features (default: [64, 128, 256, 512])).'
     )
