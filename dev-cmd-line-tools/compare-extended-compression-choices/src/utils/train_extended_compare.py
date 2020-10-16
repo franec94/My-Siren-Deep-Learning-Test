@@ -119,13 +119,19 @@ def train_extended_compare_loop(
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
 
+            sidelenght = model_output.size()[1]
             if save_metrices:
                 # stop_time = time.time() - start_time
-                sidelenght = int(math.sqrt(model_output.size()[1]))
+                # sidelenght = int(math.sqrt(model_output.size()[1]))
+                sidelenght = model_output.size()[1]
                 val_psnr = \
                     psnr(
-                        model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        
+                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        
+                        model_output.cpu().view(sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght).detach().numpy(),
                         data_range=1.0)
                 # running_psnr += batch_psnr
 
@@ -133,8 +139,12 @@ def train_extended_compare_loop(
                 # skmetrics.structural_similarity(
                 val_mssim = \
                         ssim(
-                        model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        
+                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        
+                        model_output.cpu().view(sidelenght).detach().numpy(),
+                        gt.cpu().view(sidelenght).detach().numpy(),
                         data_range=1.0)
                 train_losses.append([train_loss, val_psnr, val_mssim])
                 """
