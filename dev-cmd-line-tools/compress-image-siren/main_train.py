@@ -294,7 +294,7 @@ def main():
         print("Predicted Metrices.")
         print(metrics_txt)
         prediction_path = os.path.join(root_path, 'prediction.txt')
-        with open(prediction_path) as f:
+        with open(prediction_path, "w") as f:
             f.write(metrics_txt)
             pass
         pass
