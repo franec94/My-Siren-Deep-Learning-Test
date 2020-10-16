@@ -293,6 +293,13 @@ def main():
         predicted_image_path = os.path.join(root_path, 'predicted_image_plus_text.png')
         metrics_txt = '\n'.join([f"{k}: {v:.4f}" for k, v in zip(columns, data)])
         graphics.show_image_with_metrcis_scores(image, sidelenght, metrics_txt,  predicted_image_path)
+
+        print("Predicted Metrices.")
+        print(metrics_txt)
+        prediction_path = os.path.join(root_path, 'prediction.txt')
+        with open(prediction_path) as f:
+            f.write(metrics_txt)
+            pass
         pass
 
     if opt.show_graphics:
