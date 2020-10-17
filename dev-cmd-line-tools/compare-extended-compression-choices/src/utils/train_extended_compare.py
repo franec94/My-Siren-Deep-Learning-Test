@@ -322,7 +322,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     avg_train_losses = np.concatenate((avg_train_losses, [train_losses]), axis=0)
                     pass
                 if global_avg_train_losses is None:
-                    global_avg_train_losses = [train_losses]
+                    global_avg_train_losses = np.array([train_losses])
                 else:
                     global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_losses]), axis=0)
                 # Show some output per arch per trial.
