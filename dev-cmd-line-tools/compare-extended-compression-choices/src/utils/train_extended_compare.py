@@ -126,10 +126,8 @@ def train_extended_compare_loop(
                 sidelenght = model_output.size()[1]
                 val_psnr = \
                     psnr(
-                        
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        
                         gt.cpu().view(sidelenght).detach().numpy(),
                         model_output.cpu().view(sidelenght).detach().numpy(),
                         data_range=1.0)
@@ -139,7 +137,6 @@ def train_extended_compare_loop(
                 # skmetrics.structural_similarity(
                 val_mssim = \
                         ssim(
-                        
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         gt.cpu().view(sidelenght).detach().numpy(),
@@ -202,8 +199,8 @@ def train_extended_compare_loop(
 
         val_psnr = \
             psnr(
-                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
             # running_psnr += batch_psnr
 
@@ -211,8 +208,8 @@ def train_extended_compare_loop(
         # skmetrics.structural_similarity(
         val_mssim = \
             ssim(
-                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 data_range=1.0)
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
         train_losses = np.array([train_loss, val_psnr, val_mssim])
