@@ -38,7 +38,8 @@ def train_extended_compare_loop(
     clip_grad=False,
     use_lbfgs=False,
     loss_schedules=None,
-    device='cpu', 
+    device='cpu',
+    data_range = 255,
     save_metrices = False):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
@@ -137,7 +138,7 @@ def train_extended_compare_loop(
                         # gt.cpu().view(sidelenght).detach().numpy(),
                         # model_output.cpu().view(sidelenght).detach().numpy(),
                         arr_gt, arr_output,
-                        data_range=1.0)
+                        data_range=data_range)
                 # running_psnr += batch_psnr
 
                 # Metric: SSIM
@@ -149,7 +150,7 @@ def train_extended_compare_loop(
                         # gt.cpu().view(sidelenght).detach().numpy(),
                         # model_output.cpu().view(sidelenght).detach().numpy(),
                         arr_gt, arr_output,
-                        data_range=1.0)
+                        data_range=data_range)
                 train_losses.append([train_loss, val_psnr, val_mssim])
                 """
                 tqdm.write(
@@ -217,7 +218,7 @@ def train_extended_compare_loop(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 arr_gt, arr_output,
-                data_range=1.0)
+                data_range=data_range)
             # running_psnr += batch_psnr
 
         # Metric: SSIM
@@ -227,7 +228,7 @@ def train_extended_compare_loop(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 arr_gt, arr_output,
-                data_range=1.0)
+                data_range=data_range)
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
         train_losses = np.array([train_loss, val_psnr, val_mssim])
         pass
@@ -236,7 +237,7 @@ def train_extended_compare_loop(
     return train_losses
 
 
-def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False):
+def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
@@ -325,7 +326,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     loss_fn=loss_fn,
                     device=device,
                     summary_fn=summary_fn,
-                    save_metrices = save_metrices)
+                    save_metrices = save_metrices,
+                    data_range = data_range)
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 
