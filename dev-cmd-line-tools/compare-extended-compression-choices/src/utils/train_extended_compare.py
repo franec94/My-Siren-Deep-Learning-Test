@@ -231,7 +231,7 @@ def train_extended_compare_loop(
         # --- Calculate metrices scores.
         # Metric: MSE
         train_loss = loss_fn(val_output, val_gt)
-        
+
         # Metric: PSNR
         val_psnr = \
             psnr(
@@ -310,7 +310,6 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
-                
                 # --- Create dir for record results for current trial.
                 tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
                 try: os.makedirs(tmp_model_dir)
@@ -331,6 +330,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             
                 tot_weights_model = sum(p.numel() for p in model.parameters())
                 # print(model)
+                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 w = 32 bits): {tot_weights_model * 32}")
 
                 # --- Train model.
                 # Set start time and show messages.
