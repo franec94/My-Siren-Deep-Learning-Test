@@ -330,7 +330,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             
                 tot_weights_model = sum(p.numel() for p in model.parameters())
                 # print(model)
-                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 w = 32 bits): {tot_weights_model * 32}")
+                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
 
                 # --- Train model.
                 # Set start time and show messages.
