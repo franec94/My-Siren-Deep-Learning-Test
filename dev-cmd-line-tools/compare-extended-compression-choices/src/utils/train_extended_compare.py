@@ -216,8 +216,6 @@ def train_extended_compare_loop(
         # sidelenght = int(math.sqrt(val_output.size()[1]))
         sidelenght = val_output.size()[1]
 
-        train_loss = loss_fn(val_output, val_gt)
-
         # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
         scaler = MinMaxScaler(feature_range=(0, 255))
@@ -231,6 +229,10 @@ def train_extended_compare_loop(
           scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)
         
         # --- Calculate metrices scores.
+        # Metric: MSE
+        train_loss = loss_fn(val_output, val_gt)
+        
+        # Metric: PSNR
         val_psnr = \
             psnr(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
