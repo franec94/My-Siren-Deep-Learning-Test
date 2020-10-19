@@ -124,12 +124,19 @@ def train_extended_compare_loop(
                 # stop_time = time.time() - start_time
                 # sidelenght = int(math.sqrt(model_output.size()[1]))
                 sidelenght = model_output.size()[1]
+
+                arr_gt = gt.cpu().view(sidelenght).detach().numpy()
+                arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+
+                arr_output = model_output.cpu().view(sidelenght).detach().numpy()
+                arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
                 val_psnr = \
                     psnr(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght).detach().numpy(),
-                        model_output.cpu().view(sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght).detach().numpy(),
+                        # model_output.cpu().view(sidelenght).detach().numpy(),
+                        arr_gt, arr_output,
                         data_range=1.0)
                 # running_psnr += batch_psnr
 
@@ -139,8 +146,9 @@ def train_extended_compare_loop(
                         ssim(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                         # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        gt.cpu().view(sidelenght).detach().numpy(),
-                        model_output.cpu().view(sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght).detach().numpy(),
+                        # model_output.cpu().view(sidelenght).detach().numpy(),
+                        arr_gt, arr_output,
                         data_range=1.0)
                 train_losses.append([train_loss, val_psnr, val_mssim])
                 """
@@ -193,14 +201,22 @@ def train_extended_compare_loop(
 
         val_output, _ = model(val_input)
 
-        sidelenght = int(math.sqrt(val_output.size()[1]))
+        # sidelenght = int(math.sqrt(val_output.size()[1]))
+        sidelenght = val_output.size()[1]
 
         train_loss = loss_fn(val_output, val_gt)
 
+        arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
+        arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+
+        arr_output = val_output.cpu().view(sidelenght).detach().numpy()
+        arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
+
         val_psnr = \
             psnr(
-                val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                arr_gt, arr_output,
                 data_range=1.0)
             # running_psnr += batch_psnr
 
@@ -208,8 +224,9 @@ def train_extended_compare_loop(
         # skmetrics.structural_similarity(
         val_mssim = \
             ssim(
-                val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                arr_gt, arr_output,
                 data_range=1.0)
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
         train_losses = np.array([train_loss, val_psnr, val_mssim])
@@ -219,7 +236,7 @@ def train_extended_compare_loop(
     return train_losses
 
 
-def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0):
+def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
@@ -307,7 +324,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     model_dir=tmp_model_dir,
                     loss_fn=loss_fn,
                     device=device,
-                    summary_fn=summary_fn)
+                    summary_fn=summary_fn,
+                    save_metrices = save_metrices)
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 
