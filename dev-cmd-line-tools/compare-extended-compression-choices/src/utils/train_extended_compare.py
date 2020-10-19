@@ -47,10 +47,10 @@ def train_extended_compare_loop(
     Performe training on a given input model, specifing onto which device the training process will be done.
     """
 
-    # Set model into train mode, for safe reasons.
+    # --- Set model into train mode, for safe reasons.
     model.train()
 
-    # Define some objects necessary to lead the protocol
+    # --- Define some objects necessary to lead the protocol
     # which is in charge of let the model to be trained.
     optim = torch.optim.Adam(lr=lr, params=model.parameters())
     loss_fn = nn.MSELoss()
@@ -66,7 +66,7 @@ def train_extended_compare_loop(
             history_size=50, line_search_fn='strong_wolfe')
         pass
 
-    # Local variables.
+    # --- Local variables.
     train_losses = []  # used for recording metrices when evaluated.
     try: os.makedirs(model_dir)
     except: pass
@@ -79,9 +79,9 @@ def train_extended_compare_loop(
     checkpoints_dir = os.path.join(model_dir, 'checkpoints')
     utils.cond_mkdir(checkpoints_dir)
 
-    # Number of interation for current image.
+    # --- Number of interation for current image.
     for epoch in range(epochs):
-        # Save partial results as checkpoints.
+        # --- Save partial results as checkpoints.
         if not epoch % epochs_til_checkpoint and epoch:
             try:
                 model_name_path = os.path.join(checkpoints_dir, 'model_epoch_%04d.pth' % epoch)
@@ -95,7 +95,7 @@ def train_extended_compare_loop(
                            np.array(train_losses))
             except Exception as _:
                 raise Exception(f"Error when saving file: filename={tmp_file_path} .")
-        # Loop for let model's arch be improved, updateding weights values.
+        # --- Loop for let model's arch be improved, updateding weights values.
         for _, (model_input, gt) in enumerate(train_dataloader):
             # if save_metrices: start_time = time.time()
             # Get input data and set it to desired device
@@ -117,7 +117,7 @@ def train_extended_compare_loop(
                     return train_loss
                 optim.step(closure)
 
-            # Compute forward pass.
+            # --- Compute forward pass.
             model_output, _ = model(model_input)
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
@@ -132,13 +132,13 @@ def train_extended_compare_loop(
                 # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
                 scaler = MinMaxScaler(feature_range=(0, 255))
                 arr_gt = \
-                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.int8)
+                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)
 
                 arr_output = model_output.cpu().view(sidelenght).detach().numpy()
                 # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
                 scaler = MinMaxScaler(feature_range=(0, 255))
                 arr_output = \
-                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.int8)
+                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)
                 val_psnr = \
                     psnr(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
@@ -169,7 +169,7 @@ def train_extended_compare_loop(
                 train_losses.append(train_loss)
                 pass
 
-            # Backward pass.
+            # --- Backward pass.
             if not use_lbfgs:
                 optim.zero_grad()
                 train_loss.backward()
@@ -188,7 +188,7 @@ def train_extended_compare_loop(
             pass
         pass
 
-    # Save overall training results.
+    # --- Save overall training results.
     try:
         tmp_file_path = os.path.join(checkpoints_dir, 'model_final.pth')
         torch.save(model.state_dict(),
@@ -200,33 +200,37 @@ def train_extended_compare_loop(
                 raise Exception(f"Error when saving file: filename={tmp_file_path} .")
 
     
-    # Evaluate model's on validation data.
+    # --- Evaluate model's on validation data.
     model.eval()
     with torch.no_grad():
+        # -- Get data from validation loader.
         val_input, val_gt = next(iter(val_dataloader))
 
         val_input = val_input['coords'].to(device)
         val_gt = val_gt['img'].to(device)
 
+        # --- Compute estimation.
         val_output, _ = model(val_input)
 
+        # --- Prepare data for calculating metrices scores.
         # sidelenght = int(math.sqrt(val_output.size()[1]))
         sidelenght = val_output.size()[1]
 
         train_loss = loss_fn(val_output, val_gt)
 
-        arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
         # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+        arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
         scaler = MinMaxScaler(feature_range=(0, 255))
         arr_gt = \
-            scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.int8)
+            scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)
 
+        # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
         arr_output = val_output.cpu().view(sidelenght).detach().numpy()
         scaler = MinMaxScaler(feature_range=(0, 255))
         arr_output = \
-          scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.int8)
-        # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-
+          scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)
+        
+        # --- Calculate metrices scores.
         val_psnr = \
             psnr(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
@@ -243,6 +247,8 @@ def train_extended_compare_loop(
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 arr_gt, arr_output,
                 data_range=data_range)
+        
+        # --- Record results.
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
         train_losses = np.array([train_loss, val_psnr, val_mssim])
         pass
@@ -256,7 +262,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
 
-    # Local variables.
+    # --- Local variables.
     history_combs = []
     step = 1
     arch_step = 0
@@ -265,14 +271,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     model, train_dataloader, val_dataloader = None, None, None
     global_avg_train_losses = None
 
-    # Processing Bar to control the workout.
+    # --- Processing Bar to control the workout.
     with tqdm(total=len(grid_arch_hyperparams)) as pbar:
 
-        # For loop for performing different training depending on the
+        # --- For loop for performing different training depending on the
         # chosen hyper-params.
         # print()
         for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
-            # Start time: it's the point in time from which the current train
+            # --- Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
             if verbose >= 1:
                 start_time_ao = time.time()
@@ -281,12 +287,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             tqdm.write(f"{arch_hyperparams_str}")
 
-            # Rescale image to be correctly processed by the net.
+            # --- Rescale image to be correctly processed by the net.
             sidelength = int(arch_hyperparams['hidden_features'])
             coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=opt.sidelength, compute_diff=None)
 
-            # Prepare dataloaders for train and eval phases.
+            # --- Prepare dataloaders for train and eval phases.
             train_dataloader = DataLoader(
                 coord_dataset,
                 shuffle=True,
@@ -303,17 +309,17 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
                 
-                # Create dir for record results for current trial.
+                # --- Create dir for record results for current trial.
                 tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
                 try: os.makedirs(tmp_model_dir)
                 except: pass
                 
-                # Set seeds
+                # --- Set seeds
                 torch.manual_seed(seed)
                 np.random.seed(seed)
                 random.seed(seed)
 
-                # Prepare siren model.
+                # --- Prepare siren model.
                 model = Siren(
                     in_features=2,
                     out_features=1,
@@ -324,7 +330,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tot_weights_model = sum(p.numel() for p in model.parameters())
                 # print(model)
 
-                # Train model.
+                # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
@@ -345,7 +351,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 
-                # record train_loss for later average computations.
+                # --- Record train_loss for later average computations.
                 if avg_train_losses is None:
                     avg_train_losses =  np.array([train_losses])
                 else:
@@ -355,7 +361,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     global_avg_train_losses = np.array([train_losses])
                 else:
                     global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_losses]), axis=0)
-                # Show some output per arch per trial.
+                # --- Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
@@ -363,7 +369,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     pass
                 
 
-                # Record performance metrices for later investigations.
+                # --- Record performance metrices for later investigations.
                 # history_combs.append(np.concat(train_losses, [stop_time]))
                 history_combs.append(
                     np.concatenate(
@@ -376,7 +382,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 )
                 pass
             
-            # Show AVG stats per Arch.
+            # --- Show AVG stats per Arch.
             if verbose >= 1:
                 stop_time = time.time() - start_time_ao
                 # Show Average stats about current arch
@@ -391,7 +397,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
             
-            # Save data following step strategy.
+            # --- Save data following step strategy.
             if step // steps_til_summary == step:
                 # Save into output file recorded metrices across different trials.
                 try:
@@ -413,12 +419,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 arch_step += 1
                 pass
             step += 1
-            # Update counter used to handle processing bar.
+            # --- Update counter used to handle processing bar.
             pbar.update(1)
             pass
         pass
 
-    # Save into output file recorded metrices across different trials.
+    # --- Save into output file recorded metrices across different trials.
     try:
         path_result_comb_train = os.path.join(model_dir, 'result_comb_train.txt')
         result = np.array(history_combs)
