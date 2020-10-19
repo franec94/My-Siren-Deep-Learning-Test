@@ -199,12 +199,16 @@ def main():
         img_dataset = dataio.Camera()
         # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=512, compute_diff='all')
         image_resolution = (512, 512)
+        if opt.sidelength is None:
+            opt.sidelength = min(image_resolution)
+            pass
     else:
         img_dataset =  dataio.ImageFile(opt.image_filepath)
         img = Image.open(opt.image_filepath)
         image_resolution = img.size
         if opt.sidelength is None:
             opt.sidelength = min(image_resolution)
+            pass
         # if opt.sidelength is None:
         #     opt.sidelength = min(img.size)
         # coord_dataset = dataio.Implicit2DWrapper(img_dataset, sidelength=opt.sidelength, compute_diff='all')
