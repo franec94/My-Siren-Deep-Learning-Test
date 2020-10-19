@@ -24,6 +24,8 @@ from skimage.metrics import mean_squared_error
 import src.utils.dataio as dataio
 from src.utils.siren import Siren
 
+from sklearn.preprocessing import MinMaxScaler
+
 
 def train_extended_compare_loop(
     model, train_dataloader,
@@ -208,10 +210,14 @@ def train_extended_compare_loop(
         train_loss = loss_fn(val_output, val_gt)
 
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
-        arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+        # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+        scaler = MinMaxScaler(feature_range=(0, 255))
+        arr_gt = scaler.fit_transform(arr_gt)
 
         arr_output = val_output.cpu().view(sidelenght).detach().numpy()
-        arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
+        scaler = MinMaxScaler(feature_range=(0, 255))
+        arr_output = scaler.fit_transform(arr_output)
+        # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
 
         val_psnr = \
             psnr(
