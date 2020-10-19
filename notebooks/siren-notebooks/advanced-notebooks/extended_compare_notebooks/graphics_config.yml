@@ -1,0 +1,9 @@
+kind:
+  - df_scatter
+  - scatter
+  - bar
+  - reg
+  - point
+  - box
+  - violin
+  - complex
