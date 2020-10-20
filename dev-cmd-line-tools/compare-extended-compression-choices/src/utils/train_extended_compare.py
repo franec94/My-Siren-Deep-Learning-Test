@@ -286,11 +286,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 start_time_ao = time.time()
             # print(hidden_features, hidden_layers)
 
+            # --- Print hyperparams to be tested.
             arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             tqdm.write(f"{arch_hyperparams_str}")
 
             # --- Rescale image to be correctly processed by the net.
-            sidelength = int(arch_hyperparams['hidden_features'])
+            # sidelength = int(arch_hyperparams['hidden_features'])
             coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=opt.sidelength, compute_diff=None)
 
@@ -307,6 +308,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 batch_size=opt.batch_size,
                 pin_memory=True, num_workers=0)
 
+            # --- Train with the same configuration n-times (at least one).
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
