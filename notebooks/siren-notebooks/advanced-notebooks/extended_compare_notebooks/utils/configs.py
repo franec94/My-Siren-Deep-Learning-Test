@@ -8,7 +8,7 @@ from pprint import pprint
 
 # import psycopg2 as ps
 import matplotlib.pyplot as plt
-plt.style.use('dark_background')
+# plt.style.use('dark_background')
 import seaborn as sns
 # sns.set_theme(style="whitegrid")
 import ipywidgets as widgets
