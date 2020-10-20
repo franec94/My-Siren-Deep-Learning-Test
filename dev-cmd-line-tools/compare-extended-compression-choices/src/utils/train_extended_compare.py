@@ -237,8 +237,8 @@ def train_extended_compare_loop(
             psnr(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output,
-                data_range=data_range)
+                arr_gt, arr_output)
+                # , data_range=data_range)
             # running_psnr += batch_psnr
 
         # Metric: SSIM
@@ -247,8 +247,8 @@ def train_extended_compare_loop(
             ssim(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output,
-                data_range=data_range)
+                arr_gt, arr_output)
+                # , data_range=data_range)
         
         # --- Record results.
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])

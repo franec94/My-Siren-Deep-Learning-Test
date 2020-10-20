@@ -208,6 +208,7 @@ def main():
         image_resolution = img.size
         if opt.sidelength is None:
             opt.sidelength = min(image_resolution)
+            opt.sidelength = image_resolution
             pass
         # if opt.sidelength is None:
         #     opt.sidelength = min(img.size)
