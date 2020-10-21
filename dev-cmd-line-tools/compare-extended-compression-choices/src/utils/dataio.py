@@ -583,7 +583,7 @@ class Implicit2DWrapper(torch.utils.data.Dataset):
 
         self.transform = Compose([
             # Resize(sidelength),
-            CenterCrop(sidelength),
+            # CenterCrop(sidelength),
             ToTensor(),
             Normalize(torch.Tensor([0.5]), torch.Tensor([0.5]))
         ])

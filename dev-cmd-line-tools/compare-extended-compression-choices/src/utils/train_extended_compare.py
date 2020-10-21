@@ -1,6 +1,8 @@
 '''Implements a generic training loop for comparing different architectures.
 '''
 
+import logging
+
 import torch
 import src.utils.utils as utils
 import torch.nn as nn
@@ -273,6 +275,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     model, train_dataloader, val_dataloader = None, None, None
     global_avg_train_losses = None
 
+    # ---  Setup logger.
+    log_filename = os.path.join(model_dir, 'train.log')
+    logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
+
     # --- Processing Bar to control the workout.
     with tqdm(total=len(grid_arch_hyperparams)) as pbar:
 
@@ -287,8 +293,13 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # print(hidden_features, hidden_layers)
 
             # --- Print hyperparams to be tested.
+            logging.info("_" * 50)
+            logging.info("_" * 50)
+            tqdm.write("_" * 50)
+            tqdm.write("_" * 50)
             arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             tqdm.write(f"{arch_hyperparams_str}")
+            logging.info(arch_hyperparams_str)
 
             # --- Rescale image to be correctly processed by the net.
             # sidelength = int(arch_hyperparams['hidden_features'])
@@ -309,6 +320,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pin_memory=True, num_workers=0)
 
             # --- Train with the same configuration n-times (at least one).
+            logging.info("-" * 50)
+            tqdm.write("-" * 50)
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
@@ -333,11 +346,15 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tot_weights_model = sum(p.numel() for p in model.parameters())
                 # print(model)
                 tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                logging.info("-" * 50)
+                tqdm.write("-" * 50)
 
                 # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
+                logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 train_losses = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -354,6 +371,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     data_range = data_range)
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
+                logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 
                 # --- Record train_loss for later average computations.
                 if avg_train_losses is None:
@@ -392,14 +410,18 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Show Average stats about current arch
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] Arch no.=%d, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        "[*] --> Arch no.=%d, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 # Show Global Average stats about training process.
                 avg_train_losses = global_avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        "[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
+            logging.info("[*] --> Arch no.=%d stats, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+            logging.info("[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
             
             # --- Save data following step strategy.
             if step // steps_til_summary == step:
