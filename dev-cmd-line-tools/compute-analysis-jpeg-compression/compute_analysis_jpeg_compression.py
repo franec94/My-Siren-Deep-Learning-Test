@@ -56,6 +56,7 @@ def main(opt = None):
             plt.savefig(f'big_scatter.png')
         except Exception as err:
             print(str(err))
+            logger.warning(str(err))
             pass
         pass
 
