@@ -431,12 +431,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             if step // steps_til_summary == step:
                 # Save into output file recorded metrices across different trials.
                 try:
+                    """
                     path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
                     result = np.array(history_combs)
                     np.savetxt(
                         path_result_comb_train,
                         result
                     )
+                    """
                     path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
                     result = np.array(history_combs)
                     np.savetxt(
