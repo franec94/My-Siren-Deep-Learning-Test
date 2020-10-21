@@ -45,7 +45,7 @@ from skimage.metrics import mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-def compute_graph_image_psnr_CR(data_tuples, x_axes, y_axes, subject, colors = sns.color_palette()):   
+def compute_graph_for_image_by_metrices(data_tuples, x_axes, y_axes, subject, colors = sns.color_palette()):   
     # Prepare pairs of attributes to be represented
     # one against the other via scatter plot.
     # x_axes = "bpp;file_size_bits".split(";")

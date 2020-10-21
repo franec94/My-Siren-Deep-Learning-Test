@@ -8,7 +8,7 @@ from utils.custom_argparser import get_cmd_line_opts
 from utils.functions import get_input_image, get_image_size_as_bits, show_image_characteristics, get_custom_logger
 from utils.works import calculate_several_jpeg_compression
 
-from utils.make_graphics import graphics_scatterplot
+from utils.make_graphics import graphics_scatterplot, compute_graph_for_image_by_metrices
 
 
 def main(opt = None):
@@ -44,11 +44,11 @@ def main(opt = None):
         result_df.to_csv('results.csv')
         pass
 
-    # get big picture
+    # Get big picture.
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         try:
-            g = sns.PairGrid(result_df.drop([], axis = 1), diag_sharey=False)
+            g = sns.PairGrid(result_df.drop(['width', 'heigth'], axis = 1), diag_sharey=False)
             g.map_upper(sns.scatterplot, s=15) # 
             g.map_lower(sns.kdeplot)
             g.map_diag(sns.kdeplot, lw=2)
@@ -67,7 +67,7 @@ def main(opt = None):
     g.fig.suptitle('JPEG Compressions')
     g.fig.savefig('scatter.png')
 
-    grid_shape = "(1, 2)" # @param ["(1, 4)", "(4, 1)", "(2, 2)"]
+    grid_shape = "(1, 3)" # @param ["(1, 4)", "(4, 1)", "(2, 2)"]
     grid_shape = eval(grid_shape)
 
     fig, axes = graphics_scatterplot(
@@ -91,6 +91,20 @@ def main(opt = None):
     # plt.savefig(f"scatterplot_mse_psnr_et_al_vs_no_params_train_no_{train_no}.png")
     plt.savefig(f"file_size_bits_vs_others_scatterplot.png")
     # plt.show()
+
+    # Get summary plot about metrices vs bpp and image's size as bits.
+    x_axes = "bpp;file_size_bits".split(";")
+    y_axes = "psnr;ssim;CR".split(";")
+
+    fig, axes = compute_graph_for_image_by_metrices(
+        data_tuples = result_tuples,
+        x_axes = x_axes,
+        y_axes = y_axes,
+        subject = 'jpeg',
+        colors = sns.color_palette())
+    fig.suptitle(f'JPEG', fontsize=15)
+    plt.savefig('summary_plot_metrices_for_jpge_res.png')
+
 
     pass
 
