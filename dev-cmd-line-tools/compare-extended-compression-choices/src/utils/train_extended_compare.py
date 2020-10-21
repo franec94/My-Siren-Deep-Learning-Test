@@ -365,7 +365,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     loss_fn=loss_fn,
                     device=device,
                     summary_fn=summary_fn,
-                    save_metrices = save_metrices,
+                    save_metrices = True,
                     data_range = data_range)
                 
                 stop_time = time.time() - start_time_to
