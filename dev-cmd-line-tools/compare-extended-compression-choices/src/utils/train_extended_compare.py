@@ -459,12 +459,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
         result
         )
 
+        """
         path_result_comb_train = '/content/result_comb_train.txt'
         result = np.array(history_combs)
         np.savetxt(
             path_result_comb_train,
             result
         )
+        """
     except Exception as _:
         raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
 

@@ -7,9 +7,9 @@
   --end_to  1 \
   --num_epochs 500 \
   --hidden_features 110 \
-  --num_attempts 1 \
+  --num_attempts 3 \
   --seeds 0 42 123 \
-  --hidden_layers 5 7 8 9 10 11 12 13\
+  --hidden_layers 5 7 8\
   --show_timetable_estimate \
   --verbose 1 \
 
