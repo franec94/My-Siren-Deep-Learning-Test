@@ -388,11 +388,11 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     tqdm.write(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
                         % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
-                    logging.info(
+                    pass
+                logging.info(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
                         % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time)
                     )
-                    pass
                 
 
                 # --- Record performance metrices for later investigations.
