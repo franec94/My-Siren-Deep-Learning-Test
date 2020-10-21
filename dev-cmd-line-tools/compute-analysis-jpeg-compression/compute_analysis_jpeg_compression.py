@@ -5,7 +5,7 @@ from utils.libs import *
 
 
 from utils.custom_argparser import get_cmd_line_opts
-from utils.functions import get_input_image, get_image_size_as_bits, show_image_characteristics, get_custom_logger
+from utils.functions import get_input_image, get_image_size_as_bits, show_image_characteristics, get_custom_logger, create_dir_from_path_by_opt
 from utils.works import calculate_several_jpeg_compression
 
 from utils.make_graphics import graphics_scatterplot, compute_graph_for_image_by_metrices
@@ -14,8 +14,12 @@ from utils.make_graphics import graphics_scatterplot, compute_graph_for_image_by
 def main(opt = None):
 
 
+    create_dir_from_path_by_opt(opt.logging_path, opt.erase_content_prev_logging)
+    create_dir_from_path_by_opt(opt.output_path, opt.erase_content_prev_output)
+
     # Get logger for logging reasons.
-    logger = get_custom_logger()
+    logger_filename = os.path.join(opt.logging_path, 'result.log')
+    logger = get_custom_logger(logger_filename)
 
     # Get input image fetching by means of opt
     # taken from command input args.
@@ -41,7 +45,7 @@ def main(opt = None):
     if len(result_tuples) != 0:
         data_result = list(map(operator.methodcaller("_asdict"), result_tuples))
         result_df = pd.DataFrame(data = data_result)
-        result_df.to_csv('results.csv')
+        result_df.to_csv(os.path.join(opt.output_path,'results.csv'))
         pass
 
     # Get big picture.
@@ -53,7 +57,10 @@ def main(opt = None):
             g.map_lower(sns.kdeplot)
             g.map_diag(sns.kdeplot, lw=2)
             # plt.savefig(f'scatter_plot_train_no_{train_no}.png')
-            plt.savefig(f'big_scatter.png')
+            plt.savefig(
+                os.path.join(opt.output_path,
+                f'big_scatter.png')
+            )
         except Exception as err:
             print(str(err))
             logger.warning(str(err))
@@ -79,7 +86,10 @@ def main(opt = None):
         figsize = (20, 10))
     fig.suptitle('Trend MSE and PSNR et al. across archs (grouped by #params).', fontsize=15)
     # plt.savefig(f"scatterplot_mse_psnr_et_al_vs_no_params_train_no_{train_no}.png")
-    plt.savefig(f"bpp_vs_others_scatterplot.png")
+    plt.savefig(
+        os.path.join(opt.output_path,
+        f"bpp_vs_others_scatterplot.png")
+    )
     # plt.show()
 
     fig, axes = graphics_scatterplot(
@@ -90,7 +100,10 @@ def main(opt = None):
         figsize = (20, 10))
     fig.suptitle('Trend MSE and PSNR et al. across archs (grouped by #params).', fontsize=15)
     # plt.savefig(f"scatterplot_mse_psnr_et_al_vs_no_params_train_no_{train_no}.png")
-    plt.savefig(f"file_size_bits_vs_others_scatterplot.png")
+    plt.savefig(
+        os.path.join(opt.output_path,
+        f"file_size_bits_vs_others_scatterplot.png")
+    )
     # plt.show()
 
     # Get summary plot about metrices vs bpp and image's size as bits.
@@ -104,7 +117,10 @@ def main(opt = None):
         subject = 'jpeg',
         colors = sns.color_palette())
     fig.suptitle(f'JPEG', fontsize=15)
-    plt.savefig('summary_plot_metrices_for_jpge_res.png')
+    plt.savefig(
+        os.path.join(opt.output_path,
+            'summary_plot_metrices_for_jpge_res.png')
+    )
 
 
     pass

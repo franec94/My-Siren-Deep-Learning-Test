@@ -1,12 +1,22 @@
 from utils.libs import *
 
-def get_custom_logger():
+def create_dir_from_path_by_opt(dir_path, erase_check):
+    if os.path.exists(dir_path) and os.path.isdir(dir_path):
+        if erase_check:
+            shutil.rmtree(dir_path)
+            pass
+        else: return
+        pass
+    os.makedirs(dir_path)
+    pass
+
+def get_custom_logger(logger_filename):
     # Create a log with the same name as the script that created it
     logger = logging.getLogger('results') 
     logger.setLevel('DEBUG')
 
     # Create handlers and set their logging level
-    filehandler_dbg = logging.FileHandler('results.log', mode='w')
+    filehandler_dbg = logging.FileHandler(f'{logger_filename}', mode='w')
     filehandler_dbg.setLevel('DEBUG')
     
     # Add handlers to logger
