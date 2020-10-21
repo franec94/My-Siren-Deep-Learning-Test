@@ -372,6 +372,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
+                logging.info("-" * 50)
+                tqdm.write("-" * 50)
                 
                 # --- Record train_loss for later average computations.
                 if avg_train_losses is None:
