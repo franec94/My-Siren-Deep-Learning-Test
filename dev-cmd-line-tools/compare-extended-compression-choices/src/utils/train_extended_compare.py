@@ -293,10 +293,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # print(hidden_features, hidden_layers)
 
             # --- Print hyperparams to be tested.
-            logging.info("_" * 50)
-            logging.info("_" * 50)
-            tqdm.write("_" * 50)
-            tqdm.write("_" * 50)
+            logging.info("_" * 50); logging.info("_" * 50)
+            tqdm.write("_" * 50); tqdm.write("_" * 50)
+
             arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             tqdm.write(f"{arch_hyperparams_str}")
             logging.info(arch_hyperparams_str)
@@ -320,8 +319,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pin_memory=True, num_workers=0)
 
             # --- Train with the same configuration n-times (at least one).
-            logging.info("-" * 50)
-            tqdm.write("-" * 50)
+            logging.info("-" * 50); tqdm.write("-" * 50)
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
@@ -347,14 +345,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # print(model)
                 tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
                 logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                logging.info("-" * 50)
-                tqdm.write("-" * 50)
+                logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
+
                 train_losses = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -369,12 +367,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     summary_fn=summary_fn,
                     save_metrices = save_metrices,
                     data_range = data_range)
+                
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
-                logging.info("-" * 50)
-                tqdm.write("-" * 50)
-                
+                logging.info("-" * 50); tqdm.write("-" * 50)
+
                 # --- Record train_loss for later average computations.
                 if avg_train_losses is None:
                     avg_train_losses =  np.array([train_losses])
