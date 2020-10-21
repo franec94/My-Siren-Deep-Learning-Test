@@ -73,7 +73,10 @@ def main(opt = None):
     g.fig.tight_layout()
     g.fig.subplots_adjust(top=0.9)
     g.fig.suptitle('JPEG Compressions')
-    g.fig.savefig('scatter.png')
+    g.fig.savefig(
+        os.path.join(opt.output_path,
+        f"scatter.png")
+    )
 
     grid_shape = "(1, 3)" # @param ["(1, 4)", "(4, 1)", "(2, 2)"]
     grid_shape = eval(grid_shape)
