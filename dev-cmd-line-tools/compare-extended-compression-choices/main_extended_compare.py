@@ -287,40 +287,9 @@ def main():
         f.write(parser.format_values())
         pass
 
-    # --- Start training.
-    start_time = time.time()
-    print(f"Start training [{curr_date}][timestamp={curr_timestamp}] ...")
-    train_extended_compare.train_extended_protocol_compare_archs(
-        grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
-        img_dataset=img_dataset,
-        opt=opt,
-        model_dir=root_path,
-        verbose=opt.verbose,
-    )
-    print(f"End training [{curr_date}][timestamp={curr_timestamp}] eta: {time.time() - start_time} seconds.")
-    
-    pass
-
-
-if __name__ == "__main__":
-
-    log_filename = os.path.join(model_dir, 'train.log')
+    log_filename = os.path.join(root_path, 'train.log')
     logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
 
-    # Initialize option and parser objects.
-    opt, parser = get_cmd_line_opts()
-    
-    # Set seeds for experiment re-running.
-    if hasattr(opt, 'seed'): seed = opt.seed
-    else: seed = 0
-    
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    
     # Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
     device = None
@@ -340,6 +309,37 @@ if __name__ == "__main__":
         print(f"Id current device: {torch.cuda.current_device()}")
         logging.info(f"Id current device: {torch.cuda.current_device()}")
         pass
+
+    # --- Start training.
+    start_time = time.time()
+    print(f"Start training [{curr_date}][timestamp={curr_timestamp}] ...")
+    train_extended_compare.train_extended_protocol_compare_archs(
+        grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
+        img_dataset=img_dataset,
+        opt=opt,
+        model_dir=root_path,
+        verbose=opt.verbose,
+    )
+    print(f"End training [{curr_date}][timestamp={curr_timestamp}] eta: {time.time() - start_time} seconds.")
+    
+    pass
+
+
+if __name__ == "__main__":
+
+    # Initialize option and parser objects.
+    opt, parser = get_cmd_line_opts()
+    
+    # Set seeds for experiment re-running.
+    if hasattr(opt, 'seed'): seed = opt.seed
+    else: seed = 0
+    
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     # Run training.
     main()
