@@ -5,6 +5,8 @@ from __future__ import print_function
 from __future__ import division
 
 # Standard Library, plus some Third Party Libraries
+
+import logging
 from pprint import pprint
 from PIL import Image
 from tqdm import tqdm
@@ -302,6 +304,9 @@ def main():
 
 if __name__ == "__main__":
 
+    log_filename = os.path.join(model_dir, 'train.log')
+    logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
+
     # Initialize option and parser objects.
     opt, parser = get_cmd_line_opts()
     
@@ -326,9 +331,15 @@ if __name__ == "__main__":
         device = torch.device('cpu')
         pass
     print(f"Training on device {device}.")
+    logging.info(f"Training on device {device}.")
+
     print(f"# cuda device: {torch.cuda.device_count()}")
+    logging.info(f"# cuda device: {torch.cuda.device_count()}")
+
     if torch.cuda.device_count() > 0:
         print(f"Id current device: {torch.cuda.current_device()}")
+        logging.info(f"Id current device: {torch.cuda.current_device()}")
+        pass
 
     # Run training.
     main()
