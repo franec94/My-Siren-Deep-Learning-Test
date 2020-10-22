@@ -16,4 +16,6 @@ if [ $? != 0 ] ; then
   exit -1
 fi
 
+cat ${dest_filename} | sed 's/INFO:root://g' | grep -E "^hidden_layers" | sort | uniq -c
+
 exit 0
