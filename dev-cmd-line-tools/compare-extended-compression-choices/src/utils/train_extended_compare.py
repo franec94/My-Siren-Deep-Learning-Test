@@ -136,7 +136,7 @@ def train_extended_compare_loop(
                 arr_gt = \
                     scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
 
-                arr_gt = (trgt / 2.) + 0.5
+                arr_gt = (arr_gt / 2.) + 0.5
 
                 arr_output = model_output.cpu().view(sidelenght).detach().numpy()
                 arr_output = (arr_output / 2.) + 0.5
@@ -224,7 +224,7 @@ def train_extended_compare_loop(
 
         # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
-        arr_gt = (trgt / 2.) + 0.5
+        arr_gt = (arr_gt / 2.) + 0.5
         """scaler = MinMaxScaler(feature_range=(0, 255))
         arr_gt = \
             scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
