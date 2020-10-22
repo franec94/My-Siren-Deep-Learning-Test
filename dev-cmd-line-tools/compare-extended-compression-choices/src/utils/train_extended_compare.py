@@ -171,7 +171,7 @@ def train_extended_compare_loop(
                         # model_output.cpu().view(sidelenght).detach().numpy(),
                         arr_gt, arr_output,
                         data_range=1.)
-                train_losses.append([train_loss, val_psnr, val_mssim])
+                train_losses.append([train_loss.item(), val_psnr, val_mssim])
                 """
                 tqdm.write(
                     "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
