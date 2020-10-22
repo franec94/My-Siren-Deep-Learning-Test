@@ -132,15 +132,19 @@ def train_extended_compare_loop(
 
                 arr_gt = gt.cpu().view(sidelenght).detach().numpy()
                 # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
-                scaler = MinMaxScaler(feature_range=(0, 255))
+                """scaler = MinMaxScaler(feature_range=(0, 255))
                 arr_gt = \
-                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)
+                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
+
+                arr_gt = (trgt / 2.) + 0.5
 
                 arr_output = model_output.cpu().view(sidelenght).detach().numpy()
+                arr_output = (arr_output / 2.) + 0.5
+                arr_output = np.clip(arr_output, a_min=0., a_max=1.)
                 # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-                scaler = MinMaxScaler(feature_range=(0, 255))
+                """scaler = MinMaxScaler(feature_range=(0, 255))
                 arr_output = \
-                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)
+                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
                 val_psnr = \
                     psnr(
                         # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
@@ -148,7 +152,7 @@ def train_extended_compare_loop(
                         # gt.cpu().view(sidelenght).detach().numpy(),
                         # model_output.cpu().view(sidelenght).detach().numpy(),
                         arr_gt, arr_output,
-                        data_range=data_range)
+                        data_range=1.)
                 # running_psnr += batch_psnr
 
                 # Metric: SSIM
@@ -160,7 +164,7 @@ def train_extended_compare_loop(
                         # gt.cpu().view(sidelenght).detach().numpy(),
                         # model_output.cpu().view(sidelenght).detach().numpy(),
                         arr_gt, arr_output,
-                        data_range=data_range)
+                        data_range=1.)
                 train_losses.append([train_loss, val_psnr, val_mssim])
                 """
                 tqdm.write(
@@ -220,15 +224,21 @@ def train_extended_compare_loop(
 
         # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
-        scaler = MinMaxScaler(feature_range=(0, 255))
+        arr_gt = (trgt / 2.) + 0.5
+        """scaler = MinMaxScaler(feature_range=(0, 255))
         arr_gt = \
-            scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)
+            scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
 
         # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-        arr_output = val_output.cpu().view(sidelenght).detach().numpy()
+                        
+
+        arr_output = model_output.cpu().view(sidelenght).detach().numpy()
+        arr_output = (arr_output / 2.) + 0.5
+        arr_output = np.clip(arr_output, a_min=0., a_max=1.)
+        """arr_output = val_output.cpu().view(sidelenght).detach().numpy()
         scaler = MinMaxScaler(feature_range=(0, 255))
         arr_output = \
-          scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)
+          scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
         
         # --- Calculate metrices scores.
         # Metric: MSE
@@ -239,7 +249,7 @@ def train_extended_compare_loop(
             psnr(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output)
+                arr_gt, arr_output, data_range=1.)
                 # , data_range=data_range)
             # running_psnr += batch_psnr
 
@@ -249,7 +259,7 @@ def train_extended_compare_loop(
             ssim(
                 # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
                 # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output)
+                arr_gt, arr_output, data_range=1.)
                 # , data_range=data_range)
         
         # --- Record results.
