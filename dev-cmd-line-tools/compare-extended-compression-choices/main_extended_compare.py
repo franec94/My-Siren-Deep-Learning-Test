@@ -203,6 +203,7 @@ def main():
         image_resolution = (512, 512)
         if opt.sidelength is None:
             opt.sidelength = min(image_resolution)
+            opt.sidelength = 256
             pass
     else:
         img_dataset =  dataio.ImageFile(opt.image_filepath)
