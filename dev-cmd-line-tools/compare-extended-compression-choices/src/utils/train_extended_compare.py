@@ -102,8 +102,12 @@ def train_extended_compare_loop(
             # if save_metrices: start_time = time.time()
             # Get input data and set it to desired device
             # for computation reasons.
-            model_input = model_input['coords'].to(device)
-            gt = gt['img'].to(device)
+            # model_input = model_input['coords'].to(device)
+            # gt = gt['img'].to(device)
+
+            model_input = model_input['coords'].cuda()
+            gt = gt['img'].cuda()
+
 
             # sidelenght = int(math.sqrt(model_input.size()[1]))
 
@@ -212,8 +216,11 @@ def train_extended_compare_loop(
         # -- Get data from validation loader.
         val_input, val_gt = next(iter(val_dataloader))
 
-        val_input = val_input['coords'].to(device)
-        val_gt = val_gt['img'].to(device)
+        # val_input = val_input['coords'].to(device)
+        # val_gt = val_gt['img'].to(device)
+
+        val_input = val_input['coords'].cuda()
+        val_gt = val_gt['img'].cuda()
 
         # --- Compute estimation.
         val_output, _ = model(val_input)
@@ -349,7 +356,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     out_features=1,
                     hidden_features=int(arch_hyperparams['hidden_features']),
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
-                    outermost_linear=True).to(device=device)
+                    # outermost_linear=True).to(device=device)
+                    outermost_linear=True).cuda()
             
                 tot_weights_model = sum(p.numel() for p in model.parameters())
                 # print(model)
