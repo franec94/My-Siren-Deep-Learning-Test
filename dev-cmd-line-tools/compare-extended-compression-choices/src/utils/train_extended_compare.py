@@ -304,6 +304,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
         # chosen hyper-params.
         # print()
         for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
+
+            torch.cuda.empty_cache()
             # --- Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
             if verbose >= 1:
