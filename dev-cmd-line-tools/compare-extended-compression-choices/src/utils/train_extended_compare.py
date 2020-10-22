@@ -88,6 +88,59 @@ def train_extended_compare_loop(
             # --- Backward pass.
             # if not use_lbfgs:
             # optim.zero_grad()
+            # sidelenght = model_output.size()[1]
+            if save_metrices:
+                
+                # stop_time = time.time() - start_time
+                # sidelenght = int(math.sqrt(model_output.size()[1]))
+                sidelenght = model_output.size()[1]
+
+                arr_gt = gt.cpu().view(sidelenght).detach().numpy()
+                # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
+                """scaler = MinMaxScaler(feature_range=(0, 255))
+                arr_gt = \
+                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
+
+                arr_gt = (arr_gt / 2.) + 0.5
+
+                arr_output = model_output.cpu().view(sidelenght).detach().numpy()
+                arr_output = (arr_output / 2.) + 0.5
+                arr_output = np.clip(arr_output, a_min=0., a_max=1.)
+                # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
+                """scaler = MinMaxScaler(feature_range=(0, 255))
+                arr_output = \
+                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
+
+                
+                val_psnr = \
+                    psnr(
+                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght).detach().numpy(),
+                        # model_output.cpu().view(sidelenght).detach().numpy(),
+                        arr_gt, arr_output,
+                        data_range=1.)
+                # running_psnr += batch_psnr
+
+                # Metric: SSIM
+                # skmetrics.structural_similarity(
+                val_mssim = \
+                        ssim(
+                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
+                        # gt.cpu().view(sidelenght).detach().numpy(),
+                        # model_output.cpu().view(sidelenght).detach().numpy(),
+                        arr_gt, arr_output,
+                        data_range=1.)
+                # train_losses.append([train_loss.item(), val_psnr, val_mssim])
+                """
+                tqdm.write(
+                    "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
+                        % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                """
+            else:
+                train_losses.append(train_loss.item())
+                pass
             train_loss.backward()
             """
                 if clip_grad:
