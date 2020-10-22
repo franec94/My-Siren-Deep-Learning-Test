@@ -177,7 +177,7 @@ def train_extended_compare_loop(
                         % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
                 """
             else:
-                train_losses.append(train_loss)
+                train_losses.append(train_loss.cpu().detach().numpy())
                 pass
 
             # --- Backward pass.
@@ -272,7 +272,7 @@ def train_extended_compare_loop(
         
         # --- Record results.
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
-        train_losses = np.array([train_loss, val_psnr, val_mssim])
+        train_losses = np.array([train_loss.cpu().detach().numpy(), val_psnr, val_mssim])
         pass
 
     # Return best metrices.
