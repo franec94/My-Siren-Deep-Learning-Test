@@ -57,17 +57,6 @@ def train_extended_compare_loop(
     optim = torch.optim.Adam(lr=lr, params=model.parameters())
     loss_fn = nn.MSELoss()
 
-    # copy settings from Raissi et al. (2019) and here
-    # https://github.com/maziarraissi/PINNs
-    if use_lbfgs:
-        optim = torch.optim.LBFGS(
-            lr=lr,
-            params=model.parameters(),
-            max_iter=50000,
-            max_eval=50000,
-            history_size=50, line_search_fn='strong_wolfe')
-        pass
-
     # --- Local variables.
     train_losses = []  # used for recording metrices when evaluated.
     try: os.makedirs(model_dir)
@@ -89,104 +78,12 @@ def train_extended_compare_loop(
 
 
         for epoch in range(epochs):
-            # if save_metrices: start_time = time.time()
-            # Get input data and set it to desired device
-            # for computation reasons.
-            # model_input = model_input['coords'].to(device)
-            # gt = gt['img'].to(device)
-
-            # --- Save partial results as checkpoints.
-            if not epoch % epochs_til_checkpoint and epoch:
-                """
-                try:
-                    model_name_path = os.path.join(checkpoints_dir, 'model_epoch_%04d.pth' % epoch)
-                    tmp_file_path = model_name_path
-                    torch.save(model.state_dict(),
-                           model_name_path)
-                
-                    data_name_path = os.path.join(checkpoints_dir, 'train_losses_epoch_%04d.txt' % epoch)
-                    tmp_file_path = data_name_path
-                    np.savetxt(data_name_path,
-                           np.array(train_losses))
-                except Exception as _:
-                    raise Exception(f"Error when saving file: filename={tmp_file_path} .")
-                """
-                pass
-
-            # sidelenght = int(math.sqrt(model_input.size()[1]))
-
-            if use_lbfgs:
-                def closure():
-                    optim.zero_grad()
-                    model_output = model(model_input)
-                    losses = loss_fn(model_output, gt)
-                    train_loss = 0.
-                    for _, loss in losses.items():
-                        train_loss += loss.mean()
-                    train_loss.backward()
-                    return train_loss
-                optim.step(closure)
 
             # --- Compute forward pass.
             optim.zero_grad()
             model_output, _ = model(model_input)
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
-
-            # sidelenght = model_output.size()[1]
-            if save_metrices:
-                
-                # stop_time = time.time() - start_time
-                # sidelenght = int(math.sqrt(model_output.size()[1]))
-                """sidelenght = model_output.size()[1]
-
-                arr_gt = gt.cpu().view(sidelenght).detach().numpy()"""
-                # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
-                """scaler = MinMaxScaler(feature_range=(0, 255))
-                arr_gt = \
-                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
-
-                """arr_gt = (arr_gt / 2.) + 0.5
-
-                arr_output = model_output.cpu().view(sidelenght).detach().numpy()
-                arr_output = (arr_output / 2.) + 0.5
-                arr_output = np.clip(arr_output, a_min=0., a_max=1.)"""
-                # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-                """scaler = MinMaxScaler(feature_range=(0, 255))
-                arr_output = \
-                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
-
-                """
-                val_psnr = \
-                    psnr(
-                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght).detach().numpy(),
-                        # model_output.cpu().view(sidelenght).detach().numpy(),
-                        arr_gt, arr_output,
-                        data_range=1.)"""
-                # running_psnr += batch_psnr
-
-                # Metric: SSIM
-                # skmetrics.structural_similarity(
-                """val_mssim = \
-                        ssim(
-                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght).detach().numpy(),
-                        # model_output.cpu().view(sidelenght).detach().numpy(),
-                        arr_gt, arr_output,
-                        data_range=1.)
-                """
-                # train_losses.append([train_loss.item(), val_psnr, val_mssim])
-                """
-                tqdm.write(
-                    "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
-                        % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
-                """
-            else:
-                # train_losses.append(train_loss.item())
-            pass
 
             # --- Backward pass.
             # if not use_lbfgs:
