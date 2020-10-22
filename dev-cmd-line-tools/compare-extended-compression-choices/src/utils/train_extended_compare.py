@@ -125,6 +125,7 @@ def train_extended_compare_loop(
                 optim.step(closure)
 
             # --- Compute forward pass.
+            optim.zero_grad()
             model_output, _ = model(model_input)
             # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
@@ -181,10 +182,10 @@ def train_extended_compare_loop(
                 pass
 
             # --- Backward pass.
-            if not use_lbfgs:
-                optim.zero_grad()
-                train_loss.backward()
-
+            # if not use_lbfgs:
+            # optim.zero_grad()
+            train_loss.backward()
+            """
                 if clip_grad:
                     if isinstance(clip_grad, bool):
                         torch.nn.utils.clip_grad_norm_(
@@ -194,9 +195,9 @@ def train_extended_compare_loop(
                             model.parameters(), max_norm=clip_grad)
                         pass
                     pass
-                pass
-                optim.step()
-            pass
+                pass"""
+            optim.step()
+            """pass"""
         pass
 
     # --- Save overall training results.
