@@ -82,32 +82,33 @@ def train_extended_compare_loop(
     utils.cond_mkdir(checkpoints_dir)
 
     # --- Number of interation for current image.
-    for epoch in range(epochs):
-        # --- Save partial results as checkpoints.
-        if not epoch % epochs_til_checkpoint and epoch:
-            try:
-                model_name_path = os.path.join(checkpoints_dir, 'model_epoch_%04d.pth' % epoch)
-                tmp_file_path = model_name_path
-                torch.save(model.state_dict(),
-                           model_name_path)
-                
-                data_name_path = os.path.join(checkpoints_dir, 'train_losses_epoch_%04d.txt' % epoch)
-                tmp_file_path = data_name_path
-                np.savetxt(data_name_path,
-                           np.array(train_losses))
-            except Exception as _:
-                raise Exception(f"Error when saving file: filename={tmp_file_path} .")
+    for _, (model_input, gt) in enumerate(train_dataloader):
         # --- Loop for let model's arch be improved, updateding weights values.
-        for _, (model_input, gt) in enumerate(train_dataloader):
+        model_input = model_input['coords'].cuda()
+        gt = gt['img'].cuda()
+
+
+        for epoch in range(epochs):
             # if save_metrices: start_time = time.time()
             # Get input data and set it to desired device
             # for computation reasons.
             # model_input = model_input['coords'].to(device)
             # gt = gt['img'].to(device)
 
-            model_input = model_input['coords'].cuda()
-            gt = gt['img'].cuda()
-
+            # --- Save partial results as checkpoints.
+            if not epoch % epochs_til_checkpoint and epoch:
+                try:
+                    model_name_path = os.path.join(checkpoints_dir, 'model_epoch_%04d.pth' % epoch)
+                    tmp_file_path = model_name_path
+                    torch.save(model.state_dict(),
+                           model_name_path)
+                
+                    data_name_path = os.path.join(checkpoints_dir, 'train_losses_epoch_%04d.txt' % epoch)
+                    tmp_file_path = data_name_path
+                    np.savetxt(data_name_path,
+                           np.array(train_losses))
+                except Exception as _:
+                    raise Exception(f"Error when saving file: filename={tmp_file_path} .")
 
             # sidelenght = int(math.sqrt(model_input.size()[1]))
 
