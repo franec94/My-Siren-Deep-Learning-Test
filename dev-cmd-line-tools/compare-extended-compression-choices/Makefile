@@ -13,7 +13,7 @@ RUN_FULL_EXAMPLE = run_full_example.sh
 
 run_program:
 	chmod u+x $(RUN_PROGRAM)
-	$(RUN_PROGRAM)
+	./$(RUN_PROGRAM)
 
 run_full_example:
 	chmod u+x $(RUN_FULL_EXAMPLE)
