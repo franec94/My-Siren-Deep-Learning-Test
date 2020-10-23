@@ -244,11 +244,11 @@ def main():
 
     # --- Show overall number of trials.
     if opt.show_number_of_trials:    
-        logging.info(f'Total number of archs:', len(grid_arch_hyperparams))
+        logging.info(f'Total number of archs: {len(grid_arch_hyperparams)}')
         print(f'Total number of archs:', len(grid_arch_hyperparams))
     
         tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
-        logging.info(f'Total number of trials (with {opt.num_attempts} attempts per arch):', tot_trials)
+        logging.info(f'Total number of trials (with {opt.num_attempts} attempts per arch): {tot_trials}')
         print(f'Total number of trials (with {opt.num_attempts} attempts per arch):', tot_trials)
         pass
 
