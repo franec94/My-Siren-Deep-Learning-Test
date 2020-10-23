@@ -9,19 +9,20 @@ declare -A conf_table
 # --- Functions ---
 function update_src_path() {
     keys_for_src_path=("user" "date" "timestamp")
-
     src_path=${conf_table["src_path"]}
     for k in ${keys_for_src_path[@]} ; do
       # echo $k
-      val=${conf_table["${k}"]}
+      val=${conf_table[$k]}
+      # echo $val
       src_path="${src_path/${k}/${conf_table["${k}"]}}" 
+      # echo $src_path
     done
     # echo $src_path
-    
 }
 
 function create_conf_array() {
     local conf_file=$1
+     echo $conf_file
 
     while IFS= read -r line ; do
       # echo "$line"
@@ -66,13 +67,13 @@ update_src_path
 # src_path="${conf_table["src_path"]/user/${conf_table["user"]}}" 
 # src_path="${src_path/date/${conf_table["date"]}}"
 # src_path="${src_path/timestamp/${conf_table["timestamp"]}}"
-# echo ${src_path}
+echo ${src_path}
+# exit 0
 
 CMD="pscp"
-echo "${CMD} ${conf_table["user"]}@${conf_table["remote_server"]}:${src_path}/${conf_table["src_filename"]} ${conf_table["dest_filename"]}"
-# ${CMD} ${conf_table["user"]}@${conf_table["remote_server"]}:${src_path}/${conf_table["src_filename"]} ${conf_table["dest_filename"]}
+# echo "${CMD} ${conf_table["user"]}@${conf_table["remote_server"]}:${src_path}/${conf_table["src_filename"]} ${conf_table["dest_filename"]}"
+${CMD} ${conf_table["user"]}@${conf_table["remote_server"]}:${src_path}/${conf_table["src_filename"]} ${conf_table["dest_filename"]}
 
-# cat ${conf_table["dest_filename"]} | sed 's/INFO:root://g' | grep -E "^hidden_layers" | sort | uniq -c
-
+cat ${conf_table["dest_filename"]} | sed 's/INFO:root://g' | grep -E "^hidden_layers" | sort | uniq -c
+cp ${conf_table["dest_filename"]} "${conf_table["date"]}_${conf_table["timestamp"]}_${conf_table["dest_filename"]}"
 exit 0
-
