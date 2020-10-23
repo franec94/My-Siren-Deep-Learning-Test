@@ -12,14 +12,14 @@ RUN_FULL_EXAMPLE = run_full_example.sh
 # ======================== #
 
 run_program:
-	chmod u,x $(RUN_PROGRAM)
+	chmod u+x $(RUN_PROGRAM)
 	$(RUN_PROGRAM)
 
 run_full_example:
-	chmod u,x $(RUN_FULL_EXAMPLE)
+	chmod u+x $(RUN_FULL_EXAMPLE)
 	./$(RUN_FULL_EXAMPLE)
 
 run_tiny_example:
-	chmod u,x $(RUN_TINY_EXAMPLE)
+	chmod u+x $(RUN_TINY_EXAMPLE)
 	./$(RUN_TINY_EXAMPLE)
 
