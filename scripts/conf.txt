@@ -1,0 +1,10 @@
+date=dd-mm-yyyy
+timestamp=..........-......
+          
+user=fake.user
+remote_server=fake.remote.server
+
+src_path=/remote/dir/path/to/resource/
+src_filename=fake.remmote.resource
+
+dest_filename=/local/file/path
