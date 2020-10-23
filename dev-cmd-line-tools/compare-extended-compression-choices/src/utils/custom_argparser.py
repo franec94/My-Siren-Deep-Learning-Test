@@ -8,6 +8,8 @@ def get_cmd_line_opts():
     p.add_argument('--logging_root', type=str, default='./logs', help='root for logging')
     p.add_argument('--experiment_name', type=str, required=True,
         help='Name of subdirectory in logging_root where summaries and checkpoints will be saved.')
+    p.add_argument('--enable_tensorboard_logging', default=False, required=False, action='store_true',
+        help='Flag that enable store results for later investigation via tensorboard util.')
 
 
     # General input image options
@@ -49,8 +51,8 @@ def get_cmd_line_opts():
     p.add_argument('--num_attempts', type=int, required=False, default=5,
         help='Number of attempts per architecture sticking a particular seed value (default: 5).'
     )
-    p.add_argument('--show_timetable_estimate', required=False, action='store_true',
-        help='Flag to display timetable estimate.'
+    p.add_argument('--show_number_of_trials', required=False, action='store_true',
+        help='Flag to display overall number of trials.'
     )
     p.add_argument('--verbose', required=False, type=int, default=0,
         help='Verbose style logging (default: 0, a.k.a silent mode), allowed: [0 for silent, 1 for complete, 2 for minimal].'

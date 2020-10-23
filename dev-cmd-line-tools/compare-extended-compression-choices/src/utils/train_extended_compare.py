@@ -44,6 +44,7 @@ def train_extended_compare_loop(
     loss_schedules=None,
     device='cpu',
     data_range = 255,
+    log_for_tensorboard=False,
     save_metrices = False):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
@@ -59,6 +60,10 @@ def train_extended_compare_loop(
 
     # --- Local variables.
     train_losses = []  # used for recording metrices when evaluated.
+    writer_tb = None
+
+    # --- Arch's attempt summary dirs.
+    # Root dir for current attempt of a given arch.
     try: os.makedirs(model_dir)
     except: pass
 
@@ -66,9 +71,17 @@ def train_extended_compare_loop(
     summaries_dir = os.path.join(model_dir, 'summaries')
     utils.cond_mkdir(summaries_dir)
     """
-
+    # Where to collect checkpoints.
     checkpoints_dir = os.path.join(model_dir, 'checkpoints')
     utils.cond_mkdir(checkpoints_dir)
+
+    # Where to store results for tensorboard.
+    
+    if log_for_tensorboard:
+        tensorboard_dir = os.path.join(model_dir, 'summary-tensorboard')
+        utils.cond_mkdir(tensorboard_dir)
+        writer_tb = SummaryWriter(tensorboard_dir)
+        pass
 
     # --- Number of interation for current image.
     for _, (model_input, gt) in enumerate(train_dataloader):
@@ -78,109 +91,81 @@ def train_extended_compare_loop(
 
 
         for epoch in range(epochs):
-
             # --- Compute forward pass.
             optim.zero_grad()
+
             model_output, _ = model(model_input)
-            # losses = loss_fn(model_output, gt)
             train_loss = loss_fn(model_output, gt)
 
-            # --- Backward pass.
-            # if not use_lbfgs:
-            # optim.zero_grad()
-            # sidelenght = model_output.size()[1]
             if save_metrices:
-                
-                # stop_time = time.time() - start_time
-                # sidelenght = int(math.sqrt(model_output.size()[1]))
                 sidelenght = model_output.size()[1]
 
                 arr_gt = gt.cpu().view(sidelenght).detach().numpy()
-                # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
-                """scaler = MinMaxScaler(feature_range=(0, 255))
-                arr_gt = \
-                    scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
-
                 arr_gt = (arr_gt / 2.) + 0.5
 
                 arr_output = model_output.cpu().view(sidelenght).detach().numpy()
                 arr_output = (arr_output / 2.) + 0.5
                 arr_output = np.clip(arr_output, a_min=0., a_max=1.)
-                # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-                """scaler = MinMaxScaler(feature_range=(0, 255))
-                arr_output = \
-                    scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
 
-                
-                val_psnr = \
-                    psnr(
-                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght).detach().numpy(),
-                        # model_output.cpu().view(sidelenght).detach().numpy(),
-                        arr_gt, arr_output,
-                        data_range=1.)
-                # running_psnr += batch_psnr
+                val_psnr = psnr(arr_gt, arr_output,data_range=1.)
+                val_mssim = ssim(arr_gt, arr_output,data_range=1.)
 
-                # Metric: SSIM
-                # skmetrics.structural_similarity(
-                val_mssim = \
-                        ssim(
-                        # model_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                        # gt.cpu().view(sidelenght).detach().numpy(),
-                        # model_output.cpu().view(sidelenght).detach().numpy(),
-                        arr_gt, arr_output,
-                        data_range=1.)
-                # train_losses.append([train_loss.item(), val_psnr, val_mssim])
+                train_losses.append(train_loss.item(), val_psnr, val_mssim)
                 """
                 tqdm.write(
                     "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
                         % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
                 """
+                if log_for_tensorboard:
+                    writer_tb.add_scalar('train_mse', train_loss.item(), epoch)
+                    writer_tb.add_scalar('train_psnr',val_psnr, epoch)
+                    writer_tb.add_scalar('train_ssim', val_mssim, epoch)
+                    pass
             else:
                 train_losses.append(train_loss.item())
-                pass
-            train_loss.backward()
-            """
-                if clip_grad:
-                    if isinstance(clip_grad, bool):
-                        torch.nn.utils.clip_grad_norm_(
-                            model.parameters(), max_norm=1.)
-                    else:
-                        torch.nn.utils.clip_grad_norm_(
-                            model.parameters(), max_norm=clip_grad)
-                        pass
+                if log_for_tensorboard:
+                    writer_tb.add_scalar('train_mse', train_loss.item(), epoch)
                     pass
-                pass"""
+                pass
+
+            # Backward pass.
+            train_loss.backward()
+            if clip_grad:
+                if isinstance(clip_grad, bool):
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), max_norm=1.)
+                else:
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), max_norm=clip_grad)
+                    pass
+                pass
             optim.step()
-            """pass"""
-        pass
+
+            pass # end inner loop
+        pass # end outer loop
 
     # --- Save overall training results.
     try:
         tmp_file_path = os.path.join(checkpoints_dir, 'model_final.pth')
         torch.save(model.state_dict(),
                   tmp_file_path)
-        """
+        
         tmp_file_path = os.path.join(checkpoints_dir, 'train_losses_final.txt')
         np.savetxt(tmp_file_path,
-                   np.array(train_losses))"""
+                   np.array(train_losses))
     except Exception as _:
                 raise Exception(f"Error when saving file: filename={tmp_file_path} .")
 
     
     # --- Evaluate model's on validation data.
+    train_losses = None
     model.eval()
     with torch.no_grad():
         # -- Get data from validation loader.
         val_input, val_gt = next(iter(val_dataloader))
 
-        # val_input = val_input['coords'].to(device)
-        # val_gt = val_gt['img'].to(device)
-
-        val_input = val_input['coords'].cuda()
-        val_gt = val_gt['img'].cuda()
+        val_input = val_input['coords'].cuda() # .to(device)
+        val_gt = val_gt['img'].cuda() # .to(device)
 
         # --- Compute estimation.
         val_output, _ = model(val_input)
@@ -189,45 +174,20 @@ def train_extended_compare_loop(
         # sidelenght = int(math.sqrt(val_output.size()[1]))
         sidelenght = val_output.size()[1]
 
-        # arr_gt = np.array([(xi/2+0.5)*255 for xi in arr_gt])
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
-        arr_gt = (arr_gt / 2.) + 0.5
-        """scaler = MinMaxScaler(feature_range=(0, 255))
-        arr_gt = \
-            scaler.fit_transform(arr_gt.reshape(-1, 1)).flatten().astype(np.uint8)"""
-
-        # arr_output = np.array([(xi/2+0.5)*255 for xi in arr_output])
-                        
+        arr_gt = (arr_gt / 2.) + 0.5                
 
         arr_output = model_output.cpu().view(sidelenght).detach().numpy()
         arr_output = (arr_output / 2.) + 0.5
         arr_output = np.clip(arr_output, a_min=0., a_max=1.)
-        """arr_output = val_output.cpu().view(sidelenght).detach().numpy()
-        scaler = MinMaxScaler(feature_range=(0, 255))
-        arr_output = \
-          scaler.fit_transform(arr_output.reshape(-1, 1)).flatten().astype(np.uint8)"""
         
         # --- Calculate metrices scores.
         # Metric: MSE
         train_loss = loss_fn(val_output, val_gt)
 
-        # Metric: PSNR
-        val_psnr = \
-            psnr(
-                # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output, data_range=1.)
-                # , data_range=data_range)
-            # running_psnr += batch_psnr
-
-        # Metric: SSIM
-        # skmetrics.structural_similarity(
-        val_mssim = \
-            ssim(
-                # val_gt.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                # val_output.cpu().view(sidelenght, sidelenght).detach().numpy(),
-                arr_gt, arr_output, data_range=1.)
-                # , data_range=data_range)
+        # Other Metrics: PSNR, SSIM
+        val_psnr = psnr(arr_gt, arr_output, data_range=1.)
+        val_mssim = ssim(arr_gt, arr_output, data_range=1.)
         
         # --- Record results.
         # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
@@ -244,6 +204,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     """
 
     # --- Local variables.
+    writer_tb = None
     history_combs = []
     step = 1
     arch_step = 0
@@ -255,6 +216,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     # ---  Setup logger.
     log_filename = os.path.join(model_dir, 'train.log')
     logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
+
+    if opt.enable_tensorboard_logging:
+        tensorboard_dir = os.path.join(model_dir, 'summary-avg-tensorboard')
+        utils.cond_mkdir(tensorboard_dir)
+        writer_tb = SummaryWriter(tensorboard_dir)
+        pass
 
     # --- Processing Bar to control the workout.
     with tqdm(total=len(grid_arch_hyperparams)) as pbar:
@@ -406,6 +373,11 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
             logging.info("[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+            if opt.enable_tensorboard_logging:
+                writer_tb.add_scalar('train_mse_avg', avg_train_losses[0], step)
+                writer_tb.add_scalar('train_psnr_avg', avg_train_losses[1], step)
+                writer_tb.add_scalar('train_ssim_avg', avg_train_losses[2], step)
+                pass
             
             # --- Save data following step strategy.
             if step // steps_til_summary == step:
