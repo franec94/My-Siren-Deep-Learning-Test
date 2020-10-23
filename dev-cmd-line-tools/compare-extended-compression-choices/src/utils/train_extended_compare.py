@@ -110,7 +110,7 @@ def train_extended_compare_loop(
                 val_psnr = psnr(arr_gt, arr_output,data_range=1.)
                 val_mssim = ssim(arr_gt, arr_output,data_range=1.)
 
-                train_losses.append(train_loss.item(), val_psnr, val_mssim)
+                train_losses.append([train_loss.item(), val_psnr, val_mssim])
                 """
                 tqdm.write(
                     "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
@@ -313,6 +313,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     device=device,
                     summary_fn=summary_fn,
                     save_metrices = True,
+                    log_for_tensorboard=opt.enable_tensorboard_logging,
                     data_range = data_range)
                 
                 stop_time = time.time() - start_time_to
