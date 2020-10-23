@@ -243,7 +243,7 @@ def main():
     logging.info(parser.format_values())
 
     # --- Show overall number of trials.
-    if opt.show_timetable_estimate:    
+    if opt.show_number_of_trials:    
         logging.info(f'Total number of archs:', len(grid_arch_hyperparams))
         print(f'Total number of archs:', len(grid_arch_hyperparams))
     
