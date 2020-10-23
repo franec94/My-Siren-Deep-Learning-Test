@@ -100,7 +100,11 @@ cat ${conf_table["dest_filename"]} | sed 's/INFO:root://g' | grep -E "^hidden_la
 # Save gotten data into proper directory path, whitin local file system.
 dest_dir_local=${conf_table["date"]}/${conf_table["timestamp"]}
 if [ ! -d $dest_dir_local ] ; then
-  mkdir $dest_dir_local
+  mkdir -p $dest_dir_local
+  if [ $? -ne 0 ] ; then
+    echo "Error: dir '$dest_dir_local' not created!"
+    exit -1
+  fi
 fi
 
 # Copy data to local file system.
@@ -109,3 +113,4 @@ cp ${conf_table["dest_filename"]} ${dest_dir_local}/${conf_table["dest_filename"
 cp ${conf_file} ${dest_dir_local}/${conf_file}
 
 exit 0
+
