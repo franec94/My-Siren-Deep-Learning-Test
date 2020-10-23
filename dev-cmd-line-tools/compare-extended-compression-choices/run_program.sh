@@ -3,6 +3,7 @@
 CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --logging_root '../../../../results' \
   --experiment_name 'train' \
+  --sidelength 256 \
   --num_epochs 100000 \
   --hidden_features 75 \
   --num_attempts 1 \

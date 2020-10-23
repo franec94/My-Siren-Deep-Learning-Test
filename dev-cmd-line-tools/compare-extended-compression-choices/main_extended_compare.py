@@ -150,10 +150,10 @@ def show_model_summary(model):
 def get_input_image(opt):
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
-        img = Image.fromarray(img_dataset)
+        img = Image.fromarray(skimage.data.camera())
         image_resolution = img.size
         if opt.sidelength is None:
-            opt.sidelength = min(image_resolution)
+            opt.sidelength = image_resolution
             # opt.sidelength = 256
             pass
     else:
@@ -161,7 +161,7 @@ def get_input_image(opt):
         img = Image.open(opt.image_filepath)
         image_resolution = img.size
         if opt.sidelength is None:
-            opt.sidelength = min(image_resolution)
+            opt.sidelength = image_resolution
             # opt.sidelength = image_resolution
             pass
         pass
