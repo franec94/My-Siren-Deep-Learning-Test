@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
-  --logging_root '../../../../results' \
+  --logging_root '../../../../results/cameramen' \
   --experiment_name 'train' \
   --sidelength 256 \
   --num_epochs 100000 \
