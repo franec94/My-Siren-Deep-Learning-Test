@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# =============================================== #
+# Script: run_program.sh
+# Used it for launching a run for training 
+# a deep learning model based on Siren-like 
+# Architecture for retrieving model's weights
+# that all together represent Cameramen compressed
+# image.
+# =============================================== #
+
 CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --logging_root '../../../../results/cameramen' \
   --experiment_name 'train' \
