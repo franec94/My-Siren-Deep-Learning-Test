@@ -28,6 +28,8 @@ from src.utils.siren import Siren
 
 from sklearn.preprocessing import MinMaxScaler
 
+import pytorch_model_summary as pms
+
 
 def train_extended_compare_loop(
     model, train_dataloader,
@@ -239,8 +241,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # print(hidden_features, hidden_layers)
 
             # --- Print hyperparams to be tested.
-            logging.info("_" * 50); logging.info("_" * 50)
-            tqdm.write("_" * 50); tqdm.write("_" * 50)
+            # logging.info("_" * 50); logging.info("_" * 50)
+            # tqdm.write("_" * 50); tqdm.write("_" * 50)
+
+            sep_str_arch_no = "=" * 25 + f" Arch no.={arch_no + opt.resume_from} " + "=" * 25
+            logging.info(sep_str_arch_no)
+            tqdm.write(sep_str_arch_no)
 
             arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             tqdm.write(f"{arch_hyperparams_str}")
@@ -288,11 +294,16 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     # outermost_linear=True).to(device=device)
                     outermost_linear=True).cuda()
             
-                tot_weights_model = sum(p.numel() for p in model.parameters())
+                
+
+                model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
+                logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
+
                 # print(model)
-                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                logging.info("-" * 50); tqdm.write("-" * 50)
+                # tot_weights_model = sum(p.numel() for p in model.parameters())
+                # tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Train model.
                 # Set start time and show messages.
