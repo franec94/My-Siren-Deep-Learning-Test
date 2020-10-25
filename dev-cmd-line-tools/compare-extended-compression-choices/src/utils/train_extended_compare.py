@@ -293,17 +293,15 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
                     # outermost_linear=True).to(device=device)
                     outermost_linear=True).cuda()
-            
-                
+
+                # print(model)
+                tot_weights_model = sum(p.numel() for p in model.parameters())
+                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                logging.info("-" * 50); tqdm.write("-" * 50)
 
                 model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
                 logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
-
-                # print(model)
-                # tot_weights_model = sum(p.numel() for p in model.parameters())
-                # tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                # logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Train model.
                 # Set start time and show messages.
