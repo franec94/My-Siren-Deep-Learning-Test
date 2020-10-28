@@ -17,7 +17,7 @@ CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --hidden_features 45 \
   --num_attempts 1 \
   --seeds 0 42 123 \
-  --hidden_layers 10 11 12 13 \
+  --hidden_layers 3 4 5 6 7 8 9 \
   --resume_from 0 \
   --end_to  1 \
   --enable_tensorboard_logging \
