@@ -56,11 +56,10 @@ class SineLayerQuantized(nn.Module):
         
     def forward(self, input):
         x = self.quant(input)
-        omega_0 = self.quant(self.omega_0)
         # torch.sin(self.omega_0 * self.linear(input))
         self.linear(x)
         x = self.dequant(x)
-        x = torch.sin(omega_0 * x)
+        x = torch.sin(self.omega_0 * x)
         return x
     
     def forward_with_intermediate(self, input):
