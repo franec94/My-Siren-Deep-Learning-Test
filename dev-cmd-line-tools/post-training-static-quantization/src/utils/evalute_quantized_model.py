@@ -81,28 +81,28 @@ def _print_size_of_model(model):
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
 
     
-    if device == 'cpu' and is_quantized is False:
-        model = Siren(
-            in_features=2,
-            out_features=1,
-            hidden_features=int(model_params['hidden_features']),
-            hidden_layers=int(model_params['hidden_layers']),
-            outermost_linear=True)
-        state_dict = torch.load(model_path)
-        # model.load_state_dict(state_dict).to('cpu')
-        model.load_state_dict(state_dict)
-        model.to(device=device)
-    else:
-        if is_quantized is True:
-            raise Exception('Quantization unsupported for GPU devices!')
-        model = Siren(
-            in_features=2,
-            out_features=1,
-            hidden_features=int(model_params['hidden_features']),
-            hidden_layers=int(model_params['hidden_layers']),
-            outermost_linear=True)
-        state_dict = torch.load(model_path)
-        model.load_state_dict(state_dict).cuda()
+    if is_quantized is False:
+        if model == 'cpu':
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(model_params['hidden_features']),
+                hidden_layers=int(model_params['hidden_layers']),
+                outermost_linear=True)
+            state_dict = torch.load(model_path)
+            # model.load_state_dict(state_dict).to('cpu')
+            model.load_state_dict(state_dict)
+            model.to(device=device)
+        else:
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(model_params['hidden_features']),
+                hidden_layers=int(model_params['hidden_layers']),
+                outermost_linear=True)
+            state_dict = torch.load(model_path)
+            model.load_state_dict(state_dict).cuda()
+            pass
         pass
 
     if is_quantized:
