@@ -258,6 +258,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
             files_not_found.append(files_not_found)
+            continue
 
         model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
