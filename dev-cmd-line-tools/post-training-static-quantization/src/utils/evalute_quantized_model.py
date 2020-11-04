@@ -133,7 +133,7 @@ def _prepare_data_loaders(img_dataset, opt):
                 pin_memory=True, num_workers=0)
     return a_dataloader
 
-def _evaluate_model(model, loss_fn, evaluate_dataloader):
+def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
     # --- Evaluate model's on validation data.
     eval_scores = None
     model.eval()
@@ -141,8 +141,13 @@ def _evaluate_model(model, loss_fn, evaluate_dataloader):
         # -- Get data from validation loader.
         val_input, val_gt = next(iter(evaluate_dataloader))
 
-        val_input = val_input['coords'].cuda() # .to(device)
-        val_gt = val_gt['img'].cuda() # .to(device)
+        if device == 'cpu':
+            val_input = val_input['coords'].to(device)
+            val_gt = val_gt['img'].to(device)
+        else:
+            val_input = val_input['coords'].cuda() # .to(device)
+            val_gt = val_gt['img'].cuda() # .to(device)
+            pass
 
         # --- Compute estimation.
         val_output, _ = model(val_input)
@@ -206,7 +211,9 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
     eval_scores = \
         _evaluate_model(
             model,
-            loss_fn, evaluate_dataloader = eval_dataloader
+            loss_fn,
+            device = device,
+            evaluate_dataloader = eval_dataloader
     )
     return eval_scores
 
@@ -278,6 +285,8 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
             loss_fn = nn.MSELoss(),
             device = device,
             verbose = 0)
+
+        print(eval_scores)
         
         a_record = EvalScores._make(eval_scores)
         records_list.append(a_record)
