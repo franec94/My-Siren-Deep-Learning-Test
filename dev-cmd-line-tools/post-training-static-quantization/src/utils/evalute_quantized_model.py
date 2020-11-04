@@ -257,7 +257,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
         vals = Columns._make(row)
 
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
-            files_not_found.append(files_not_found)
+            files_not_found.append(vals.path)
             continue
 
         model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
