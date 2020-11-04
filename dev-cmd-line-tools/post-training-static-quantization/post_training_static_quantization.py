@@ -61,20 +61,20 @@ def main():
     opt = map_filter_model_dirs_opt_args(opt)
     opt = filter_model_files_csv_opt_args(opt)
 
-    # if args.model_files is None or args.model_files is []: raise Exception("Error: no models to process!")
+    # if args.model_files == None or args.model_files == []: raise Exception("Error: no models to process!")
 
     # --- Do job.
-    if opt.model_files is None or opt.model_files is []:
+    if opt.model_files == None or opt.model_files == []:
         print("No input .ph files provided!")
     else:
         print("TODO: processing input .ph files.")
         pass
-    if opt.model_dirs is None or opt.model_files is []:
+    if opt.model_dirs == None or opt.model_dirs == []:
         print("No input dirs files provided!")
     else:
         print("TODO: processing input dirs.")
         pass
-    if opt.log_models is None or opt.log_models is []:
+    if opt.log_models == None or opt.log_models == []:
         print("No input csv files provided!")
     else:
         print("TODO: processing input .csv files.")
