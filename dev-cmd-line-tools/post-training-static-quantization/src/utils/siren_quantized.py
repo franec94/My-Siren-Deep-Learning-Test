@@ -64,11 +64,12 @@ class SineLayerQuantized(nn.Module):
     def forward_with_intermediate(self, input):
         x = self.quant(input)
         # For visualization of activation distributions
-        # intermediate = self.omega_0 * self.linear(input)
-        # torch.sin(intermediate), intermediate
+        # intermediate = self.omega_0 * self.linear(input) # torch.sin(intermediate), intermediate
         x = self.omega_0 * self.linear(x)
+        x_out = torch.sin(x)
+        x_out = self.dequant(x_out)
         x = self.dequant(x)
-        return torch.sin(x), x
+        return x_out, x
     pass
     
     
