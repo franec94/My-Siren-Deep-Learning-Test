@@ -185,6 +185,7 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
         _prepare_post_training_model(
             model_path,
             model_params,
+            is_quantized = True,
             verbose = verbose
     )
     eval_dataloader = \
