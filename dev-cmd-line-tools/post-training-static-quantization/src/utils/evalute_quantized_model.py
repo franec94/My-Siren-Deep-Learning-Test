@@ -212,7 +212,6 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
 
 def evaluate_post_train_quantized_models_by_csv(a_file_csv):
     # - Read data from src file
-    runs_df = _read_csv_data(a_file_csv)
 
     cropped_images_df = _read_csv_data(a_file_csv)
 
@@ -228,7 +227,7 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv):
 
 def _read_csv_data(a_file_csv):
     # - Read data from src file
-    runs_df = pd.DataFrame(a_file_csv)
+    runs_df = pd.read_csv(a_file_csv)
 
     if 'Unnamed: 0' in runs_df.columns:
         runs_df = runs_df.drop(['Unnamed: 0'], axis = 1)
