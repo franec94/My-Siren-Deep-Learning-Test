@@ -102,9 +102,9 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
             state_dict = torch.load(model_path)
             model.load_state_dict(state_dict).cuda()
             pass
-        pass
-
-    if is_quantized:
+        print(f"Size of model loaded to device = {device}")
+        _print_size_of_model(model)
+    else:
         model = SirenQuantized(
             in_features=2,
             out_features=1,
@@ -123,20 +123,8 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
         # model.qconfig = torch.quantization.default_qconfig
         model.eval()
         model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
-        if verbose > 1:
-            print(model.qconfig)
-            pass
-        if is_quantized:
-            torch.quantization.prepare(model, inplace=True)
-            pass
-        
-    else:
-        # print(f"Size of model loaded to device = {device}")
-        # _print_size_of_model(model)
+        torch.quantization.prepare(model, inplace=True)
         pass
-
-    print(f"Size of model loaded to device = {device}")
-    _print_size_of_model(model)
 
     return model
 

@@ -37,9 +37,6 @@ class SineLayerQuantized(nn.Module):
         self.linear = nn.Linear(in_features, out_features, bias=bias)
         
         self.init_weights()
-
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
         pass
     
     def init_weights(self):
