@@ -109,12 +109,6 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
             pass
         if is_quantized:
             torch.quantization.prepare(model, inplace=True)
-            torch.quantization.convert(model, inplace=True)
-
-            if verbose > 1:
-                print("Size of model After quantization")
-                _print_size_of_model(model)
-                pass
             pass
         
     else:
@@ -180,14 +174,15 @@ def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
     return eval_scores
 
 
-def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
-    model = \
-        _prepare_post_training_model(
-            model_path,
-            model_params,
-            is_quantized = True,
-            verbose = verbose
-    )
+def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', model = None, verbose = 0):
+    if model is None:
+        model = \
+            _prepare_post_training_model(
+                model_path,
+                model_params,
+                is_quantized = True,
+                verbose = verbose
+        )
     eval_dataloader = \
         _prepare_data_loaders(
             img_dataset,
@@ -198,7 +193,7 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
             model,
             loss_fn, device = device, evaluate_dataloader = eval_dataloader
     )
-    return eval_scores
+    return eval_scores, model
 
 
 def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
@@ -221,10 +216,10 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
             device = device,
             evaluate_dataloader = eval_dataloader
     )
-    return eval_scores
+    return eval_scores, model
 
 
-def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'):
+def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu', verbose = 0):
     # - Read data from src file
 
     cropped_images_df = _read_csv_data(a_file_csv)
@@ -257,13 +252,31 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
         img_dataset, _, _ = \
             get_input_image(opt)
 
-        eval_scores = _evaluate_quantized_model(
+        eval_scores, model = evaluate_plain_model(
             model_path = vals.path,
             model_params = model_params,
             img_dataset = img_dataset,
             opt = opt,
             loss_fn = nn.MSELoss(),
             device = device,
+            verbose = 0)
+
+        img_dataset, _, _ = \
+            get_input_image(opt)
+        torch.quantization.convert(model, inplace=True)
+
+        if verbose > 1:
+            print("Size of model After quantization")
+            _print_size_of_model(model)
+            pass
+        eval_scores, model = _evaluate_quantized_model(
+            model_path = vals.path,
+            model_params = model_params,
+            img_dataset = img_dataset,
+            opt = opt,
+            loss_fn = nn.MSELoss(),
+            device = device,
+            model = model,
             verbose = 0)
 
         print(eval_scores)
@@ -275,7 +288,6 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
 
     # - Add columns for better working
     return records_list, files_not_found
-    pass
 
 
 def _read_csv_data(a_file_csv):
@@ -322,7 +334,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
         img_dataset, _, _ = \
             get_input_image(opt)
 
-        eval_scores = evaluate_plain_model(
+        eval_scores, _ = evaluate_plain_model(
             model_path = vals.path,
             model_params = model_params,
             img_dataset = img_dataset,
