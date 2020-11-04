@@ -17,7 +17,7 @@ from functools import partial
 import copy
 import collections
 import datetime
-import f
+import functools
 import h5py
 import math
 import os
