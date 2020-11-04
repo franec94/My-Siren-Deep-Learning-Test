@@ -240,7 +240,7 @@ def _read_csv_data(a_file_csv):
 
     return cropped_images_df
 
-def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
+def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
     cropped_images_df = _read_csv_data(a_file_csv)
 
@@ -248,7 +248,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
         return []
     
     Columns = collections.namedtuple('Columns', cropped_images_df.columns)
-    Options = collections.namedtuple('Options', "sidelength".split(","))
+    Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
     EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
 
     records_list = []
@@ -256,7 +256,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
         vals = Columns._make(row)
 
         model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
-        opt = Options._make([int(vals.cropped_width)])
+        opt = Options._make([args.image_filepath, int(vals.cropped_width)])
 
         # --- Get input image to be evaluated.
         # img_dataset, img, image_resolution = \
@@ -280,7 +280,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
     # - Add columns for better working
     return records_list
 
-def evaluate_post_train_models_by_csv_list(file_csv_list, device = 'cpu'):
+def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
 
     if file_csv_list is None or len(file_csv_list) == 0:
         return []
