@@ -284,8 +284,9 @@ def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
 def evaluate_post_train_models_by_csv_list(file_csv_list, device = 'cpu'):
 
     if file_csv_list is None or len(file_csv_list) == 0:
-        return records_list = []
-
+        return []
+    
+    records_list = []
     for a_file_csv in file_csv_list:
         records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv, device = device)
         records_list.extend(records_list_tmp)
