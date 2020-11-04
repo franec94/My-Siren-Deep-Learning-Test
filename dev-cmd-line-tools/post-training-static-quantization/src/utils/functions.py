@@ -106,6 +106,24 @@ def  get_root_level_logger(root_path):
     logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
     pass
 
+def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
+    def is_file_filter(a_file, logger = logger):
+        is_file_res = os.path.isfile(f"{a_file}")
+        if logger != None:
+            logger.info(f"{a_file} is file? A: {is_file_res}")
+            pass
+        return is_file_res
+    def is_file_valid(a_file, logger = logger, ext = ext):
+        _, extension = os.path.splitext(f"{a_file}")
+        is_valid_res = extension in ext
+        if logger != None:
+            logger.info(f"{a_file} is valid ({ext})? A: {is_valid_res}")
+            pass
+        return is_valid_res
+
+    args.log_models = list(map(is_file_valid, map(is_file_filter, args.log_models)))
+    return args
+
 
 def filter_model_files_opt_args(args, logger = None, ext = [".ph"]):
     def is_file_filter(a_file, logger = logger):
@@ -134,4 +152,4 @@ def map_filter_model_dirs_opt_args(args, logger = None, ext = [".ph"]):
         return is_valid_res
 
     args.model_dirs = list(map(is_dir_valid, args.model_dirs))
-    return
+    return args

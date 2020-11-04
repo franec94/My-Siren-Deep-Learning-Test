@@ -8,9 +8,10 @@ def get_cmd_line_opts():
     p.add_argument('--logging_root', type=str, default='./logs', help='root for logging')
     p.add_argument('--experiment_name', type=str, required=True,
         help='Name of subdirectory in logging_root where summaries and checkpoints will be saved.')
-    p.add_argument('--enable_tensorboard_logging', default=False, required=False, action='store_true',
-        help='Flag that enable store results for later investigation via tensorboard util.')
-
+    p.add_argument('--verbose', required=False, type=int, default=0,
+        help='Verbose style logging (default: 0, a.k.a silent mode), allowed: [0 for silent, 1 for complete, 2 for minimal].'
+    )
+    # p.add_argument('--enable_tensorboard_logging', default=False, required=False, action='store_true', help='Flag that enable store results for later investigation via tensorboard util.')
 
     # General input image options
     p.add_argument('--image_filepath', type=str, default=None, required=False,
@@ -25,6 +26,9 @@ def get_cmd_line_opts():
     )
     p.add_argument('--model_dirs',  nargs='+', type=str, required=False, default=[],
         help='List of dirs where looking for model files (default: [], empty list).'
+    )
+    p.add_argument('--log_models',  nargs='+', type=str, required=False, default=[],
+        help='List of csv files with metadata about trains done. (default: [], empty list).'
     )
 
 

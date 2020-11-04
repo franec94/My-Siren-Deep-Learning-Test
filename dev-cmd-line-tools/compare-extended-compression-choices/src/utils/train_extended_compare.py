@@ -179,7 +179,7 @@ def train_extended_compare_loop(
         arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
         arr_gt = (arr_gt / 2.) + 0.5                
 
-        arr_output = model_output.cpu().view(sidelenght).detach().numpy()
+        arr_output = val_output.cpu().view(sidelenght).detach().numpy()
         arr_output = (arr_output / 2.) + 0.5
         arr_output = np.clip(arr_output, a_min=0., a_max=1.)
         

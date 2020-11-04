@@ -23,7 +23,7 @@ warnings.filterwarnings(
 # Globals
 # ----------------------------------------------------------------------------------------------- #
 
-opt, parser, device = None, None, None
+args, parser, device = None, None, None
 
 # ----------------------------------------------------------------------------------------------- #
 # Util-Functions for Main-Function
@@ -33,7 +33,7 @@ def main():
 
     # --- Get cmd line options and parser objects.
     global device
-    global opt
+    global args
     global parser
     # check_cmd_line_options()
 
@@ -66,8 +66,25 @@ def main():
 
     args = filter_model_files_opt_args(args)
     args = map_filter_model_dirs_opt_args(args)
+    args = filter_model_files_csv_opt_args(args)
+
+    # if args.model_files is None or args.model_files is []: raise Exception("Error: no models to process!")
+
     if args.model_files is None or args.model_files is []:
-        raise Exception("Error: no models to process!")
+        print("No input .ph files provided!")
+    else:
+        print("TODO: processing input .ph files.")
+        pass
+    if args.model_dirs is None or args.model_files is []:
+        print("No input dirs files provided!")
+    else:
+        print("TODO: processing input dirs.")
+        pass
+    if args.log_models is None or args.log_models is []:
+        print("No input csv files provided!")
+    else:
+        print("TODO: processing input .csv files.")
+        pass
 
     
     pass
@@ -76,7 +93,7 @@ def main():
 if __name__ == "__main__":
 
     # Initialize option and parser objects.
-    opt, parser = get_cmd_line_opts()
+    args, parser = get_cmd_line_opts()
     
     # Set seeds for experiment re-running.
     if hasattr(opt, 'seed'): seed = opt.seed
