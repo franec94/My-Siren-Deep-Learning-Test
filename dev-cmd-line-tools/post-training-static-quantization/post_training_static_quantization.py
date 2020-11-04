@@ -78,10 +78,13 @@ def main():
         print("No input csv files provided!")
     else:
         print("TODO: processing input .csv files.")
+
+        print("Work: processing input .csv files - Plain mode.")
         result_tuples = evaluate_post_train_models_by_csv_list(opt.log_models)
         if result_tuples == None or len(result_tuples) == 0:
-            print("No models evaluated.")
+            print("No models evaluated in Plain mode.")
         else:
+            print("Some models evaluated in Plain mode.")
             result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
             df_results = pd.DataFrame(data = result_tuples)
             print(df_results.head(5))
