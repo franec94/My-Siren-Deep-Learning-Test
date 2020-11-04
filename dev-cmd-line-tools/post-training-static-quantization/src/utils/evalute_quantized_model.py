@@ -253,7 +253,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
     records_list = []
     files_not_found = []
-    for row in cropped_images_df[:1].values:
+    for row in cropped_images_df[:].values:
         vals = Columns._make(row)
 
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
