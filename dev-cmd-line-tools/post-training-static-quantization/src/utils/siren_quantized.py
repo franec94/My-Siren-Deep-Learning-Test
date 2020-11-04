@@ -39,6 +39,9 @@ class SineLayerQuantized(nn.Module):
         
         self.linear.weight
         self.init_weights()
+
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
         pass
     
     def init_weights(self):
@@ -52,12 +55,20 @@ class SineLayerQuantized(nn.Module):
         pass
         
     def forward(self, input):
-        return torch.sin(self.omega_0 * self.linear(input))
+        x = self.quant(input)
+        # torch.sin(self.omega_0 * self.linear(input))
+        x = torch.sin(self.omega_0 * self.linear(x))
+        x = self.dequant(x)
+        return x
     
-    def forward_with_intermediate(self, input): 
+    def forward_with_intermediate(self, input):
+        x = self.quant(input)
         # For visualization of activation distributions
-        intermediate = self.omega_0 * self.linear(input)
-        return torch.sin(intermediate), intermediate
+        # intermediate = self.omega_0 * self.linear(input)
+        # torch.sin(intermediate), intermediate
+        x = self.omega_0 * self.linear(x)
+        x = self.dequant(x)
+        return torch.sin(x), x
     pass
     
     
@@ -87,14 +98,15 @@ class SirenQuantized(nn.Module):
                                       is_first=False, omega_0=hidden_omega_0))
         
         self.net = nn.Sequential(*self.net)
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
+        # self.quant = QuantStub()
+        # self.dequant = DeQuantStub()
         pass
     
     def forward(self, coords):
-        x = self.quant(coords)
+        # x = self.quant(coords)
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
-        output = self.dequant(self.net(x))
+        # output = self.dequant(self.net(x))
+        output = self.net(x)
         return output, coords        
 
     def forward_with_activations(self, coords, retain_grad=False):
