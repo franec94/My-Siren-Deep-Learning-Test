@@ -121,6 +121,7 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
 
         # set quantization config for server (x86)
         # model.qconfig = torch.quantization.default_qconfig
+        model.eval()
         model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
         if verbose > 1:
             print(model.qconfig)
