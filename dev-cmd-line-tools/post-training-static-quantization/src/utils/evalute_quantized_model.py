@@ -274,6 +274,10 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
         img_dataset, _, _ = \
             get_input_image(opt)
 
+        # Calibrate first
+        print('Post Training Quantization Prepare: Inserting Observers')
+
+        # Calibrate with the training set
         eval_scores, model = _evaluate_quantized_model(
             model_path = vals.path,
             model_params = model_params,
@@ -282,11 +286,14 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
             loss_fn = nn.MSELoss(),
             device = device,
             verbose = 0)
+        print('Post Training Quantization: Calibration done')
 
         img_dataset, _, _ = \
             get_input_image(opt)
+        
+        # Convert to quantized model
         torch.quantization.convert(model, inplace=True)
-
+        print('Post Training Quantization: Convert done')
         if verbose > 1:
             print("Size of model After quantization")
             _print_size_of_model(model)
