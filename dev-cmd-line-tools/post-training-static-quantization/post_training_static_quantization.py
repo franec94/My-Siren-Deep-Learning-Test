@@ -80,7 +80,7 @@ def main():
         print("TODO: processing input .csv files.")
 
         print("Work: processing input .csv files - Plain mode.")
-        result_tuples = evaluate_post_train_models_by_csv_list(opt.log_models)
+        result_tuples = evaluate_post_train_models_by_csv_list(opt.log_models, opt)
         if result_tuples == None or len(result_tuples) == 0:
             print("No models evaluated in Plain mode.")
         else:
