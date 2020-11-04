@@ -106,7 +106,7 @@ class SirenQuantized(nn.Module):
         # x = self.quant(coords)
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
         # output = self.dequant(self.net(x))
-        output = self.net(x)
+        output = self.net(coords)
         return output, coords        
 
     def forward_with_activations(self, coords, retain_grad=False):
