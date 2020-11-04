@@ -65,9 +65,9 @@ def main():
 
     # --- Do job.
     if opt.model_files == None or opt.model_files == []:
-        print("No input .ph files provided!")
+        print("No input .pth files provided!")
     else:
-        print("TODO: processing input .ph files.")
+        print("TODO: processing input .pth files.")
         pass
     if opt.model_dirs == None or opt.model_dirs == []:
         print("No input dirs files provided!")
@@ -78,6 +78,13 @@ def main():
         print("No input csv files provided!")
     else:
         print("TODO: processing input .csv files.")
+        result_tuples = evaluate_post_train_models_by_csv_list(opt.log_models)
+        if result_tuples == None or len(result_tuples) == 0:
+            print("No models evaluated.")
+        else:
+            result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
+            df_results = pd.DataFrame(data = result_tuples)
+            print(df_results.head(5))
         pass
 
     

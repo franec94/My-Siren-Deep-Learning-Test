@@ -145,7 +145,7 @@ def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
     return args
 
 
-def filter_model_files_opt_args(args, logger = None, ext = [".ph"]):
+def filter_model_files_opt_args(args, logger = None, ext = [".pth"]):
     def is_file_filter(a_file, logger = logger):
         is_file_res = os.path.isfile(f"{a_file}")
         if logger != None:
@@ -163,11 +163,11 @@ def filter_model_files_opt_args(args, logger = None, ext = [".ph"]):
     args.model_files = list(map(is_file_valid, map(is_file_filter, args.model_files)))
     return args
 
-def map_filter_model_dirs_opt_args(args, logger = None, ext = [".ph"]):
+def map_filter_model_dirs_opt_args(args, logger = None, ext = [".pth"]):
     def is_dir_valid(a_dir, logger = logger, ext = ext):
         is_valid_res = os.path.isdir(f"{a_dir}")
         if logger != None:
-            logger.info(f"{a_dir} is valid ({ext})? A: {is_valid_res}")
+            logger.info(f"{a_dir} is valid? A: {is_valid_res}")
             pass
         return is_valid_res
 
