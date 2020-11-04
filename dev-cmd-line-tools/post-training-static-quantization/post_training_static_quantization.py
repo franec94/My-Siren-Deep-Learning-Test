@@ -31,6 +31,56 @@ DEBUG_MODE = True
 # Util-Functions for Main-Function
 # ----------------------------------------------------------------------------------------------- #
 
+def process_plain_mode(opt):
+    print("Work: processing input .csv files - Plain mode.")
+    result_tuples, files_not_found = \
+        evaluate_post_train_models_by_csv_list(
+            opt.log_models,
+            opt)
+    if result_tuples == None or len(result_tuples) == 0:
+        print("No models evaluated in Plain mode.")
+    else:
+        print("Some models evaluated in Plain mode.")
+        result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
+        df_results = pd.DataFrame(data = result_tuples)
+        print(df_results.head(5))
+        pass
+    if files_not_found != None and len(files_not_found) != 0:
+        print(files_not_found[:5])
+    else:
+        print("All model files processed.")
+        pass
+    tot = len(result_tuples) + len(files_not_found)
+    print(f"PROCESSED {len(result_tuples)} | SKIPPED {len(files_not_found)}| TOT {tot}")
+    return result_tuples, files_not_found
+
+
+def process_posterior_quantization_mode(opt):
+    print("Work: processing input .csv files - Quantization mode.")
+    result_tuples, files_not_found = \
+        evaluate_post_train_posterion_quantized_models_by_csv_list(
+            opt.log_models,
+            opt)
+    if result_tuples == None or len(result_tuples) == 0:
+        print("No models evaluated in Plain mode.")
+    else:
+        print("Some models evaluated in Plain mode.")
+        result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
+        df_results = pd.DataFrame(data = result_tuples)
+        print(df_results.head(5))
+        pass
+    if files_not_found != None and len(files_not_found) != 0:
+        print(files_not_found[:5])
+    else:
+        print("All model files processed.")
+        pass
+    tot = len(result_tuples) + len(files_not_found)
+    print(f"PROCESSED {len(result_tuples)} | SKIPPED {len(files_not_found)}| TOT {tot}")
+    return result_tuples, files_not_found
+
+# ----------------------------------------------------------------------------------------------- #
+# Main-Function
+# ----------------------------------------------------------------------------------------------- #
 def main():
 
     # --- Get cmd line options and parser objects.
@@ -77,26 +127,9 @@ def main():
     if opt.log_models == None or opt.log_models == []:
         print("No input csv files provided!")
     else:
-        print("TODO: processing input .csv files.")
-
-        print("Work: processing input .csv files - Plain mode.")
-        result_tuples, files_not_found = \
-            evaluate_post_train_models_by_csv_list(
-                opt.log_models,
-                opt)
-        if result_tuples == None or len(result_tuples) == 0:
-            print("No models evaluated in Plain mode.")
-        else:
-            print("Some models evaluated in Plain mode.")
-            result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
-            df_results = pd.DataFrame(data = result_tuples)
-            print(df_results.head(5))
-            pass
-        if files_not_found != None and len(files_not_found) != 0:
-            print(files_not_found[:5])
-        else:
-            print("All model files processed.")
-            pass
+        # print("TODO: processing input .csv files.")
+        process_plain_mode(opt)
+        process_posterior_quantization_mode(opt)
         pass
 
     

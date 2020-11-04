@@ -76,6 +76,7 @@ def _print_size_of_model(model):
     os.remove('temp.p')
     pass
 
+
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
 
     model = Siren(
@@ -123,6 +124,7 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
 
     return model
 
+
 def _prepare_data_loaders(img_dataset, opt):
     coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=opt.sidelength, compute_diff=None)
@@ -132,6 +134,7 @@ def _prepare_data_loaders(img_dataset, opt):
                 batch_size=1,
                 pin_memory=True, num_workers=0)
     return a_dataloader
+
 
 def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
     # --- Evaluate model's on validation data.
@@ -176,7 +179,8 @@ def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
         pass
     return eval_scores
 
-def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), verbose = 0):
+
+def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
     model = \
         _prepare_post_training_model(
             model_path,
@@ -191,9 +195,10 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
     eval_scores = \
         _evaluate_model(
             model,
-            loss_fn, evaluate_dataloader = eval_dataloader
+            loss_fn, device = device, evaluate_dataloader = eval_dataloader
     )
     return eval_scores
+
 
 def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
     model = \
@@ -218,8 +223,7 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
     return eval_scores
 
 
-
-def evaluate_post_train_quantized_models_by_csv(a_file_csv):
+def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'):
     # - Read data from src file
 
     cropped_images_df = _read_csv_data(a_file_csv)
@@ -231,8 +235,47 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv):
     attrs_for_sorting = "timestamp,hf,hl".split(",")
     cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
 
+    Columns = collections.namedtuple('Columns', cropped_images_df.columns)
+    Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
+    EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
+
+    records_list = []
+    files_not_found = []
+    for row in cropped_images_df[:].values:
+        vals = Columns._make(row)
+
+        if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
+            files_not_found.append(vals.path)
+            continue
+
+        model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
+        opt = Options._make([args.image_filepath, int(vals.cropped_width)])
+
+        # --- Get input image to be evaluated.
+        # img_dataset, img, image_resolution = \
+        img_dataset, _, _ = \
+            get_input_image(opt)
+
+        eval_scores = _evaluate_quantized_model(
+            model_path = vals.path,
+            model_params = model_params,
+            img_dataset = img_dataset,
+            opt = opt,
+            loss_fn = nn.MSELoss(),
+            device = device,
+            verbose = 0)
+
+        print(eval_scores)
+        
+        a_record = EvalScores._make(eval_scores)
+        records_list.append(a_record)
+        pass
+
+
     # - Add columns for better working
+    return records_list, files_not_found
     pass
+
 
 def _read_csv_data(a_file_csv):
     # - Read data from src file
@@ -248,6 +291,7 @@ def _read_csv_data(a_file_csv):
     cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
 
     return cropped_images_df
+
 
 def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
@@ -296,6 +340,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
     # - Add columns for better working
     return records_list, files_not_found
 
+
 def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
 
     if file_csv_list is None or len(file_csv_list) == 0:
@@ -314,3 +359,24 @@ def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
         pass
     
     return records_list, files_not_found
+
+
+def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, args, device = 'cpu'):
+
+    if file_csv_list is None or len(file_csv_list) == 0:
+        return []
+    
+    records_list = []
+    files_not_found = []
+    for a_file_csv in file_csv_list:
+        records_list_tmp, files_not_found_tmp = \
+            evaluate_post_train_quantized_models_by_csv(
+                a_file_csv,
+                args,
+                device = device)
+        records_list.extend(records_list_tmp)
+        files_not_found.extend(files_not_found_tmp)
+        pass
+    
+    return records_list, files_not_found
+
