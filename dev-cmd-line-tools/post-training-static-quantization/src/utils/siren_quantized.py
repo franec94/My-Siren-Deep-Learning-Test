@@ -88,6 +88,8 @@ class SirenQuantized(nn.Module):
                                       is_first=False, omega_0=hidden_omega_0))
         
         self.net = nn.Sequential(*self.net)
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
         pass
     
     def forward(self, coords):
