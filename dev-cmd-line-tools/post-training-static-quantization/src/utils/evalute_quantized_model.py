@@ -67,6 +67,7 @@ import torch.quantization
 # Import: custom, from this project
 # --------------------------------------------- #
 from src.utils.siren import Siren
+from src.utils.siren_quantized import SirenQuantized
 import src.utils.dataio as dataio
 from src.utils.functions import get_input_image
 
@@ -79,24 +80,41 @@ def _print_size_of_model(model):
 
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
 
-    model = Siren(
-        in_features=2,
-        out_features=1,
-        hidden_features=int(model_params['hidden_features']),
-        hidden_layers=int(model_params['hidden_layers']),
-        outermost_linear=True)
-    state_dict = torch.load(model_path)
-    if device == 'cpu':
+    
+    if device == 'cpu' and is_quantized is False:
+        model = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(model_params['hidden_features']),
+            hidden_layers=int(model_params['hidden_layers']),
+            outermost_linear=True)
+        state_dict = torch.load(model_path)
         # model.load_state_dict(state_dict).to('cpu')
         model.load_state_dict(state_dict)
         model.to(device=device)
     else:
         if is_quantized is True:
             raise Exception('Quantization unsupported for GPU devices!')
+        model = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(model_params['hidden_features']),
+            hidden_layers=int(model_params['hidden_layers']),
+            outermost_linear=True)
+        state_dict = torch.load(model_path)
         model.load_state_dict(state_dict).cuda()
         pass
 
     if is_quantized:
+        model = SirenQuantized(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(model_params['hidden_features']),
+            hidden_layers=int(model_params['hidden_layers']),
+            outermost_linear=True)
+        state_dict = torch.load(model_path)
+        model.load_state_dict(state_dict)
+        model.to(device=device)
         if verbose > 1:
             print("Size of model Before quantization")
             _print_size_of_model(model)
@@ -112,9 +130,12 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
             pass
         
     else:
-        print(f"Size of model loaded to device = {device}")
-        _print_size_of_model(model)
+        # print(f"Size of model loaded to device = {device}")
+        # _print_size_of_model(model)
         pass
+
+    print(f"Size of model loaded to device = {device}")
+    _print_size_of_model(model)
 
     return model
 
