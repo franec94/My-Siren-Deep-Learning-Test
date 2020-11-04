@@ -86,7 +86,9 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
         outermost_linear=True)
     state_dict = torch.load(model_path)
     if device == 'cpu':
-        model.load_state_dict(state_dict).to('cpu')
+        # model.load_state_dict(state_dict).to('cpu')
+        model.load_state_dict(state_dict)
+        model.to(device=device)
     else:
         if is_quantized is True:
             raise Exception('Quantization unsupported for GPU devices!')
