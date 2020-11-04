@@ -122,7 +122,8 @@ def  get_root_level_logger(root_path, debug_mode = False):
         logging.basicConfig(filemode=sys.stdout, level=logging.INFO)
     else:
         log_filename = os.path.join(root_path, 'train.log')
-    logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
+        logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
+        pass
     pass
 
 def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
