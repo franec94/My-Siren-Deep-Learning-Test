@@ -252,7 +252,7 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
         img_dataset, _, _ = \
             get_input_image(opt)
 
-        eval_scores, model = evaluate_plain_model(
+        eval_scores, model = _evaluate_quantized_model(
             model_path = vals.path,
             model_params = model_params,
             img_dataset = img_dataset,
