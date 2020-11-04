@@ -68,8 +68,7 @@ import torch.quantization
 # --------------------------------------------- #
 from src.utils.siren import Siren
 import src.utils.dataio as dataio
-from src.utils.functions import get_date_from_ts_as_str
-
+from src.utils.functions import get_input_image
 
 def _print_size_of_model(model):
     torch.save(model.state_dict(), "temp.p")
@@ -240,7 +239,7 @@ def _read_csv_data(a_file_csv):
 
     return cropped_images_df
 
-def evaluate_post_train_models_by_csv(a_file_csv, img_dataset):
+def evaluate_post_train_models_by_csv(a_file_csv):
 
     cropped_images_df = _read_csv_data(a_file_csv)
 
@@ -258,6 +257,10 @@ def evaluate_post_train_models_by_csv(a_file_csv, img_dataset):
         model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
         opt = Options._make([int(vals.cropped_width)])
 
+        # --- Get input image to be evaluated.
+        img_dataset, img, image_resolution = \
+            get_input_image(opt)
+
         eval_scores = evaluate_plain_model(
             model_path = vals.path,
             model_params = model_params,
@@ -274,11 +277,11 @@ def evaluate_post_train_models_by_csv(a_file_csv, img_dataset):
     # - Add columns for better working
     return records_list
 
-def evaluate_post_train_models_by_csv_list(file_csv_list, img_dataset):
+def evaluate_post_train_models_by_csv_list(file_csv_list):
     records_list = []
 
     for a_file_csv in file_csv_list:
-        records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv, img_dataset)
+        records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv)
         records_list.extend(records_list_tmp)
         pass
     

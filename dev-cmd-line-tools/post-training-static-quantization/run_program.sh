@@ -14,6 +14,9 @@
 python post_training_static_quantization.py \
   --logging_root '../../../../results/quantization/post_training/cameramen' \
   --experiment_name 'train' \
-  --model_dirs '../../../../results/cameramen'
+  --log_models '/home/chiarlo/siren-project/data/input.csv'
+
+# --model_files ''
+# --model_dirs '../../../../results/cameramen'
 
 exit 0

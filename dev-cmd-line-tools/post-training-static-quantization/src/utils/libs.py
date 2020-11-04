@@ -87,9 +87,9 @@ except:
 # --------------------------------------------- #
 from src.utils.custom_argparser import get_cmd_line_opts
 
-from src.utils.functions import get_input_image, , get_root_level_logger
+from src.utils.functions import get_input_image, get_root_level_logger, log_parser
 from src.utils.functions import filter_model_files_opt_args, filter_model_files_csv_opt_args
 from src.utils.functions import map_filter_model_dirs_opt_args, create_train_logging_dir
 
-from src.utils.evalute_quantized_model import evaluate_plain_model, evaluate_post_train_quantized_models_by_csv, 
+from src.utils.evalute_quantized_model import evaluate_plain_model, evaluate_post_train_quantized_models_by_csv
 from src.utils.evalute_quantized_model import evaluate_post_train_models_by_csv, evaluate_post_train_models_by_csv_list
