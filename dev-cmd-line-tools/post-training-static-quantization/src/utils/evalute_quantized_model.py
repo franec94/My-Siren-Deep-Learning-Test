@@ -252,8 +252,12 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
     EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
 
     records_list = []
+    files_not_found = []
     for row in cropped_images_df[:1].values:
         vals = Columns._make(row)
+
+        if os.path.isfile(files_not_found) is False:
+            files_not_found.append(files_not_found)
 
         model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl))
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
@@ -278,7 +282,7 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
 
     # - Add columns for better working
-    return records_list
+    return records_list, files_not_found
 
 def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
 
@@ -286,9 +290,15 @@ def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
         return []
     
     records_list = []
+    files_not_found = []
     for a_file_csv in file_csv_list:
-        records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv, args, device = device)
+        records_list_tmp, files_not_found_tmp = \
+            evaluate_post_train_models_by_csv(
+                a_file_csv,
+                args,
+                device = device)
         records_list.extend(records_list_tmp)
+        files_not_found.extend(files_not_found_tmp)
         pass
     
-    return records_list
+    return records_list, files_not_found
