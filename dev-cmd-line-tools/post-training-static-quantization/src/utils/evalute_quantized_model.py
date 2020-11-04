@@ -80,7 +80,6 @@ def _print_size_of_model(model):
 
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
 
-    
     if is_quantized is False:
         if model == 'cpu':
             model = Siren(
@@ -121,7 +120,8 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
             pass
 
         # set quantization config for server (x86)
-        model.qconfig = torch.quantization.default_qconfig
+        # model.qconfig = torch.quantization.default_qconfig
+        model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
         if verbose > 1:
             print(model.qconfig)
             pass
