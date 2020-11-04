@@ -1,0 +1,16 @@
+{
+    "dsp_ml_dl_papers": [
+        {
+            "title": "Quantizing deep convolutional networks for efficient inference: A whitepaper",
+            "authors": "Raghuraman Krishnamoorthi",
+            "url": "https://arxiv.org/abs/1806.08342",
+            "paper_code": "1806.08342"
+        },
+        {
+            "title": "",
+            "authors": "",
+            "url": "",
+            "paper_code": ""
+        }
+    ]
+}
