@@ -141,7 +141,7 @@ def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
             pass
         return is_valid_res
 
-    args.log_models = list(map(is_file_valid, map(is_file_filter, args.log_models)))
+    args.log_models = list(filter(is_file_valid, filter(is_file_filter, args.log_models)))
     return args
 
 
@@ -160,7 +160,7 @@ def filter_model_files_opt_args(args, logger = None, ext = [".pth"]):
             pass
         return is_valid_res
 
-    args.model_files = list(map(is_file_valid, map(is_file_filter, args.model_files)))
+    args.model_files = list(filter(is_file_valid, filter(is_file_filter, args.model_files)))
     return args
 
 def map_filter_model_dirs_opt_args(args, logger = None, ext = [".pth"]):
@@ -171,5 +171,5 @@ def map_filter_model_dirs_opt_args(args, logger = None, ext = [".pth"]):
             pass
         return is_valid_res
 
-    args.model_dirs = list(map(is_dir_valid, args.model_dirs))
+    args.model_dirs = list(filter(is_dir_valid, args.model_dirs))
     return args
