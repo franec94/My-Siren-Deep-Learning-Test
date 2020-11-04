@@ -10,6 +10,7 @@ RUN_PROGRAM = run_program.sh
 # ======================== #
 
 run_program_eval_on_cameramen:
+	clear
 	chmod u+x $(RUN_PROGRAM)
 	./$(RUN_PROGRAM)
 
