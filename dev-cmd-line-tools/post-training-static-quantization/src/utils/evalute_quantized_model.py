@@ -113,6 +113,10 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
                 _print_size_of_model(model)
                 pass
             pass
+        
+    else:
+        print(f"Size of model loaded to device = {device}")
+        _print_size_of_model(model)
         pass
 
     return model
@@ -184,11 +188,12 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
     )
     return eval_scores
 
-def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), verbose = 0):
+def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
     model = \
         _prepare_post_training_model(
             model_path,
             model_params,
+            device = device,
             verbose = verbose
     )
     eval_dataloader = \
@@ -207,22 +212,19 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
 
 def evaluate_post_train_quantized_models_by_csv(a_file_csv):
     # - Read data from src file
-    runs_df = pd.DataFrame(a_file_csv)
+    runs_df = _read_csv_data(a_file_csv)
 
-    if 'Unnamed: 0' in runs_df.columns:
-        runs_df = runs_df.drop(['Unnamed: 0'], axis = 1)
-        pass
-    cropped_images_df = runs_df[~runs_df['cropped_heigth'].isna()][~runs_df['cropped_width'].isna()]
+    cropped_images_df = _read_csv_data(a_file_csv)
+
+    if cropped_images_df.shape[0] == 0:
+        return []
 
     # - Sort data
     attrs_for_sorting = "timestamp,hf,hl".split(",")
     cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
 
-
-
     # - Add columns for better working
     pass
-
 
 def _read_csv_data(a_file_csv):
     # - Read data from src file
@@ -239,7 +241,7 @@ def _read_csv_data(a_file_csv):
 
     return cropped_images_df
 
-def evaluate_post_train_models_by_csv(a_file_csv):
+def evaluate_post_train_models_by_csv(a_file_csv, device = 'cpu'):
 
     cropped_images_df = _read_csv_data(a_file_csv)
 
@@ -258,7 +260,8 @@ def evaluate_post_train_models_by_csv(a_file_csv):
         opt = Options._make([int(vals.cropped_width)])
 
         # --- Get input image to be evaluated.
-        img_dataset, img, image_resolution = \
+        # img_dataset, img, image_resolution = \
+        img_dataset, _, _ = \
             get_input_image(opt)
 
         eval_scores = evaluate_plain_model(
@@ -267,6 +270,7 @@ def evaluate_post_train_models_by_csv(a_file_csv):
             img_dataset = img_dataset,
             opt = opt,
             loss_fn = nn.MSELoss(),
+            device = device,
             verbose = 0)
         
         a_record = EvalScores._make(eval_scores)
@@ -277,11 +281,13 @@ def evaluate_post_train_models_by_csv(a_file_csv):
     # - Add columns for better working
     return records_list
 
-def evaluate_post_train_models_by_csv_list(file_csv_list):
-    records_list = []
+def evaluate_post_train_models_by_csv_list(file_csv_list, device = 'cpu'):
+
+    if file_csv_list is None or len(file_csv_list) == 0:
+        return records_list = []
 
     for a_file_csv in file_csv_list:
-        records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv)
+        records_list_tmp = evaluate_post_train_models_by_csv(a_file_csv, device = device)
         records_list.extend(records_list_tmp)
         pass
     
