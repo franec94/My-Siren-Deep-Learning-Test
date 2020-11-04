@@ -122,8 +122,8 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
         # set quantization config for server (x86)
         # model.qconfig = torch.quantization.default_qconfig
         model.eval()
-        # model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
-        model.qconfig = torch.quantization.get_default_qat_qconfig('qnnpack')
+        model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
+        # model.qconfig = torch.quantization.get_default_qat_qconfig('qnnpack')
         torch.quantization.prepare(model, inplace=True)
         pass
 
