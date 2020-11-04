@@ -186,6 +186,7 @@ def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
 
 def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', model = None, verbose = 0):
     if model is None:
+        print("Create model for quantization...")
         model = \
             _prepare_post_training_model(
                 model_path,
@@ -193,6 +194,11 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
                 is_quantized = True,
                 verbose = verbose
         )
+        pass
+    else:
+        print("Model for quantization already created.")
+        pass
+
     eval_dataloader = \
         _prepare_data_loaders(
             img_dataset,
