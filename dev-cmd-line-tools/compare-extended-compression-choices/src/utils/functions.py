@@ -45,6 +45,19 @@ from sklearn.model_selection import ParameterGrid
 from sklearn.model_selection import train_test_split
 
 # --------------------------------------------- #
+# Import: skimage
+# --------------------------------------------- #
+try:
+    import skimage
+    import skimage.metrics as skmetrics
+    from skimage.metrics import peak_signal_noise_ratio as psnr
+    from skimage.metrics import structural_similarity as ssim
+    from skimage.metrics import mean_squared_error
+except:
+    print("skimage library not available!")
+    pass
+
+# --------------------------------------------- #
 # Import: custom, from this project
 # --------------------------------------------- #
 
