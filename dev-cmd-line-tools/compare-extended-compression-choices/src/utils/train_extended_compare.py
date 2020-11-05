@@ -342,6 +342,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 else:
                     device = 'cuda'
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
+                tqdm.write(f"Model created on device: {device}")
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())
