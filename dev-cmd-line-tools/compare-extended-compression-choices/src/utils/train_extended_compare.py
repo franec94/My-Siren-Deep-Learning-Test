@@ -247,6 +247,7 @@ def train_extended_compare_loop(
 
 def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
     """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
+    model = None
     if opt.quantization_enabled != None:
         if opt.quantization_enabled == 'dynamic':
             model = Siren(
@@ -329,7 +330,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # logging.info("_" * 50); logging.info("_" * 50)
             # tqdm.write("_" * 50); tqdm.write("_" * 50)
 
-            sep_str_arch_no = "=" * 25 + f" Arch no.={arch_no + opt.resume_from} " + "=" * 25
+            sep_str_arch_no = "=" * 25 + f" ARCH {arch_no + opt.resume_from} " + "=" * 25
             logging.info(sep_str_arch_no)
             tqdm.write(sep_str_arch_no)
 
