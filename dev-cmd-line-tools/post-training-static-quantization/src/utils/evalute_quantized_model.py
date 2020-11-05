@@ -267,6 +267,9 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
     Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
     EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
 
+    field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
+    RecordTuple = collections.namedtuple('RecordTuple', field_names)
+
     records_list = []
     files_not_found = []
     for row in cropped_images_df[:].values:
@@ -323,7 +326,11 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
         print(eval_scores)
         
         a_record = EvalScores._make(eval_scores)
-        records_list.append(a_record)
+
+        all_vals = vals + a_record
+        record_tuple = RecordTuple._make(all_vals)
+
+        records_list.append(record_tuple)
         pass
 
 
@@ -363,6 +370,9 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
     Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
     EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
 
+    field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
+    RecordTuple = collections.namedtuple('RecordTuple', field_names)
+
     records_list = []
     files_not_found = []
     for row in cropped_images_df[:].values:
@@ -392,7 +402,11 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
         print(eval_scores)
         
         a_record = EvalScores._make(eval_scores)
-        records_list.append(a_record)
+
+        all_vals = vals + a_record
+        record_tuple = RecordTuple._make(all_vals)
+
+        records_list.append(record_tuple)
         pass
 
 

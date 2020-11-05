@@ -25,7 +25,7 @@ warnings.filterwarnings(
 
 opt, parser, device = None, None, None
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 # ----------------------------------------------------------------------------------------------- #
 # Util-Functions for Main-Function
@@ -35,6 +35,8 @@ def process_plain_mode(opt):
     """
     Process models by means of plain mode.
     """
+    df_results = None
+
     print("Work: processing input .csv files - Plain mode.")
     result_tuples, files_not_found = \
         evaluate_post_train_models_by_csv_list(
@@ -55,7 +57,7 @@ def process_plain_mode(opt):
         pass
     tot = len(result_tuples) + len(files_not_found)
     print(f"PROCESSED {len(result_tuples)} | SKIPPED {len(files_not_found)}| TOT {tot}")
-    return result_tuples, files_not_found
+    return result_tuples, files_not_found, df_results
 
 
 def process_posterior_quantization_mode(opt):
@@ -138,7 +140,12 @@ def main():
     else:
         # print("TODO: processing input .csv files.")
         if opt.plain_eval_mode:
-            process_plain_mode(opt)
+            _, _, df_results = process_plain_mode(opt)
+            if df_results != None:
+                full_path = [opt.logging_root, opt.experiment_name, 'processed_plain_mode.csv']
+                filename_path = os.path.join(*full_path)
+                df_results.to_csv(filename_path)
+                pass
         if opt.post_train_quant_eval_mode:
             process_posterior_quantization_mode(opt)
             pass
