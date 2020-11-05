@@ -34,6 +34,7 @@ def set_device_for_torch(device, opt, engine = 'fbgemm'):
         if opt.quantization_enabled == None:
             device = (torch.device('cuda:0') if torch.cuda.is_available()
             else torch.device('gpu'))
+            engine = None
         else:
             device = torch.device('cpu')    
             torch.backends.quantized.engine = engine
@@ -51,7 +52,7 @@ def set_device_for_torch(device, opt, engine = 'fbgemm'):
         print(f"Id current device: {torch.cuda.current_device()}")
         logging.info(f"Id current device: {torch.cuda.current_device()}")
         pass
-    return device
+    return device, torch.cuda.device_count(), engine
 
 # ----------------------------------------------------------------------------------------------- #
 # Main
@@ -65,6 +66,10 @@ def main():
     global opt
     global parser
     # check_cmd_line_options()
+
+    field_names = "Date,Timestamp,# Cuda Devices,Device,Quantization,Quant. Backend".split(",")
+    field_vals = []
+    SomeInfos = collections.namedtuple('SomeInfos', field_names)
 
     # --- Get input image to be compressed.
     img_dataset, img, image_resolution = \
@@ -88,6 +93,7 @@ def main():
         create_train_logging_dir(opt)
     print(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
     print(f'Created root dir: {root_path}')
+    field_vals.extend([curr_date, curr_timestamp])
     # --- Create root logger.
     get_root_level_logger(root_path)
 
@@ -109,14 +115,20 @@ def main():
 
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
-    device = set_device_for_torch(device, opt)
+    device, cuda_devices_no, engine = set_device_for_torch(device, opt)
     print(f"Device selected: {device}.")
     logging.info(f"Device selected: {device}.")
+    field_vals.extend([device, cuda_devices_no, opt.quantization_enabled, engine])
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
     print(f"Quantization selected: {opt.quantization_enabled}.")
     logging.info(f"Quantization selected: {opt.quantization_enabled}.")
+
+    table_vals = list(SomeInfos._make(field_vals)._asdict().items())
+    table = tabulate.tabulate(table_vals)
+    print(f"{table}")
+    logging.info(f"{table}")
 
     # --- Start training.
     start_time = time.time()

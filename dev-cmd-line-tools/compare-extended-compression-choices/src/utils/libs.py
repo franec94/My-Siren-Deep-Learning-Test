@@ -27,6 +27,7 @@ import random
 import shutil
 import sys
 import re
+import tabulate 
 import time
 # import visdom
 
