@@ -152,7 +152,7 @@ def log_parser(root_path, parser, debug_mode = False):
     pass
 
 
-def set_hyperparams_to_be_tested(, grid_arch_hyperparams):
+def set_hyperparams_to_be_tested(opt, grid_arch_hyperparams):
     if opt.end_to is None:
         opt.end_to = len(grid_arch_hyperparams)
     if opt.end_to > len(grid_arch_hyperparams):
