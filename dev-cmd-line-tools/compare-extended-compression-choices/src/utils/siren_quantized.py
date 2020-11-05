@@ -63,10 +63,13 @@ class SineLayerQuantized(nn.Module):
         x = self.linear(input_quant)
 
         # Unquantized Processed data
-        x = self.dequant(x)
         
+        qmul = QFunctional()
+        x = qmul.mul_scalar(x, self.omega_0)
+        x = torch.sin(x)
+        
+        x = self.dequant(x)
         # Let unquantized data flow through Activation 
-        x = torch.sin(self.omega_0 * x)
         return x
     
     def forward_with_intermediate(self, input):
