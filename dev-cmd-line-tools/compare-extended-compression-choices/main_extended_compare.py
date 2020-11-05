@@ -86,7 +86,7 @@ def main():
         f.write(parser.format_values())
         pass
     """
-    log_parser(root_path, parser, debug_mode = False)
+    log_parser(root_path, parser, opt, debug_mode = False)
     logging.info(parser.format_values())
 
     # --- Show overall number of trials.
