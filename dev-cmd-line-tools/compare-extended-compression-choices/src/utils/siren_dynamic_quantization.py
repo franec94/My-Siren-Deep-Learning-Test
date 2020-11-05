@@ -63,13 +63,15 @@ from torchvision.transforms import Resize, Compose, ToTensor, Normalize
 # --------------------------------------------- #
 # Custom Project Imports
 # --------------------------------------------- #
+import src.utils.dataio as dataio
 from src.utils.siren import Siren
+from src.utils.siren_quantized import SirenQuantized
 
 # --------------------------------------------- #
 # Functions
 # --------------------------------------------- #
 
-def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get dynamic quantization Siren model."""
 
     if model_fp32 == None:
@@ -81,6 +83,10 @@ def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {tor
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             # outermost_linear=True).to(device=device)
             outermost_linear=True)
+        pass
+    if model_path != None:
+        state_dict = torch.load(model_path)
+        model_fp32.load_state_dict(state_dict)
         pass
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
@@ -95,18 +101,22 @@ def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {tor
     return model_int8
 
 
-def get_static_quantization_model(metadata_model_dict = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+def get_static_quantization_model(metadata_model_dict = None, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get static quantization Siren model."""
 
     if model_fp32 == None:
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
-        model_fp32 = Siren(
+        model_fp32 = SirenQuantized(
             in_features=2,
             out_features=1,
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             # outermost_linear=True).to(device=device)
             outermost_linear=True)
+        pass
+    if model_path != None:
+        state_dict = torch.load(model_path)
+        model_fp32.load_state_dict(state_dict)
         pass
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
@@ -127,16 +137,19 @@ def get_static_quantization_model(metadata_model_dict = None, fuse_modules = Non
     return model_fp32_prepared
 
 
-def get_post_training_quantization_model(model_path, metadata_model_dict, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
+def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Get posterior quantization Siren model."""
 
-    model_fp32 = Siren(
+    model_fp32 = SirenQuantized(
         in_features=2,
         out_features=1,
         hidden_features=int(metadata_model_dict['hidden_features']),
         hidden_layers=int(metadata_model_dict['hidden_layers']),
-        # outermost_linear=True).to(device=device)
-        outermost_linear=True)
+        outermost_linear=True) # outermost_linear=True).to(device=device)
+    if model_path != None:
+        state_dict = torch.load(model_path)
+        model_fp32.load_state_dict(state_dict)
+        pass
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
     else:
@@ -159,6 +172,203 @@ def get_post_training_quantization_model(model_path, metadata_model_dict, fuse_m
     return model_fp32_prepared
 
 
-def get_quantization_aware_training(model_path, metadata_model_dict, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
+def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get quantization aware Siren model. """
-    raise Exception('Not yet implemented')
+    if device == 'cpu':
+        model_fp32 = SirenQuantized(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            outermost_linear=True)
+        if model_path != None:
+            state_dict = torch.load(model_path)
+            # model.load_state_dict(state_dict).to('cpu')
+            model_fp32.load_state_dict(state_dict)
+            pass
+        model_fp32.to(device=device)
+    else:
+        model_fp32 = SirenQuantized(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            outermost_linear=True)
+        if model_path != None:
+            state_dict = torch.load(model_path)
+            # model.load_state_dict(state_dict).to('cpu')
+            model_fp32.load_state_dict(state_dict)
+            pass
+        model_fp32.load_state_dict(state_dict).cuda()
+        pass
+    if fuse_modules != None:
+        model_fp32_fused = torch.quantization.fuse_modules(model_fp32, fuse_modules)
+        model_fp32_prepared = torch.quantization.prepare_qat(model_fp32_fused)
+        return model_fp32_prepared
+    
+    model_fp32_prepared = torch.quantization.prepare_qat(model_fp32)
+    return model_fp32_prepared
+
+
+def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
+    """Compute quantized results."""
+
+    model, eval_scores = None, None
+    if opt.quantization_enabled != None:
+        # --- Dynamic Quantization: TODO test it.
+        if opt.quantization_enabled == 'dynamic':
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            pass
+        
+        # --- Static Quantization: TODO test it.
+        elif opt.quantization_enabled =='static':
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            model_fp32_prepared(input_fp32)
+            model_int8 = torch.quantization.convert(model_fp32_prepared)
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            # res = model_int8(input_fp32)
+            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            pass
+
+        # --- Posterior Quantization: TODO test it.
+        elif opt.quantization_enabled =='posterior':
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            model = None
+            model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
+
+            model(input_fp32)
+            model_int8 = torch.quantization.convert(model)
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            # res = model_int8(input_fp32)
+            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            pass
+
+        # --- Quantization Aware Training: TODO test it.
+        elif opt.quantization_enabled =='quantization_aware_training':
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            model = None
+            model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
+            
+            model(input_fp32)
+            model_int8 = torch.quantization.convert(model)
+            input_fp32 = _prepare_data_loaders(img_dataset, opt)
+            # res = model_int8(input_fp32)
+            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            pass
+        else:
+            raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
+    return eval_scores
+
+
+def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
+    """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
+    model = None
+    if opt.quantization_enabled != None:
+        if opt.quantization_enabled == 'dynamic':
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+        elif opt.quantization_enabled =='static':
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+            pass
+        else:
+            raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
+    else:
+        model = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(arch_hyperparams['hidden_features']),
+            hidden_layers=int(arch_hyperparams['hidden_layers']),
+            # outermost_linear=True).to(device=device)
+            outermost_linear=True).cuda()
+        pass
+    return model
+
+
+def _prepare_data_loaders(img_dataset, opt):
+    """Prepare data loader from which fetching data in order to feed models."""
+
+    coord_dataset = dataio.Implicit2DWrapper(
+                img_dataset, sidelength=opt.sidelength, compute_diff=None)
+    a_dataloader = DataLoader(
+                coord_dataset,
+                shuffle=False,
+                batch_size=1,
+                pin_memory=True, num_workers=0)
+    return a_dataloader
+
+
+def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device = 'cpu'):
+    """ Evalaute model."""
+
+    # --- Evaluate model's on validation data.
+    eval_scores = None
+    model.eval()
+    with torch.no_grad():
+        # -- Get data from validation loader.
+        val_input, val_gt = next(iter(evaluate_dataloader))
+
+        if device == 'cpu':
+            val_input = val_input['coords'].to(device)
+            val_gt = val_gt['img'].to(device)
+        else:
+            val_input = val_input['coords'].cuda() # .to(device)
+            val_gt = val_gt['img'].cuda() # .to(device)
+            pass
+
+        # --- Compute estimation.
+        val_output, _ = model(val_input)
+
+        # --- Prepare data for calculating metrices scores.
+        # sidelenght = int(math.sqrt(val_output.size()[1]))
+        sidelenght = val_output.size()[1]
+
+        arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
+        arr_gt = (arr_gt / 2.) + 0.5                
+
+        arr_output = val_output.cpu().view(sidelenght).detach().numpy()
+        arr_output = (arr_output / 2.) + 0.5
+        arr_output = np.clip(arr_output, a_min=0., a_max=1.)
+        
+        # --- Calculate metrices scores.
+        # Metric: MSE
+        train_loss = loss_fn(val_output, val_gt)
+
+        # Other Metrics: PSNR, SSIM
+        val_psnr = psnr(arr_gt, arr_output, data_range=1.)
+        val_mssim = ssim(arr_gt, arr_output, data_range=1.)
+        
+        # --- Record results.
+        eval_scores = np.array([train_loss.item(), val_psnr, val_mssim])
+        pass
+    return eval_scores

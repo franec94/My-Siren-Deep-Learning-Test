@@ -3,6 +3,13 @@
 from __future__ import print_function
 from __future__ import division
 
+
+# --------------------------------------------- #
+# Globals
+# --------------------------------------------- #
+
+FILE_PATH = None
+
 # --------------------------------------------- #
 # Standard Library | Third Party Libraries
 # --------------------------------------------- #
@@ -41,7 +48,9 @@ from sklearn.preprocessing import MinMaxScaler
 
 import pytorch_model_summary as pms
 
-from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model, get_post_training_quantization_model
+from src.utils.siren_dynamic_quantization import prepare_model, compute_quantization
+from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model
+from src.utils.siren_dynamic_quantization import get_post_training_quantization_model, get_quantization_aware_training
 
 # --------------------------------------------- #
 # Functions
@@ -185,6 +194,7 @@ def train_extended_compare_loop(
                   tmp_file_path)
         
         tmp_file_path = os.path.join(checkpoints_dir, 'train_losses_final.txt')
+        FILE_PATH = os.path.join(checkpoints_dir, 'train_losses_final.txt')
         np.savetxt(tmp_file_path,
                    np.array(train_scores))
     except Exception as _:
@@ -243,44 +253,6 @@ def train_extended_compare_loop(
 
     # Return best metrices.
     return train_scores
-
-
-def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
-    """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
-    model = None
-    if opt.quantization_enabled != None:
-        if opt.quantization_enabled == 'dynamic':
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True)
-            model = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
-        elif opt.quantization_enabled =='static':
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True)
-            model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
-            pass
-        else:
-            raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
-    else:
-        model = Siren(
-            in_features=2,
-            out_features=1,
-            hidden_features=int(arch_hyperparams['hidden_features']),
-            hidden_layers=int(arch_hyperparams['hidden_layers']),
-            # outermost_linear=True).to(device=device)
-            outermost_linear=True).cuda()
-            
-        pass
-    return model
 
 
 def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
@@ -403,6 +375,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
 
+                quant_tech = opt.quantization_enabled
+                opt.quantization_enabled = None
                 train_scores = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -423,6 +397,15 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
+                
+                opt.quantization_enabled = quant_tech
+                if opt.quantization_enabled != None:
+                    res_quantized = compute_quantization(img_dataset=img_dataset, opt=opt, model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
+                    tqdm.write("Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
+                    logging.info("Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
+                    pass
                 logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record train_loss for later average computations.
@@ -439,7 +422,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 if verbose == 1:
                     tqdm.write(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
-                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time))
+                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time)))
                     pass
                 logging.info(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"

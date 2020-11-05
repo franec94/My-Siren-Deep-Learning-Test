@@ -67,8 +67,6 @@ def get_cmd_line_opts():
         help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,static,posterior,quantization_aware_training])'
     )
 
-
-
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()
     return opt, p
