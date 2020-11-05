@@ -105,7 +105,7 @@ def main():
 
     # --- Create logging dirs.
     # root_path, curr_date, curr_timestamp = \
-    root_path, _, _ = \
+    root_path, curr_date, curr_timestamp = \
         create_train_logging_dir(opt, debug_mode=DEBUG_MODE)
     
     # --- Create root logger.
@@ -143,7 +143,7 @@ def main():
             _, _, df_results = process_plain_mode(opt)
             if isinstance(df_results, pd.DataFrame):
                 if df_results.shape[0] != 0:
-                    full_path = [opt.logging_root, opt.experiment_name, 'processed_plain_mode.csv']
+                    full_path = [root_path, 'processed_plain_mode.csv']
                     filename_path = os.path.join(*full_path)
                     df_results.to_csv(filename_path)
                     pass
