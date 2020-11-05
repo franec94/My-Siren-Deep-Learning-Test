@@ -233,15 +233,18 @@ def prepare_model(opt, arch_hyperparams = None):
                 # outermost_linear=True).to(device=device)
                 outermost_linear=True)
             model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
-        else:
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True).cuda()
             pass
+        else:
+            raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
+    else:
+        model = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(arch_hyperparams['hidden_features']),
+            hidden_layers=int(arch_hyperparams['hidden_layers']),
+            # outermost_linear=True).to(device=device)
+            outermost_linear=True).cuda()
+            
         pass
     return model
 
