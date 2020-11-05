@@ -42,15 +42,15 @@ def set_device_for_torch(device, opt, engine = 'fbgemm'):
     except:
         device = torch.device('cpu')
         pass
-    print(f"Training on device {device}.")
-    logging.info(f"Training on device {device}.")
+    # print(f"Training on device {device}.")
+    # logging.info(f"Training on device {device}.")
 
-    print(f"# cuda device: {torch.cuda.device_count()}")
-    logging.info(f"# cuda device: {torch.cuda.device_count()}")
+    # print(f"# cuda device: {torch.cuda.device_count()}")
+    # logging.info(f"# cuda device: {torch.cuda.device_count()}")
 
     if torch.cuda.device_count() > 0:
-        print(f"Id current device: {torch.cuda.current_device()}")
-        logging.info(f"Id current device: {torch.cuda.current_device()}")
+        # print(f"Id current device: {torch.cuda.current_device()}")
+        # logging.info(f"Id current device: {torch.cuda.current_device()}")
         pass
     return device, torch.cuda.device_count(), engine
 
@@ -91,8 +91,8 @@ def main():
     # --- Create logging dirs.
     root_path, curr_date, curr_timestamp = \
         create_train_logging_dir(opt)
-    print(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
-    print(f'Created root dir: {root_path}')
+    # print(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
+    # print(f'Created root dir: {root_path}')
     field_vals.extend([curr_date, curr_timestamp])
     # --- Create root logger.
     get_root_level_logger(root_path)
@@ -116,14 +116,14 @@ def main():
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
     device, cuda_devices_no, engine = set_device_for_torch(device, opt)
-    print(f"Device selected: {device}.")
-    logging.info(f"Device selected: {device}.")
-    field_vals.extend([device, cuda_devices_no, opt.quantization_enabled, engine])
+    # print(f"Device selected: {device}.")
+    # logging.info(f"Device selected: {device}.")
+    field_vals.extend([cuda_devices_no, device.type, opt.quantization_enabled, engine])
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
-    print(f"Quantization selected: {opt.quantization_enabled}.")
-    logging.info(f"Quantization selected: {opt.quantization_enabled}.")
+    # print(f"Quantization selected: {opt.quantization_enabled}.")
+    # logging.info(f"Quantization selected: {opt.quantization_enabled}.")
 
     table_vals = list(SomeInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals)
