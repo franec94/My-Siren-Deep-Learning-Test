@@ -249,7 +249,7 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
 
 
 def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu', verbose = 0):
-     """
+    """
     Evaluate posterior quantized models fetching data and weigths from information gotten reading a .csv file.
     """
     # - Read data from src file
