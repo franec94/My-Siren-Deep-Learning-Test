@@ -130,8 +130,11 @@ def main():
         print("No input csv files provided!")
     else:
         # print("TODO: processing input .csv files.")
-        # process_plain_mode(opt)
-        process_posterior_quantization_mode(opt)
+        if opt.plain_eval_mode:
+            process_plain_mode(opt)
+        if opt.post_train_quant_eval_mode:
+            process_posterior_quantization_mode(opt)
+            pass
         pass
 
     
