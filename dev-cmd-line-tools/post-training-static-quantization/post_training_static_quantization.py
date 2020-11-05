@@ -32,6 +32,9 @@ DEBUG_MODE = True
 # ----------------------------------------------------------------------------------------------- #
 
 def process_plain_mode(opt):
+    """
+    Process models by means of plain mode.
+    """
     print("Work: processing input .csv files - Plain mode.")
     result_tuples, files_not_found = \
         evaluate_post_train_models_by_csv_list(
@@ -56,6 +59,9 @@ def process_plain_mode(opt):
 
 
 def process_posterior_quantization_mode(opt):
+    """
+    Process models by means of posterior quantization mode.
+    """
     print("Work: processing input .csv files - Quantization mode.")
     result_tuples, files_not_found = \
         evaluate_post_train_posterion_quantized_models_by_csv_list(
@@ -82,6 +88,7 @@ def process_posterior_quantization_mode(opt):
 # Main-Function
 # ----------------------------------------------------------------------------------------------- #
 def main():
+    """Main Function"""
 
     # --- Get cmd line options and parser objects.
     global device

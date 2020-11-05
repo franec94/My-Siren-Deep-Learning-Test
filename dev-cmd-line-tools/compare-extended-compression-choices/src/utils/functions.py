@@ -65,6 +65,8 @@ import src.utils.dataio as dataio
 
 
 def show_model_summary(model):
+    """Show Model summary"""
+    
     # Print model's state_dict
     print("Model's state_dict:")
     for param_tensor in model.state_dict():
@@ -81,6 +83,8 @@ def show_model_summary(model):
 
 
 def get_arch_hyperparams(opt, image_resolution):
+    """ Setup combinations to be tested."""
+
     param_grid = None
     sidelength = min(image_resolution)
 
@@ -110,6 +114,7 @@ def get_arch_hyperparams(opt, image_resolution):
 
 
 def get_input_image(opt):
+    """Get input image, if none image is provided, then Cameramen default image will be fetched."""
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
         img = Image.fromarray(skimage.data.camera())
@@ -132,6 +137,8 @@ def get_input_image(opt):
 
 
 def create_train_logging_dir(opt):
+    """Create train logging directory."""
+
     p = re.compile(r'\.')
     curr_time = datetime.datetime.now()
     curr_date = curr_time.strftime("%d-%m-%Y")
@@ -151,12 +158,16 @@ def create_train_logging_dir(opt):
 
 
 def  get_root_level_logger(root_path):
+    """Get root logger"""
     log_filename = os.path.join(root_path, 'train.log')
     logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
     pass
 
 
 def log_parser(root_path, parser, opt, debug_mode = False):
+    """Log parser by means of plain .txt file and .pickle file.
+    If debug_mode is True, no data will be stored.
+    """
     if debug_mode is False:
         parser_logged = os.path.join(root_path, 'parser_logged.txt')
         with open(parser_logged, "w") as f:
@@ -173,6 +184,8 @@ def log_parser(root_path, parser, opt, debug_mode = False):
 
 
 def set_hyperparams_to_be_tested(opt, grid_arch_hyperparams):
+    """Set Hyper-parameters to be tested."""
+
     if opt.end_to is None:
         opt.end_to = len(grid_arch_hyperparams)
     if opt.end_to > len(grid_arch_hyperparams):
@@ -189,6 +202,9 @@ def set_hyperparams_to_be_tested(opt, grid_arch_hyperparams):
 
 
 def show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False):
+    """
+    Show number of trials.
+    """
     if opt.show_number_of_trials:    
         logging.info(f'Total number of archs: {len(grid_arch_hyperparams)}')
         print(f'Total number of archs:', len(grid_arch_hyperparams))
@@ -199,11 +215,16 @@ def show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False):
         pass
     pass
 
+
 def check_quantization_tech_provided(opt):
+    """Check quantization technique provided for training a Siren based model:
+    - allowed techniques: [dynamic,static,posterior]
+    If none model is provided the default value will be None.
+    """
     if opt.quantization_enabled == None: return
 
     quant_tech = opt.quantization_enabled.lower()
-    if quant_tech not in "".split(","):
+    if quant_tech not in "dynamic,static,posterior".split(","):
         raise Exception(f"Error: {quant_tech} not allowed!")
 
     opt.quantization_enabled = quant_tech

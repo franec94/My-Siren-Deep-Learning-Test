@@ -72,6 +72,8 @@ import src.utils.dataio as dataio
 from src.utils.functions import get_input_image
 
 def _print_size_of_model(model):
+    """Print model's size."""
+
     torch.save(model.state_dict(), "temp.p")
     print('Size (MB):', os.path.getsize("temp.p")/1e6)
     os.remove('temp.p')
@@ -79,6 +81,7 @@ def _print_size_of_model(model):
 
 
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
+    """Prepare model for posterior quantization technique."""
 
     if is_quantized is False:
         if device == 'cpu':
@@ -132,6 +135,8 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
 
 
 def _prepare_data_loaders(img_dataset, opt):
+    """Prepare data loader from which fetching data in order to feed models."""
+
     coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=opt.sidelength, compute_diff=None)
     a_dataloader = DataLoader(
@@ -143,6 +148,8 @@ def _prepare_data_loaders(img_dataset, opt):
 
 
 def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
+    """ Evalaute model."""
+
     # --- Evaluate model's on validation data.
     eval_scores = None
     model.eval()
@@ -187,6 +194,8 @@ def _evaluate_model(model, loss_fn, evaluate_dataloader, device = 'cpu'):
 
 
 def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', model = None, verbose = 0):
+    """Evaluate model by means of posterior quantization model."""
+
     if model is None:
         print("Create model for quantization...")
         model = \
@@ -215,6 +224,8 @@ def _evaluate_quantized_model(model_path, model_params, img_dataset, opt, loss_f
 
 
 def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = nn.MSELoss(), device = 'cpu', verbose = 0):
+    """Evaluate plain model."""
+
     model = \
         _prepare_post_training_model(
             model_path,
@@ -238,6 +249,9 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
 
 
 def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu', verbose = 0):
+     """
+    Evaluate posterior quantized models fetching data and weigths from information gotten reading a .csv file.
+    """
     # - Read data from src file
 
     cropped_images_df = _read_csv_data(a_file_csv)
@@ -318,6 +332,8 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
 
 
 def _read_csv_data(a_file_csv):
+    """Read input csv data."""
+
     # - Read data from src file
     runs_df = pd.read_csv(a_file_csv)
 
@@ -334,6 +350,9 @@ def _read_csv_data(a_file_csv):
 
 
 def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
+    """
+    Evaluate plain models fetching data and weigths from information gotten reading a .csv file.
+    """
 
     cropped_images_df = _read_csv_data(a_file_csv)
 
@@ -382,6 +401,9 @@ def evaluate_post_train_models_by_csv(a_file_csv, args, device = 'cpu'):
 
 
 def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
+    """
+    Evaluate models fetching data and weigths from information gotten reading .csv file.
+    """
 
     if file_csv_list is None or len(file_csv_list) == 0:
         return []
@@ -402,6 +424,9 @@ def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
 
 
 def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, args, device = 'cpu'):
+    """
+    Evaluate posterior quantization models fetching data and weigths from information gotten reading .csv files.
+    """
 
     if file_csv_list is None or len(file_csv_list) == 0:
         return []
@@ -419,4 +444,3 @@ def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, ar
         pass
     
     return records_list, files_not_found
-

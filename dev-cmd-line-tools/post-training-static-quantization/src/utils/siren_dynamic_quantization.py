@@ -70,8 +70,6 @@ from src.utils.siren import Siren
 # --------------------------------------------- #
 
 def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get dynamic quantization Siren model."""
-
     if model_fp32 == None:
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
         model_fp32 = Siren(
@@ -94,8 +92,6 @@ def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {tor
 
 
 def get_static_quantization_model(metadata_model_dict = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get static quantization Siren model."""
-
     if model_fp32 == None:
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
         model_fp32 = Siren(
@@ -124,7 +120,6 @@ def get_static_quantization_model(metadata_model_dict = None, fuse_modules = Non
 
 
 def get_post_training_quantization_model(model_path, metadata_model_dict, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
-    """Get posterior quantization Siren model."""
 
     model_fp32 = Siren(
         in_features=2,
