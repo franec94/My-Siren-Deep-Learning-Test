@@ -282,6 +282,7 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
             device = device,
             verbose = 0)
         print('Post Training Quantization: Calibration done')
+        print(eval_scores)
 
         img_dataset, _, _ = \
             get_input_image(opt)
