@@ -197,9 +197,22 @@ def train_extended_compare_loop(
     with torch.no_grad():
         # -- Get data from validation loader.
         val_input, val_gt = next(iter(val_dataloader))
-
-        val_input = val_input['coords'].cuda() # .to(device)
-        val_gt = val_gt['img'].cuda() # .to(device)
+        if device == 'cpu':
+            val_input = val_input['coords'].to('cpu')
+            val_gt = val_gt['img'].to('cpu')
+            if opt.quantization_enabled  != None:
+                val_input = torch.quantize_per_tensor(val_input, 0.01, 0, torch.qint8)
+                val_gt = torch.quantize_per_tensor(val_gt, 0.01, 0, torch.qint8)    
+                pass
+        else:
+            if opt.quantization_enabled  != None:
+                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
+                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
+            else:
+                val_input = val_input['coords'].cuda() # .to(device) 
+                val_gt = val_gt['img'].cuda() # .to(device)
+                pass
+            pass
 
         # --- Compute estimation.
         val_output, _ = model(val_input)
@@ -275,7 +288,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     """
 
     # --- Local variables.
-    fields_info_models = 'Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
+    fields_info_models = 'Device,Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
     SomeInfosModel = collections.namedtuple('SomeInfosModel', fields_info_models)
     writer_tb = None
     history_combs = []
@@ -369,6 +382,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 record_info = SomeInfosModel._make([
+                    device,
                     arch_no + opt.resume_from, trial_no,
                     arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'],
                     seed, tot_weights_model, tot_weights_model*32])
@@ -377,8 +391,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"{table}")
                 logging.info(f"{table}")
 
-                model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
-                logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
+                if device != 'cpu' and device != 'gpu':
+                    model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
+                    logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
+                    pass
 
                 # --- Train model.
                 # Set start time and show messages.
