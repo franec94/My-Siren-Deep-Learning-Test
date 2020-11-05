@@ -125,6 +125,7 @@ def _prepare_post_training_model(model_path, model_params, is_quantized = False,
         model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
         # model.qconfig = torch.quantization.get_default_qat_qconfig('qnnpack')
         torch.quantization.prepare(model, inplace=True)
+        # model = torch.quantization.prepare_qat(model, inplace=True)
         pass
 
     return model
@@ -280,6 +281,7 @@ def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu'
             opt = opt,
             loss_fn = nn.MSELoss(),
             device = device,
+            model = None,
             verbose = 0)
         print('Post Training Quantization: Calibration done')
         print(eval_scores)
