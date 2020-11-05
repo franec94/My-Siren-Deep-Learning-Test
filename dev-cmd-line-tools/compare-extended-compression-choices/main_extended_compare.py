@@ -25,10 +25,15 @@ def check_cmd_line_options():
     pass
 
 
-def set_device_for_torch():
+def set_device_for_torch(opt):
     try:
-        device = (torch.device('cuda:0') if torch.cuda.is_available()
-        else torch.device('gpu'))
+        if opt.quantization_enabled == None:
+            device = (torch.device('cuda:0') if torch.cuda.is_available()
+            else torch.device('gpu'))
+        else:
+            device = torch.device('cpu')    
+            torch.backends.quantized.engine = 'fbgemm'
+            pass
     except:
         device = torch.device('cpu')
         pass
@@ -98,7 +103,7 @@ def main():
 
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
-    set_device_for_torch()
+    set_device_for_torch(opt)
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
