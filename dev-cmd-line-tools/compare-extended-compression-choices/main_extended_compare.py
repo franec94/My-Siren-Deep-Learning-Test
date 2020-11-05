@@ -3,6 +3,18 @@
 
 from src.utils.libs import *
 
+# Setup warnings
+import warnings
+warnings.filterwarnings(
+    action='ignore',
+    category=DeprecationWarning,
+    module=r'.*'
+)
+warnings.filterwarnings(
+    action='default',
+    module=r'torch.quantization'
+)
+
 # ----------------------------------------------------------------------------------------------- #
 # Globals
 # ----------------------------------------------------------------------------------------------- #
