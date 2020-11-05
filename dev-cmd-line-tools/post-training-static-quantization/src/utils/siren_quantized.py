@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-from torch.quantization import QuantStub, DeQuantStub, QFunctional
+from torch.quantization import QuantStub, DeQuantStub
+from torch.nn.quantized import QFunctional
 
 from torchvision import datasets
 from torchvision import transforms
