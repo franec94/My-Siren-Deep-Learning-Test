@@ -213,7 +213,8 @@ def train_extended_compare_loop(
     return train_scores
 
 
-def prepare_model(opt, arch_hyperparams = None):
+def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
+    """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
     if opt.quantization_enabled != None:
         if opt.quantization_enabled == 'dynamic':
             model = Siren(
@@ -334,7 +335,13 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 random.seed(seed)
 
                 # --- Prepare siren model.
-                model = prepare_model(opt, arch_hyperparams = arch_hyperparams)
+                device = 'cpu'
+                if opt.quantization_enabled != None:
+                    if opt.quantization_enabled != 'posterior':
+                        device = 'cuda'
+                else:
+                    device = 'cuda'
+                model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())

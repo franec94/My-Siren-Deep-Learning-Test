@@ -86,6 +86,7 @@ def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {tor
         model_fp32 = model_fp32.to('cpu')
     else:
         model_fp32 = model_fp32.cuda()
+        pass
     model_int8 = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
@@ -110,6 +111,7 @@ def get_static_quantization_model(metadata_model_dict = None, fuse_modules = Non
         model_fp32 = model_fp32.to('cpu')
     else:
         model_fp32 = model_fp32.cuda()
+        pass
     
     if fuse_modules != None:
         model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
