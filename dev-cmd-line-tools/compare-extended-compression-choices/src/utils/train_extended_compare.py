@@ -8,6 +8,7 @@ from __future__ import division
 # --------------------------------------------- #
 
 import logging
+import collections
 
 import torch
 import src.utils.utils as utils
@@ -272,6 +273,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     """
 
     # --- Local variables.
+    fields_info_models = 'Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
+    SomeInfosModel = collections.namedtuple('SomeInfosModel', fields_info_models)
     writer_tb = None
     history_combs = []
     step = 1
@@ -315,9 +318,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             logging.info(sep_str_arch_no)
             tqdm.write(sep_str_arch_no)
 
-            arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
-            tqdm.write(f"{arch_hyperparams_str}")
-            logging.info(arch_hyperparams_str)
+            # arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
+            # tqdm.write(f"{arch_hyperparams_str}")
+            # logging.info(arch_hyperparams_str)
 
             # --- Rescale image to be correctly processed by the net.
             # sidelength = int(arch_hyperparams['hidden_features'])
@@ -338,7 +341,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pin_memory=True, num_workers=0)
 
             # --- Train with the same configuration n-times (at least one).
-            logging.info("-" * 50); tqdm.write("-" * 50)
+            # logging.info("-" * 50); tqdm.write("-" * 50)
             seed = int(arch_hyperparams['seeds'])
             avg_train_losses = None
             for trial_no in range(opt.num_attempts):
@@ -354,14 +357,23 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # --- Prepare siren model.
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
-                tqdm.write(f"Model created on device: {device}")
-                logging.info(f"Model created on device: {device}")
+                # tqdm.write(f"Model created on device: {device}")
+                # logging.info(f"Model created on device: {device}")
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())
-                tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
-                logging.info("-" * 50); tqdm.write("-" * 50)
+                # tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info("-" * 50); tqdm.write("-" * 50)
+
+                record_info = SomeInfosModel._make([
+                    arch_no + opt.resume_from, trial_no,
+                    arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'],
+                    seed, tot_weights_model, tot_weights_model*32])
+                table_vals = list(record_info._asdict().items())
+                table = tabulate.tabulate(table_vals)
+                tqdm.write(f"{table}")
+                logging.info(f"{table}")
 
                 model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
                 logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
