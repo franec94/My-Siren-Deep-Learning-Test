@@ -67,7 +67,7 @@ def main():
     global parser
     # check_cmd_line_options()
 
-    field_names = "Date,Timestamp,No_Cuda_Devices,Device,Quantization,Quant_Backend".split(",")
+    field_names = "Date,Timestamp,No_Cuda_Devices,Device,Quantization,Quant_Backend,Tot_Archs,Tot_Trials".split(",")
     field_vals = []
     SomeInfos = collections.namedtuple('SomeInfos', field_names)
 
@@ -111,7 +111,9 @@ def main():
     logging.info(parser.format_values())
 
     # --- Show overall number of trials.
-    show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False)
+    # show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False)
+    tot_archs = len(grid_arch_hyperparams)
+    tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
 
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
@@ -125,6 +127,7 @@ def main():
     # print(f"Quantization selected: {opt.quantization_enabled}.")
     # logging.info(f"Quantization selected: {opt.quantization_enabled}.")
 
+    field_vals.extend([tot_archs, tot_trials])
     table_vals = list(SomeInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals)
     print(f"{table}")
