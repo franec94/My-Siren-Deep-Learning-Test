@@ -103,20 +103,20 @@ def create_train_logging_dir(opt, debug_mode = False):
     return root_path, curr_date, curr_timestamp
 
 
-def log_parser(root_path, parser, debug_mode = False):
+def log_parser(root_path, parser, opt, debug_mode = False):
     if debug_mode is False:
         parser_logged = os.path.join(root_path, 'parser_logged.txt')
         with open(parser_logged, "w") as f:
             f.write(parser.format_values())
             pass
     
-        parser_pickled = os.path.join(root_path, 'parser.pickle')
-        with open(parser_pickled, "w") as f:
-            pickle.dump(parser, f)
+        parser_pickled = os.path.join(root_path, 'options.pickle')
+        with open(parser_pickled, "wb") as f:
+            # pickleopt = pickle.dumps(opt)
+            pickle.dump(opt, f)
             pass
         pass
     pass
-
 def  get_root_level_logger(root_path, debug_mode = False):
     if debug_mode is True:
         logging.basicConfig(filemode=sys.stdout, level=logging.INFO)

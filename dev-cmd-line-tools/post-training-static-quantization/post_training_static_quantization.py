@@ -103,7 +103,7 @@ def main():
     get_root_level_logger(root_path, debug_mode=DEBUG_MODE)
 
     # --- Log parsed cmd args.
-    log_parser(root_path, parser, debug_mode = DEBUG_MODE)
+    log_parser(root_path, parser, opt, debug_mode = DEBUG_MODE)
     logging.info(parser.format_values())
 
     # --- Filter unwanted resources.
@@ -119,11 +119,13 @@ def main():
     else:
         print("TODO: processing input .pth files.")
         pass
+    
     if opt.model_dirs == None or opt.model_dirs == []:
         print("No input dirs files provided!")
     else:
         print("TODO: processing input dirs.")
         pass
+
     if opt.log_models == None or opt.log_models == []:
         print("No input csv files provided!")
     else:
