@@ -141,10 +141,17 @@ def main():
         # print("TODO: processing input .csv files.")
         if opt.plain_eval_mode:
             _, _, df_results = process_plain_mode(opt)
-            if df_results != None:
-                full_path = [opt.logging_root, opt.experiment_name, 'processed_plain_mode.csv']
-                filename_path = os.path.join(*full_path)
-                df_results.to_csv(filename_path)
+            if isinstance(df_results, pd.DataFrame):
+                if df_results.shape[0] != 0:
+                    full_path = [opt.logging_root, opt.experiment_name, 'processed_plain_mode.csv']
+                    filename_path = os.path.join(*full_path)
+                    df_results.to_csv(filename_path)
+                    pass
+                else:
+                    print("Empty Dataframe found in plain mode!")
+                    pass
+            else:
+                print("No dataframe gotten in plain mode!")
                 pass
         if opt.post_train_quant_eval_mode:
             process_posterior_quantization_mode(opt)
