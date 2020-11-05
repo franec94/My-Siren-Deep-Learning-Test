@@ -230,7 +230,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
             pass
         
         # --- Static Quantization: TODO test it.
-        elif opt.quantization_enabled =='static':
+        elif opt.quantization_enabled == 'static':
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             model = Siren(
                 in_features=2,
@@ -249,7 +249,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
             pass
 
         # --- Posterior Quantization: TODO test it.
-        elif opt.quantization_enabled =='posterior':
+        elif opt.quantization_enabled == 'posterior':
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             model = None
             model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)

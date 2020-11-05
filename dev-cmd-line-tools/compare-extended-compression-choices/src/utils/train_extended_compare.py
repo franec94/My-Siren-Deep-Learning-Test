@@ -344,6 +344,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 random.seed(seed)
 
                 # --- Prepare siren model.
+                quant_tech = opt.quantization_enabled
+                opt.quantization_enabled = None
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
                 # tqdm.write(f"Model created on device: {device}")
                 # logging.info(f"Model created on device: {device}")
@@ -375,8 +377,6 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
 
-                quant_tech = opt.quantization_enabled
-                opt.quantization_enabled = None
                 train_scores = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
