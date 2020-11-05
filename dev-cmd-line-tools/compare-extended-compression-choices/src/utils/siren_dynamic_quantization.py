@@ -91,6 +91,7 @@ def get_dynamic_quantization_model(metadata_model_dict = None, set_layers = {tor
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
         dtype=torch.qint8)  # the target dtype for quantized weights
+    if model_int8 == None: Exception(f"model_int8 is None, when quantization is Dynamic!")
     return model_int8
 
 
@@ -122,6 +123,7 @@ def get_static_quantization_model(metadata_model_dict = None, fuse_modules = Non
         model_fp32_prepared = torch.quantization.prepare(model_fp32)
         pass
 
+    if model_fp32_prepared == None: Exception(f"model_fp32_prepared is None, when quantization is Static!")
     return model_fp32_prepared
 
 
@@ -153,9 +155,10 @@ def get_post_training_quantization_model(model_path, metadata_model_dict, fuse_m
         model_fp32_prepared = torch.quantization.prepare(model_fp32)
         pass
 
+    if model_fp32_prepared == None: Exception(f"model_fp32_prepared is None, when quantization is Post Training!")
     return model_fp32_prepared
 
 
 def get_quantization_aware_training(model_path, metadata_model_dict, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
-    
-    return
+    """Get quantization aware Siren model. """
+    raise Exception('Not yet implemented')
