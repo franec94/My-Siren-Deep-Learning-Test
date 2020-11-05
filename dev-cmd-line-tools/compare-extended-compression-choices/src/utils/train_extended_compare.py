@@ -388,7 +388,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     epochs_til_checkpoint=opt.epochs_til_ckpt,
                     model_dir=tmp_model_dir,
                     loss_fn=loss_fn,
-                    device=device,
+                    device='cuda',
                     summary_fn=summary_fn,
                     save_metrices = True,
                     log_for_tensorboard=opt.enable_tensorboard_logging,
