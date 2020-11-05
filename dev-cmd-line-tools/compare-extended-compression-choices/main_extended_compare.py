@@ -67,7 +67,7 @@ def main():
     global parser
     # check_cmd_line_options()
 
-    field_names = "Date,Timestamp,# Cuda Devices,Device,Quantization,Quant. Backend".split(",")
+    field_names = "Date,Timestamp,No_Cuda_Devices,Device,Quantization,Quant_Backend".split(",")
     field_vals = []
     SomeInfos = collections.namedtuple('SomeInfos', field_names)
 
