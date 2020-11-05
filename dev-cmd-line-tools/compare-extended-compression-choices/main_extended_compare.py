@@ -26,7 +26,7 @@ def check_cmd_line_options():
     pass
 
 
-def set_device_for_torch(opt, engine = 'fbgemm'):
+def set_device_for_torch(device, opt, engine = 'fbgemm'):
     """Set device which can be either CPU or GPU, or CUDA, tested in reverse order, from CUDA up to CPU.
     Set torch.backends.quantized.engine which can be either FBGEMM (for server machines) or QNNPACK (for modbile devices).
     """
@@ -51,6 +51,7 @@ def set_device_for_torch(opt, engine = 'fbgemm'):
         print(f"Id current device: {torch.cuda.current_device()}")
         logging.info(f"Id current device: {torch.cuda.current_device()}")
         pass
+    return device
 
 # ----------------------------------------------------------------------------------------------- #
 # Main
@@ -108,10 +109,14 @@ def main():
 
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
-    set_device_for_torch(opt)
+    device = set_device_for_torch(device, opt)
+    print(f"Device selected: {device}.")
+    logging.info(f"Device selected: {device}.")
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
+    print(f"Quantization selected: {opt.quantization_enabled}.")
+    logging.info(f"Quantization selected: {opt.quantization_enabled}.")
 
     # --- Start training.
     start_time = time.time()
