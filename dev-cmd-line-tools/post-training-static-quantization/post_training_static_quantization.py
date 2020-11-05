@@ -107,6 +107,8 @@ def main():
     # root_path, curr_date, curr_timestamp = \
     root_path, curr_date, curr_timestamp = \
         create_train_logging_dir(opt, debug_mode=DEBUG_MODE)
+    print(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
+    print(f'Created root dir: {root_path}')
     
     # --- Create root logger.
     get_root_level_logger(root_path, debug_mode=DEBUG_MODE)
@@ -144,7 +146,9 @@ def main():
             if isinstance(df_results, pd.DataFrame):
                 if df_results.shape[0] != 0:
                     full_path = [root_path, 'processed_plain_mode.csv']
+
                     filename_path = os.path.join(*full_path)
+                    print(f'Saving file: {filename_path}...')
                     df_results.to_csv(filename_path)
                     pass
                 else:

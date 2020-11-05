@@ -221,7 +221,7 @@ def check_quantization_tech_provided(opt):
     - allowed techniques: [dynamic,static,posterior]
     If none model is provided the default value will be None.
     """
-    if opt.quantization_enabled == None: return
+    if opt.quantization_enabled == None: return opt
 
     quant_tech = opt.quantization_enabled.lower()
     if quant_tech not in "dynamic,static,posterior".split(","):
