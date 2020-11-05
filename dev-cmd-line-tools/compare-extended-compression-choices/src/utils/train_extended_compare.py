@@ -61,7 +61,7 @@ def train_extended_compare_loop(
     loss_fn = nn.MSELoss()
 
     # --- Local variables.
-    train_losses = []  # used for recording metrices when evaluated.
+    train_scores = []  # used for recording metrices when evaluated.
     writer_tb = None
 
     # --- Arch's attempt summary dirs.
@@ -112,11 +112,11 @@ def train_extended_compare_loop(
                 val_psnr = psnr(arr_gt, arr_output,data_range=1.)
                 val_mssim = ssim(arr_gt, arr_output,data_range=1.)
 
-                train_losses.append([train_loss.item(), val_psnr, val_mssim])
+                train_scores.append([train_loss.item(), val_psnr, val_mssim])
                 """
                 tqdm.write(
                     "Epoch %d loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, iteration time=%0.6f"
-                        % (epoch, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                        % (epoch, train_scores[0], train_scores[1], train_scores[2], stop_time))
                 """
                 if log_for_tensorboard:
                     writer_tb.add_scalar('train_mse', train_loss.item(), epoch)
@@ -124,7 +124,7 @@ def train_extended_compare_loop(
                     writer_tb.add_scalar('train_ssim', val_mssim, epoch)
                     pass
             else:
-                train_losses.append(train_loss.item())
+                train_scores.append(train_loss.item())
                 if log_for_tensorboard:
                     writer_tb.add_scalar('train_mse', train_loss.item(), epoch)
                     pass
@@ -154,13 +154,13 @@ def train_extended_compare_loop(
         
         tmp_file_path = os.path.join(checkpoints_dir, 'train_losses_final.txt')
         np.savetxt(tmp_file_path,
-                   np.array(train_losses))
+                   np.array(train_scores))
     except Exception as _:
                 raise Exception(f"Error when saving file: filename={tmp_file_path} .")
 
     
     # --- Evaluate model's on validation data.
-    train_losses = None
+    train_scores = None
     model.eval()
     with torch.no_grad():
         # -- Get data from validation loader.
@@ -192,12 +192,12 @@ def train_extended_compare_loop(
         val_mssim = ssim(arr_gt, arr_output, data_range=1.)
         
         # --- Record results.
-        # train_losses = np.array([[train_loss, val_psnr, val_mssim]])
-        train_losses = np.array([train_loss.item(), val_psnr, val_mssim])
+        # train_scores = np.array([[train_loss, val_psnr, val_mssim]])
+        train_scores = np.array([train_loss.item(), val_psnr, val_mssim])
         pass
 
     # Return best metrices.
-    return train_losses
+    return train_scores
 
 
 def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
@@ -309,7 +309,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
 
-                train_losses = train_extended_compare_loop(
+                train_scores = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
                     epochs=opt.num_epochs,
@@ -332,33 +332,33 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # --- Record train_loss for later average computations.
                 if avg_train_losses is None:
-                    avg_train_losses =  np.array([train_losses])
+                    avg_train_losses =  np.array([train_scores])
                 else:
-                    avg_train_losses = np.concatenate((avg_train_losses, [train_losses]), axis=0)
+                    avg_train_losses = np.concatenate((avg_train_losses, [train_scores]), axis=0)
                     pass
                 if global_avg_train_losses is None:
-                    global_avg_train_losses = np.array([train_losses])
+                    global_avg_train_losses = np.array([train_scores])
                 else:
-                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_losses]), axis=0)
+                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_scores]), axis=0)
                 # --- Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
-                        % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time))
+                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time))
                     pass
                 logging.info(
                         "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
-                        % (arch_no, trial_no, train_losses[0], train_losses[1], train_losses[2], stop_time)
+                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time)
                     )
                 
 
                 # --- Record performance metrices for later investigations.
-                # history_combs.append(np.concat(train_losses, [stop_time]))
+                # history_combs.append(np.concat(train_scores, [stop_time]))
                 history_combs.append(
                     np.concatenate(
                         (
                             [tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],
-                            train_losses,
+                            train_scores,
                             [stop_time]
                         ),
                         axis=None)
