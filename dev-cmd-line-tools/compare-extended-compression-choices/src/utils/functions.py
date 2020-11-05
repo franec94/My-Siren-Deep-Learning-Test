@@ -156,16 +156,17 @@ def  get_root_level_logger(root_path):
     pass
 
 
-def log_parser(root_path, parser, debug_mode = False):
+def log_parser(root_path, parser, opt, debug_mode = False):
     if debug_mode is False:
         parser_logged = os.path.join(root_path, 'parser_logged.txt')
         with open(parser_logged, "w") as f:
             f.write(parser.format_values())
             pass
     
-        parser_pickled = os.path.join(root_path, 'parser.pickle')
+        parser_pickled = os.path.join(root_path, 'options.pickle')
         with open(parser_pickled, "w") as f:
-            pickle.dump(parser, f)
+            pickleopt = pickle.dumps(opt)
+            pickle.dump(pickleopt, f)
             pass
         pass
     pass
