@@ -7,8 +7,10 @@ from __future__ import division
 # Standard Library | Third Party Libraries
 # --------------------------------------------- #
 
-import logging
 import collections
+import logging
+import tabulate
+
 
 import torch
 import src.utils.utils as utils
