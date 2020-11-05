@@ -65,7 +65,9 @@ class SineLayerQuantized(nn.Module):
         # Unquantized Processed data
         
         qmul = QFunctional()
-        x = qmul.mul_scalar(x, self.omega_0)
+        scalar_omega_0 = torch.Tensor([self.omega_0])
+        scalar_omega_0 = torch.quantize_per_tensor(scalar_omega_0, 0.01, 0, torch.qint8)
+        x = qmul.mul_scalar(x, scalar_omega_0)
         x = torch.sin(x)
         
         x = self.dequant(x)
@@ -79,7 +81,9 @@ class SineLayerQuantized(nn.Module):
         # Process quantized data
         x = self.linear(input_quant)
         qmul = QFunctional()
-        x = qmul.mul_scalar(x, self.omega_0)
+        scalar_omega_0 = torch.Tensor([self.omega_0])
+        scalar_omega_0 = torch.quantize_per_tensor(t, 0.01, 0, torch.qint8)
+        x = qmul.mul_scalar(x, scalar_omega_0)
 
         # Unquantized Processed data
         x_dequant = self.dequant(x)
