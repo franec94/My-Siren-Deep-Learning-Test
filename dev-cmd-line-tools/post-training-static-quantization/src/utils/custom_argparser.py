@@ -30,10 +30,11 @@ def get_cmd_line_opts():
     p.add_argument('--log_models',  nargs='+', type=str, required=False, default=[],
         help='List of csv files with metadata about trains done. (default: [], empty list).'
     )
-    p.add_argument('--plain_eval_mode',  action='store_true', type=str, required=False, default=False,
-        help='evaluate models in plain mode not quantization added. (default: False).'
+
+    p.add_argument('--plain_eval_mode',  action='store_true', required=False, default=False,
+        help='Evaluate models in plain mode not quantization added. (default: False).'
     )
-    p.add_argument('--post_train_quant_eval_mode',  action='store_true', type=str, required=False, default=False,
+    p.add_argument('--post_train_quant_eval_mode',  action='store_true', required=False, default=False,
         help='Evaluate traiend models with quantization added. (default: False).'
     )
 
