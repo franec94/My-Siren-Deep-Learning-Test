@@ -81,7 +81,7 @@ def _print_size_of_model(model):
 def _prepare_post_training_model(model_path, model_params, is_quantized = False, device = 'cpu', verbose = 0):
 
     if is_quantized is False:
-        if model == 'cpu':
+        if device == 'cpu':
             model = Siren(
                 in_features=2,
                 out_features=1,
