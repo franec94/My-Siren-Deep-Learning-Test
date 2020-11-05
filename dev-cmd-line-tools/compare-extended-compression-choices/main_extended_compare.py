@@ -75,9 +75,13 @@ def main():
     # --- Create logging dirs.
     root_path, curr_date, curr_timestamp = \
         create_train_logging_dir(opt)
-    
+    print(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
+    print(f'Created root dir: {root_path}')
     # --- Create root logger.
     get_root_level_logger(root_path)
+
+    logging.info(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
+    logging.info(f'Created root dir: {root_path}')
 
     # --- Log parsed cmd args.
     """
