@@ -13,24 +13,27 @@ FILE_PATH = None
 # --------------------------------------------- #
 # Standard Library | Third Party Libraries
 # --------------------------------------------- #
-
-import collections
-import logging
-import tabulate
-
-
-import torch
-import src.utils.utils as utils
-import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.autonotebook import tqdm
-import time
-import numpy as np
+
+import collections
+import logging
 import os
 import random
 import math
 import shutil
+import tabulate
+import time
+
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+# --------------------------------------------- #
+# torch
+# --------------------------------------------- #
+import torch
+import torch.nn as nn
 
 # --------------------------------------------- #
 # skimage
@@ -41,10 +44,13 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import mean_squared_error
 
+
+# --------------------------------------------- #
+# Custom Imports
+# --------------------------------------------- #
+import src.utils.utils as utils
 import src.utils.dataio as dataio
 from src.utils.siren import Siren
-
-from sklearn.preprocessing import MinMaxScaler
 
 import pytorch_model_summary as pms
 

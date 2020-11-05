@@ -46,6 +46,15 @@ from sklearn.model_selection import train_test_split
 
 
 # --------------------------------------------- #
+# skimage
+# --------------------------------------------- #
+import skimage
+import skimage.metrics as skmetrics
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import mean_squared_error
+
+# --------------------------------------------- #
 # Torch + Torchvision
 # --------------------------------------------- #
 import torch
@@ -242,7 +251,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
             model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             eval_scores = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-            
+
             model_int8 = torch.quantization.convert(model_fp32_prepared)
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             # res = model_int8(input_fp32)
