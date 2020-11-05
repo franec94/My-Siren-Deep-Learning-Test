@@ -355,7 +355,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 device = 'cpu'
                 if opt.quantization_enabled != None:
                     if opt.quantization_enabled != 'posterior':
-                        device = 'cuda'
+                        # device = 'cuda'
+                        pass
+                    pass
                 else:
                     device = 'cuda'
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
