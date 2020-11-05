@@ -47,6 +47,7 @@ from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model,
 def train_extended_compare_loop(
     model, train_dataloader,
     epochs, lr,
+    opt,
     steps_til_summary=None,
     epochs_til_checkpoint=None,
     model_dir=None,
@@ -101,8 +102,23 @@ def train_extended_compare_loop(
     # --- Number of interation for current image.
     for _, (model_input, gt) in enumerate(train_dataloader):
         # --- Loop for let model's arch be improved, updateding weights values.
-        model_input = model_input['coords'].cuda()
-        gt = gt['img'].cuda()
+
+        if device == 'cpu':
+            model_input = model_input['coords'].to('cpu')
+            gt = gt['img'].to('cpu')
+            if opt.quantization_enabled  != None:
+                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8)
+                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8)    
+                pass
+        else:
+            if opt.quantization_enabled  != None:
+                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
+                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
+            else:
+                model_input = model_input['coords'].cuda()
+                gt = gt['img'].cuda()
+                pass
+            pass
 
 
         for epoch in range(epochs):
@@ -249,6 +265,7 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
         pass
     return model
 
+
 def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
@@ -365,6 +382,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     train_dataloader=train_dataloader,
                     epochs=opt.num_epochs,
                     lr=opt.lr,
+                    opt=opt,
                     val_dataloader=val_dataloader,
                     # steps_til_summary=opt.steps_til_summary,
                     epochs_til_checkpoint=opt.epochs_til_ckpt,
