@@ -96,6 +96,9 @@ def main():
     # or evaluation, depending on the current desired task.
     set_device_for_torch()
 
+    # --- Check quantization tech, if provided:
+    opt = check_quantization_tech_provided(opt)
+
     # --- Start training.
     start_time = time.time()
     print(f"Start training [{curr_date}][timestamp={curr_timestamp}] ...")

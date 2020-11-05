@@ -101,6 +101,8 @@ import src.utils.train_extended_compare as train_extended_compare
 
 import src.utils.utils as utils
 
-from src.utils.functions import create_train_logging_dir, get_root_level_logger
+from src.utils.functions import create_train_logging_dir, get_root_level_logger, check_quantization_tech_provided
 from src.utils.functions import get_input_image, get_arch_hyperparams, show_number_of_trials
 from src.utils.functions import log_parser, show_model_summary, set_hyperparams_to_be_tested
+
+from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model, get_post_training_quantization_model

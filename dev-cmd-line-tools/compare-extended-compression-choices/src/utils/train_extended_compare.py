@@ -1,5 +1,11 @@
 '''Implements a generic training loop for comparing different architectures.
 '''
+from __future__ import print_function
+from __future__ import division
+
+# --------------------------------------------- #
+# Standard Library | Third Party Libraries
+# --------------------------------------------- #
 
 import logging
 
@@ -16,7 +22,9 @@ import random
 import math
 import shutil
 
+# --------------------------------------------- #
 # skimage
+# --------------------------------------------- #
 import skimage
 import skimage.metrics as skmetrics
 from skimage.metrics import peak_signal_noise_ratio as psnr
@@ -30,6 +38,11 @@ from sklearn.preprocessing import MinMaxScaler
 
 import pytorch_model_summary as pms
 
+from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model, get_post_training_quantization_model
+
+# --------------------------------------------- #
+# Functions
+# --------------------------------------------- #
 
 def train_extended_compare_loop(
     model, train_dataloader,
@@ -200,6 +213,38 @@ def train_extended_compare_loop(
     return train_scores
 
 
+def prepare_model(opt, arch_hyperparams = None):
+    if opt.quantization_enabled != None:
+        if opt.quantization_enabled == 'dynamic':
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+        elif opt.quantization_enabled =='static':
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True)
+            model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+        else:
+            model = Siren(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True).cuda()
+            pass
+        pass
+    return model
+
 def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
@@ -286,13 +331,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 random.seed(seed)
 
                 # --- Prepare siren model.
-                model = Siren(
-                    in_features=2,
-                    out_features=1,
-                    hidden_features=int(arch_hyperparams['hidden_features']),
-                    hidden_layers=int(arch_hyperparams['hidden_layers']),
-                    # outermost_linear=True).to(device=device)
-                    outermost_linear=True).cuda()
+                model = prepare_model(opt, arch_hyperparams = arch_hyperparams)
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())

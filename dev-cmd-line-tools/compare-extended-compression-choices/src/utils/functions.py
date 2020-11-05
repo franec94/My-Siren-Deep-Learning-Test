@@ -198,3 +198,13 @@ def show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False):
         print(f'Total number of trials (with {opt.num_attempts} attempts per arch):', tot_trials)
         pass
     pass
+
+def check_quantization_tech_provided(opt):
+    if opt.quantization_enabled == None: return
+
+    quant_tech = opt.quantization_enabled.lower()
+    if quant_tech not in "".split(","):
+        raise Exception(f"Error: {quant_tech} not allowed!")
+
+    opt.quantization_enabled = quant_tech
+    return opt

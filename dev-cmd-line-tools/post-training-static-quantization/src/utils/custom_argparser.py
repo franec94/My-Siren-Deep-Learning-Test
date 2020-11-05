@@ -35,7 +35,7 @@ def get_cmd_line_opts():
         help='Evaluate models in plain mode not quantization added. (default: False).'
     )
     p.add_argument('--post_train_quant_eval_mode',  action='store_true', required=False, default=False,
-        help='Evaluate traiend models with quantization added. (default: False).'
+        help='Evaluate traiend models with quantization added a posteriori (PTQ). (default: False).'
     )
 
 

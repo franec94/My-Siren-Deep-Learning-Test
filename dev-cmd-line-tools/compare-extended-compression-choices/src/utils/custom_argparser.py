@@ -63,6 +63,10 @@ def get_cmd_line_opts():
     p.add_argument('--end_to', required=False, type=int, default=None,
         help='Ordinal number representing position within array of hidden features from which to end (excluding it)'
     )
+    p.add_argument('--quantization_enabled', required=False, type=str, default=None, 
+        help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,static,posterior])'
+    )
+
 
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
