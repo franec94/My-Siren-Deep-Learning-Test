@@ -164,9 +164,9 @@ def log_parser(root_path, parser, opt, debug_mode = False):
             pass
     
         parser_pickled = os.path.join(root_path, 'options.pickle')
-        with open(parser_pickled, "w") as f:
-            pickleopt = pickle.dumps(opt)
-            pickle.dump(pickleopt, f)
+        with open(parser_pickled, "wb") as f:
+            # pickleopt = pickle.dumps(opt)
+            pickle.dump(opt, f)
             pass
         pass
     pass
