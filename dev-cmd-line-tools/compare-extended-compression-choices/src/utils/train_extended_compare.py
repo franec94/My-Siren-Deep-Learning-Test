@@ -298,8 +298,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
         # chosen hyper-params.
         # print()
         for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
-
-            torch.cuda.empty_cache()
+            if device != 'cpu' and device != 'gpu':
+                torch.cuda.empty_cache()
+                pass
             # --- Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
             if verbose >= 1:
@@ -352,14 +353,6 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 random.seed(seed)
 
                 # --- Prepare siren model.
-                device = 'cpu'
-                if opt.quantization_enabled != None:
-                    if opt.quantization_enabled != 'posterior':
-                        # device = 'cuda'
-                        pass
-                    pass
-                else:
-                    device = 'cuda'
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = device)
                 tqdm.write(f"Model created on device: {device}")
                 logging.info(f"Model created on device: {device}")

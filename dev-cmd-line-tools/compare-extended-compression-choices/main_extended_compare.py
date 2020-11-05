@@ -14,6 +14,7 @@ opt, parser, device = None, None, None
 # ----------------------------------------------------------------------------------------------- #
 
 def check_cmd_line_options():
+    """Show parser and options"""
 
     global opt, parser
     
@@ -25,14 +26,17 @@ def check_cmd_line_options():
     pass
 
 
-def set_device_for_torch(opt):
+def set_device_for_torch(opt, engine = 'fbgemm'):
+    """Set device which can be either CPU or GPU, or CUDA, tested in reverse order, from CUDA up to CPU.
+    Set torch.backends.quantized.engine which can be either FBGEMM (for server machines) or QNNPACK (for modbile devices).
+    """
     try:
         if opt.quantization_enabled == None:
             device = (torch.device('cuda:0') if torch.cuda.is_available()
             else torch.device('gpu'))
         else:
             device = torch.device('cpu')    
-            torch.backends.quantized.engine = 'fbgemm'
+            torch.backends.quantized.engine = engine
             pass
     except:
         device = torch.device('cpu')
@@ -53,6 +57,7 @@ def set_device_for_torch(opt):
 # ----------------------------------------------------------------------------------------------- #
 
 def main():
+    """Main Function"""
 
     # --- Get cmd line options and parser objects.
     global device
@@ -116,6 +121,7 @@ def main():
     train_extended_compare.train_extended_protocol_compare_archs(
         grid_arch_hyperparams=grid_arch_hyperparams[pos_start:pos_end],
         img_dataset=img_dataset,
+        device = device.type,
         opt=opt,
         model_dir=root_path,
         verbose=opt.verbose,

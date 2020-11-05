@@ -64,7 +64,7 @@ def get_cmd_line_opts():
         help='Ordinal number representing position within array of hidden features from which to end (excluding it)'
     )
     p.add_argument('--quantization_enabled', required=False, type=str, default=None, 
-        help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,static,posterior])'
+        help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,static,posterior,quantization_aware_training])'
     )
 
 

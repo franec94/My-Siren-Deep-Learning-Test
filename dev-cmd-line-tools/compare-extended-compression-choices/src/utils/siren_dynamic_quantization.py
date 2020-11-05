@@ -154,3 +154,8 @@ def get_post_training_quantization_model(model_path, metadata_model_dict, fuse_m
         pass
 
     return model_fp32_prepared
+
+
+def get_quantization_aware_training(model_path, metadata_model_dict, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
+    
+    return
