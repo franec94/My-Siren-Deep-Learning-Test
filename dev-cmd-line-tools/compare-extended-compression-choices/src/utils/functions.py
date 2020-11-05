@@ -44,6 +44,12 @@ import sklearn
 from sklearn.model_selection import ParameterGrid
 from sklearn.model_selection import train_test_split
 
+# --------------------------------------------- #
+# Import: custom, from this project
+# --------------------------------------------- #
+
+import src.utils.dataio as dataio
+
 
 def show_model_summary(model):
     # Print model's state_dict
