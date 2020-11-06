@@ -54,6 +54,9 @@ from src.utils.siren import Siren
 
 import pytorch_model_summary as pms
 
+from src.utils.training_utils_funcs import get_data_ready_for_model, compute_desired_metrices, save_data_to_file
+from src.utils.eval_model import evaluate_model
+
 from src.utils.siren_dynamic_quantization import prepare_model, compute_quantization
 from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model
 from src.utils.siren_dynamic_quantization import get_post_training_quantization_model, get_quantization_aware_training
@@ -71,7 +74,6 @@ def train_extended_compare_loop(
     model_dir=None,
     loss_fn=None,
     summary_fn=None,
-    val_dataloader=None,
     double_precision=False,
     clip_grad=False,
     use_lbfgs=False,
@@ -121,22 +123,8 @@ def train_extended_compare_loop(
     for _, (model_input, gt) in enumerate(train_dataloader):
         # --- Loop for let model's arch be improved, updateding weights values.
 
-        if device == 'cpu':
-            model_input = model_input['coords'].to('cpu')
-            gt = gt['img'].to('cpu')
-            if opt.quantization_enabled  != None:
-                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8)
-                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8)    
-                pass
-        else:
-            if opt.quantization_enabled  != None:
-                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
-                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
-            else:
-                model_input = model_input['coords'].cuda()
-                gt = gt['img'].cuda()
-                pass
-            pass
+        model_input, gt = \
+            get_data_ready_for_model(model_input, gt, device = 'cpu')
 
 
         for epoch in range(epochs):
@@ -147,18 +135,8 @@ def train_extended_compare_loop(
             train_loss = loss_fn(model_output, gt)
 
             if save_metrices:
-                sidelenght = model_output.size()[1]
-
-                arr_gt = gt.cpu().view(sidelenght).detach().numpy()
-                arr_gt = (arr_gt / 2.) + 0.5
-
-                arr_output = model_output.cpu().view(sidelenght).detach().numpy()
-                arr_output = (arr_output / 2.) + 0.5
-                arr_output = np.clip(arr_output, a_min=0., a_max=1.)
-
-                val_psnr = psnr(arr_gt, arr_output,data_range=1.)
-                val_mssim = ssim(arr_gt, arr_output,data_range=1.)
-
+                
+                val_psnr, val_mssim = compute_desired_metrices(model_output, gt)
                 train_scores.append([train_loss.item(), val_psnr, val_mssim])
                 """
                 tqdm.write(
@@ -194,71 +172,11 @@ def train_extended_compare_loop(
         pass # end outer loop
 
     # --- Save overall training results.
-    try:
-        tmp_file_path = os.path.join(checkpoints_dir, 'model_final.pth')
-        torch.save(model.state_dict(),
-                  tmp_file_path)
-        
-        tmp_file_path = os.path.join(checkpoints_dir, 'train_losses_final.txt')
-        FILE_PATH = os.path.join(checkpoints_dir, 'train_losses_final.txt')
-        np.savetxt(tmp_file_path,
-                   np.array(train_scores))
-    except Exception as _:
-                raise Exception(f"Error when saving file: filename={tmp_file_path} .")
-
-    
-    # --- Evaluate model's on validation data.
-    train_scores = None
-    model.eval()
-    with torch.no_grad():
-        # -- Get data from validation loader.
-        val_input, val_gt = next(iter(val_dataloader))
-        if device == 'cpu':
-            val_input = val_input['coords'].to('cpu')
-            val_gt = val_gt['img'].to('cpu')
-            if opt.quantization_enabled  != None:
-                val_input = torch.quantize_per_tensor(val_input, 0.01, 0, torch.qint8)
-                val_gt = torch.quantize_per_tensor(val_gt, 0.01, 0, torch.qint8)    
-                pass
-        else:
-            if opt.quantization_enabled  != None:
-                model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
-                gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
-            else:
-                val_input = val_input['coords'].cuda() # .to(device) 
-                val_gt = val_gt['img'].cuda() # .to(device)
-                pass
-            pass
-
-        # --- Compute estimation.
-        val_output, _ = model(val_input)
-
-        # --- Prepare data for calculating metrices scores.
-        # sidelenght = int(math.sqrt(val_output.size()[1]))
-        sidelenght = val_output.size()[1]
-
-        arr_gt = val_gt.cpu().view(sidelenght).detach().numpy()
-        arr_gt = (arr_gt / 2.) + 0.5                
-
-        arr_output = val_output.cpu().view(sidelenght).detach().numpy()
-        arr_output = (arr_output / 2.) + 0.5
-        arr_output = np.clip(arr_output, a_min=0., a_max=1.)
-        
-        # --- Calculate metrices scores.
-        # Metric: MSE
-        train_loss = loss_fn(val_output, val_gt)
-
-        # Other Metrics: PSNR, SSIM
-        val_psnr = psnr(arr_gt, arr_output, data_range=1.)
-        val_mssim = ssim(arr_gt, arr_output, data_range=1.)
-        
-        # --- Record results.
-        # train_scores = np.array([[train_loss, val_psnr, val_mssim]])
-        train_scores = np.array([train_loss.item(), val_psnr, val_mssim])
-        pass
+    FILE_PATH = os.path.join(checkpoints_dir, 'train_losses_final.txt')
+    save_data_to_file(root_dir = checkpoints_dir, model = model, train_scores = train_scores)
 
     # Return best metrices.
-    return train_scores
+    return model
 
 
 def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
@@ -268,13 +186,17 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
     # --- Local variables.
     fields_info_models = 'Device,Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
-    SomeInfosModel = collections.namedtuple('SomeInfosModel', fields_info_models)
-    writer_tb = None
-    history_combs = []
-    step = 1
-    arch_step = 0
+    SomeInfosModel = collections.namedtuple('SomeInfosModel', fields_info_models) # Variable used for storing and displaying infos during training.
+
+    writer_tb = None    # Variable for logging data for displaying them later via Tensorboard.
+    history_combs = []  # Variable for recording combinations explored.
+    step = 1            # Variable for keep trace of which step we are in.
+    arch_step = 0       # Variable for displaying which arch wre are considering.
+
     # steps_til_summary = len(opt.seeds) * len(opt.hidden_layers)
-    steps_til_summary = 1
+    steps_til_summary = 1 # variable for recording and saving data with a given frequence, into output files.
+
+    # Variables for most inner loop, here.
     model, train_dataloader, val_dataloader = None, None, None
     global_avg_train_losses = None
 
@@ -309,8 +231,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # tqdm.write("_" * 50); tqdm.write("_" * 50)
 
             sep_str_arch_no = "=" * 25 + f" ARCH {arch_no + opt.resume_from} " + "=" * 25
-            logging.info(sep_str_arch_no)
-            tqdm.write(sep_str_arch_no)
+            header_arch = '_' * len(sep_str_arch_no)
+            logging.info(header_arch); logging.info(sep_str_arch_no)
+            tqdm.write(header_arch); tqdm.write(sep_str_arch_no)
 
             # arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
             # tqdm.write(f"{arch_hyperparams_str}")
@@ -362,6 +285,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
                 # logging.info("-" * 50); tqdm.write("-" * 50)
 
+                # --- Show infos about model to be tested.
                 record_info = SomeInfosModel._make([
                     device,
                     arch_no + opt.resume_from, trial_no,
@@ -372,6 +296,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"{table}")
                 logging.info(f"{table}")
 
+                # --- Show model's architecture and more details.
                 if device != 'cpu' and device != 'gpu':
                     model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
                     logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
@@ -383,13 +308,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
 
-                train_scores = train_extended_compare_loop(
+                model_trained = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
                     epochs=opt.num_epochs,
                     lr=opt.lr,
                     opt=opt,
-                    val_dataloader=val_dataloader,
                     # steps_til_summary=opt.steps_til_summary,
                     epochs_til_checkpoint=opt.epochs_til_ckpt,
                     model_dir=tmp_model_dir,
@@ -403,7 +327,18 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
+
+                # --- Evaluate model's on validation data.
+                eval_start_time = time.time()
+                train_scores = evaluate_model(
+                    model = model_trained, eval_dataloader=val_dataloader,
+                    device=device, loss_fn=loss_fn,
+                    quantization_enabled=opt.quantization_enabled)
+                eval_duration_time = time.time() - eval_start_time
+                logging.info("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
+                tqdm.write("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
                 
+                # --- Show quantized scores if necessary.
                 opt.quantization_enabled = quant_tech
                 if opt.quantization_enabled != None:
                     res_quantized = compute_quantization(img_dataset=img_dataset, opt=opt, model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
@@ -414,7 +349,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     pass
                 logging.info("-" * 50); tqdm.write("-" * 50)
 
-                # --- Record train_loss for later average computations.
+                # --- Record train_scpres for later average computations.
                 if avg_train_losses is None:
                     avg_train_losses =  np.array([train_scores])
                 else:
