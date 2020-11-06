@@ -99,7 +99,7 @@ class SirenQuantizedQuantizedPostTraining(nn.Module):
                 
             self.net.append(final_linear)
         else:
-            self.net.append(SineLayerQuantized(hidden_features, out_features, 
+            self.net.append(SineLayerQuantizedPostTraining(hidden_features, out_features, 
                                       is_first=False, omega_0=hidden_omega_0))
         
         self.net = nn.Sequential(*self.net)
@@ -123,7 +123,7 @@ class SirenQuantizedQuantizedPostTraining(nn.Module):
         x = coords.clone().detach().requires_grad_(True)
         activations['input'] = x
         for i, layer in enumerate(self.net):
-            if isinstance(layer, SineLayerQuantized):
+            if isinstance(layer, SineLayerQuantizedPostTraining):
                 x, intermed = layer.forward_with_intermediate(x)
                 
                 if retain_grad:
