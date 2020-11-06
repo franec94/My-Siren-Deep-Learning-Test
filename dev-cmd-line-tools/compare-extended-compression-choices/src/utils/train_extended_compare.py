@@ -331,6 +331,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # --- Evaluate model's on validation data.
                 eval_start_time = time.time()
+                logging.info("-" * 50); tqdm.write("-" * 50)
                 tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 train_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
@@ -339,20 +340,6 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 eval_duration_time = time.time() - eval_start_time
                 logging.info("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
                 tqdm.write("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
-                
-                # --- Show quantized scores if necessary.
-                opt.quantization_enabled = quant_tech
-                if opt.quantization_enabled != None:
-                    res_quantized = compute_quantization(
-                        img_dataset=img_dataset,
-                        opt=opt,
-                        model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
-                    tqdm.write("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
-                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
-                    logging.info("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
-                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
-                    pass
-                logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record train_scpres for later average computations.
                 if avg_train_losses is None:
@@ -367,14 +354,32 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
-                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
-                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time))
+                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2]))
                     pass
                 logging.info(
-                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
-                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time)
+                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2])
                     )
-                
+
+                # --- Show quantized scores if necessary.
+                opt.quantization_enabled = quant_tech
+                if opt.quantization_enabled != None:
+                    eval_start_time = time.time()
+                    tqdm.write(f"Evaluating Quant. Tech.: {opt.quantization_enabled}")
+                    logging.info(f"Evaluating Quant. Tech.: {opt.quantization_enabled}")
+                    res_quantized = compute_quantization(
+                        img_dataset=img_dataset,
+                        opt=opt,
+                        model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
+                    tqdm.write("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]))
+                    logging.info("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]))
+                    logging.info("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
+                    tqdm.write("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
+                    pass
+                logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record performance metrices for later investigations.
                 # history_combs.append(np.concat(train_scores, [stop_time]))
