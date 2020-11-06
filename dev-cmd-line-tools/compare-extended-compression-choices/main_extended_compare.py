@@ -142,6 +142,8 @@ def main():
     field_vals.extend([tot_archs, tot_trials])
     table_vals = list(SomeInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
+    print(f"-" * 25, 'Program Details', '-' * 25)
+    logging.info(f'{"-" * 25} Program Details {"-" * 25}')
     print(f"{table}")
     logging.info(f"{table}")
 
