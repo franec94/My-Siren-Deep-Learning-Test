@@ -13,10 +13,12 @@ RUN_FULL_EXAMPLE = run_full_example.sh
 # ======================== #
 
 run_program_train_on_cameramen:
+	clear
 	chmod u+x $(RUN_PROGRAM)
 	./$(RUN_PROGRAM)
 
 run_program_train_on_cameramen_dynamic_quant:
+	clear
 	chmod u+x $(RUN_PROGRAM_DYNAMIC_QUANT)
 	./$(RUN_PROGRAM_DYNAMIC_QUANT)
 
