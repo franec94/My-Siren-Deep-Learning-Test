@@ -300,10 +300,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 logging.info(f"{table}")
 
                 # --- Show model's architecture and more details.
-                if device != 'cpu' and device != 'gpu':
+                # if device != 'cpu' and device != 'gpu':
+                try:
                     model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
                     logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")
-                    pass
+                    # pass
+                except: pass
 
                 # --- Train model.
                 # Set start time and show messages.
