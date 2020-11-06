@@ -59,7 +59,7 @@ class SineLayerQPT(nn.Module):
         omega_0_int8 = torch.quantize_per_tensor(omega_0, 0.01, 0, torch.qint8)
         qmul = QFunctional()
         # x = self.quant(self.linear(input))
-        x = self.linear(self.quant(input))
+        x = self.quant(self.linear(input))
         x = qmul.mul_scalar(x, omega_0_int8)
         x = self.dequant(x)
         # return torch.sin(self.omega_0 * self.linear(input))
