@@ -69,6 +69,9 @@ class SineLayerQPT(nn.Module):
         return torch.sin(x)
         """
         x = self.linear(input)
+        print(type(input))
+        print(type(x))
+        raise Exception("")
         omega_0_tensor = torch.Tensor([self.omega_0])
         # omega_0_int8 = torch.quantize_per_tensor(omega_0_tensor,  1.0, 0, torch.qint32)
         omega_0_int8 = self.quant(omega_0_tensor)
