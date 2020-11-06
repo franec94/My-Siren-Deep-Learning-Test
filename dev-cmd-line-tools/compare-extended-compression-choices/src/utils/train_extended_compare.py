@@ -408,19 +408,19 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Show Average stats about current arch
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
-                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+                        "- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
                 # Show Global Average stats about training process.
                 avg_train_losses = global_avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
-                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+                        "- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
                 pass
             logging.info(stats_h)
-            logging.info("Per Arch stats: arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
-                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
-            logging.info("Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
-                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
+            logging.info("Per Arch stats: arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
+            logging.info("Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
             if opt.enable_tensorboard_logging:
                 writer_tb.add_scalar('train_mse_avg', avg_train_losses[0], step)
                 writer_tb.add_scalar('train_psnr_avg', avg_train_losses[1], step)
