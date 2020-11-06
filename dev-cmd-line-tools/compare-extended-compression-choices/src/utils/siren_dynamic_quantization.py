@@ -75,6 +75,7 @@ from torchvision.transforms import Resize, Compose, ToTensor, Normalize
 import src.utils.dataio as dataio
 from src.utils.siren import Siren
 from src.utils.siren_quantized import SirenQuantized
+from src.utils.siren_quantized_post_training import SirenQuantizedQuantizedPostTraining
 
 # --------------------------------------------- #
 # Functions
@@ -149,7 +150,7 @@ def get_static_quantization_model(metadata_model_dict = None, model_path = None,
 def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Get posterior quantization Siren model."""
 
-    model_fp32 = SirenQuantized(
+    model_fp32 = SirenQuantizedQuantizedPostTraining(
         in_features=2,
         out_features=1,
         hidden_features=int(metadata_model_dict['hidden_features']),

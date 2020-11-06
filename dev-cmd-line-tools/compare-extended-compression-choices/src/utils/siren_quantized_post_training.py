@@ -79,11 +79,11 @@ class SirenQuantizedQuantizedPostTraining(nn.Module):
         super().__init__()
         
         self.net = []
-        self.net.append(SineLayerQuantized(in_features, hidden_features, 
+        self.net.append(SineLayerQuantizedPostTraining(in_features, hidden_features, 
                                   is_first=True, omega_0=first_omega_0))
 
         for i in range(hidden_layers):
-            a_layer = SineLayerQuantized(hidden_features, hidden_features, 
+            a_layer = SineLayerQuantizedPostTraining(hidden_features, hidden_features, 
                                       is_first=False, omega_0=hidden_omega_0)
             a_layer.qconfig = torch.quantization.get_default_qat_qconfig(f'{engine}')
             a_layer = torch.quantization.prepare(a_layer)
