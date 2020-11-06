@@ -40,8 +40,8 @@ class SineLayerQPT(nn.Module):
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
+        # self.quant = QuantStub()
+        # self.dequant = DeQuantStub()
         pass
     
     def init_weights(self):
@@ -68,7 +68,8 @@ class SineLayerQPT(nn.Module):
         # return torch.sin(self.omega_0 * self.linear(input))
         return torch.sin(x)
         """
-        return torch.sin(self.omega_0 * self.linear(input))
+        x = self.linear(input)
+        return torch.sin(self.omega_0 * x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
