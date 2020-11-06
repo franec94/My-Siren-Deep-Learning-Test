@@ -376,8 +376,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 res_quantized = []
                 if opt.quantization_enabled != None:
                     eval_start_time = time.time()
-                    tqdm.write(f"Evaluating Quant. Tech.: {opt.quantization_enabled}")
-                    logging.info(f"Evaluating Quant. Tech.: {opt.quantization_enabled}")
+                    tqdm.write(f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}")
+                    logging.info(f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}")
                     res_quantized = compute_quantization(
                         img_dataset=img_dataset,
                         opt=opt,
