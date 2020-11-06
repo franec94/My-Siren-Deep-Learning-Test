@@ -40,7 +40,7 @@ class SineLayerQPT(nn.Module):
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
-        # self.quant = QuantStub()
+        self.quant = QuantStub()
         # self.dequant = DeQuantStub()
         pass
     
@@ -70,8 +70,8 @@ class SineLayerQPT(nn.Module):
         """
         x = self.linear(input)
         omega_0_tensor = torch.Tensor([self.omega_0])
-        omega_0_int8 = torch.quantize_per_tensor(omega_0_tensor,  1.0, 0, torch.qint32)
-
+        # omega_0_int8 = torch.quantize_per_tensor(omega_0_tensor,  1.0, 0, torch.qint32)
+        omega_0_int8 = self.quant(omega_0_tensor)
         qmul = QFunctional()
         x = qmul.mul_scalar(x, omega_0_int8)
 
