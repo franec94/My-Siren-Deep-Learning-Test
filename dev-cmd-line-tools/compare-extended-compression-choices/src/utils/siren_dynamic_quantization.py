@@ -165,16 +165,16 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
             quantize=True,
             outermost_linear=True) # outermost_linear=True).to(device=device)
         pass
-    # Load weights if requested.
-    if model_path != None:
-        state_dict = torch.load(model_path)
-        model_fp32.load_state_dict(state_dict)
-        pass
     # Set model to cpu device.
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
     else:
         raise Exception("Post Train quantization do not support CUDA/GPU backend for computations!")
+    # Load weights if requested.
+    if model_path != None:
+        state_dict = torch.load(model_path)
+        model_fp32.load_state_dict(state_dict)
+        pass
     
     # Set backend for Quantization computations.
     model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
