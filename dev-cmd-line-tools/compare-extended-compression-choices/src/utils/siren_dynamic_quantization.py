@@ -75,12 +75,16 @@ from torchvision.transforms import Resize, Compose, ToTensor, Normalize
 import src.utils.dataio as dataio
 from src.utils.siren import Siren
 from src.utils.siren_quantized import SirenQuantized
-from src.utils.siren_quantized_post_training import SirenQuantizedQuantizedPostTraining
+from src.utils.siren_quantized_post_training import SirenQPT
 
-# --------------------------------------------- #
+# ----------------------------------------------------------------------------------------------- #
 # Functions
-# --------------------------------------------- #
+# ----------------------------------------------------------------------------------------------- #
 
+
+# --------------------------------------------- #
+# Getter functions
+# --------------------------------------------- #
 def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get dynamic quantization Siren model."""
 
@@ -148,36 +152,39 @@ def get_static_quantization_model(metadata_model_dict = None, model_path = None,
 
 
 def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get posterior quantization Siren model."""
+    """Get post-train quantization Siren model."""
 
+    # Create model if not exist.
     if model_fp32 == None:
-        model_fp32 = SirenQuantizedQuantizedPostTraining(
+        model_fp32 = SirenQPT(
             in_features=2,
             out_features=1,
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             outermost_linear=True) # outermost_linear=True).to(device=device)
         pass
+    # Load weights if requested.
     if model_path != None:
         state_dict = torch.load(model_path)
         model_fp32.load_state_dict(state_dict)
         pass
+    # Set model to cpu device.
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
     else:
         raise Exception("Posterior quantization do not support CUDA/GPU backend for computations!")
     
+    # Set backend for Quantization computations.
     model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
 
+    # Check if modules should be fused.
     if fuse_modules != None:
         model_fp32_fused = torch.quantization.fuse_modules(model_fp32, fuse_modules)
         torch.quantization.prepare(model_fp32_fused, inplace=True)
-
-        model_fp32_prepared = torch.quantization.prepare(model_fp32_fused)
+        # model_fp32_prepared = torch.quantization.prepare(model_fp32_fused)
     else:
         torch.quantization.prepare(model_fp32, inplace=True)
-
-        model_fp32_prepared = torch.quantization.prepare(model_fp32)
+        # model_fp32_prepared = torch.quantization.prepare(model_fp32)
         pass
 
     if model_fp32_prepared == None: Exception(f"model_fp32_prepared is None, when quantization is Post Training!")
@@ -222,6 +229,90 @@ def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse
     return model_fp32_prepared
 
 
+# --------------------------------------------- #
+# Compute Quantization
+# --------------------------------------------- #
+
+def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Evaluate PyTorch model already trained by means of dynamic quantization.
+    Return:
+    ------
+    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    """
+    
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    model_fp32 = Siren(
+        in_features=2,
+        out_features=1,
+        hidden_features=int(arch_hyperparams['hidden_features']),
+        hidden_layers=int(arch_hyperparams['hidden_layers']),
+        # outermost_linear=True).to(device=device)
+        outermost_linear=True)
+    model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
+    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores
+
+
+def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+     """Evaluate PyTorch model already trained by means of static quantization.
+    Return:
+    ------
+    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    """
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model_fp32)
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    # Calibrate model
+    _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+
+    # Evaluate quantized int8 model
+    model_int8 = torch.quantization.convert(model_fp32_prepared)
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores
+
+
+def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Evaluate PyTorch model already trained by means of post train quantization.
+    Return:
+    ------
+    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    """
+    
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    model_fp32_prepared = model_fp32
+    model_fp32_prepared = get_post_training_quantization_model(
+        model_path = model_path, metadata_model_dict = arch_hyperparams,
+        fuse_modules = fuse_modules, device = f"{device}", qconfig = f"{qconfig}", model_fp32 = model_fp32_prepared)
+    
+    # Calibrate model
+    _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+
+    # Evaluate quantized int8 model
+    model_int8 = torch.quantization.convert(model_fp32_prepared)
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores
+
+
+def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Evaluate PyTorch model already trained by means of quantization aware train.
+    Return:
+    ------
+    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    """
+    
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
+    eval_scores = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+
+    model_int8 = torch.quantization.convert(model)
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+    
+    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores
+
+
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Compute quantized results."""
 
@@ -229,70 +320,50 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
     if opt.quantization_enabled != None:
         # --- Dynamic Quantization: TODO test it.
         if opt.quantization_enabled == 'dynamic':
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True)
-            model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
-            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            """eval_scores = compute_quantization_dyanmic_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
         
         # --- Static Quantization: TODO test it.
         elif opt.quantization_enabled == 'static':
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True)
-            model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            # Calibrate model
-            _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-
-            model_int8 = torch.quantization.convert(model_fp32_prepared)
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            # res = model_int8(input_fp32)
-            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            """eval_scores = compute_quantization_static_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt,
+                fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
 
         # --- Posterior Quantization: TODO test it.
         elif opt.quantization_enabled == 'posterior':
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            model = None
-            model = get_post_training_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
-            # Calibrate model
-            _ = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-
-            model_int8 = torch.quantization.convert(model)
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            # res = model_int8(input_fp32)
-            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            eval_scores = compute_quantization_post_train_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt,
+                fuse_modules = None, device = 'cpu', qconfig = f"{qconfig}", model_fp32 = None)
             pass
 
         # --- Quantization Aware Training: TODO test it.
         elif opt.quantization_enabled =='quantization_aware_training':
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            model = None
-            model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
-            eval_scores = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-
-            model_int8 = torch.quantization.convert(model)
-            input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            # res = model_int8(input_fp32)
-            eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            """compute_quantization_aware_train_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt,
+                fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
         else:
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
     return eval_scores
 
 
+# --------------------------------------------- #
+# Utils Functions
+# --------------------------------------------- #
 def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
     """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
     model = None

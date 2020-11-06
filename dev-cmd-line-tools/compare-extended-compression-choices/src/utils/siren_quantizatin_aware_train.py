@@ -5,8 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-from torch.quantization import QuantStub, DeQuantStub
-from torch.nn.quantized import QFunctional
 
 from torchvision import datasets
 from torchvision import transforms
@@ -18,7 +16,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-class SineLayerQPT(nn.Module):
+class SineLayerQAT(nn.Module):
     # See paper sec. 3.2, final paragraph, and supplement Sec. 1.5 for discussion of omega_0.
     
     # If is_first=True, omega_0 is a frequency factor which simply multiplies the activations before the 
@@ -31,19 +29,13 @@ class SineLayerQPT(nn.Module):
     def __init__(self, in_features, out_features, bias=True,
                  is_first=False, omega_0=30):
         super().__init__()
-
         self.omega_0 = omega_0
         self.is_first = is_first
         
-        self.quant = QuantStub()
         self.in_features = in_features
         self.linear = nn.Linear(in_features, out_features, bias=bias)
-        # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
-        self.q_mul = QFunctional()
-        # Objetc to handle quantization/unquantizing data.
-        self.dequant = DeQuantStub()
         pass
     
     def init_weights(self):
@@ -57,42 +49,27 @@ class SineLayerQPT(nn.Module):
         pass
         
     def forward(self, input):
-        # Original work:
-        # x = self.linear(input_quant)
-        # x = self.omega_0 * x
-        # return torch.sin(x)
-
-        # Quantize work:
-        input_quant = self.quant(input)
-        x = self.linear(input_quant)
-        self.q_mul.mul_scalar(x, self.omega_0)
-        x = torch.sin(x)
-        x = self.dequant(x)
-        return x
+        return torch.sin(self.omega_0 * self.linear(input))
     
-    def forward_with_intermediate(self, input):
-        input_quant = self.quant(input)
+    def forward_with_intermediate(self, input): 
         # For visualization of activation distributions
-        intermediate = self.omega_0 * self.linear(input_quant)
+        intermediate = self.omega_0 * self.linear(input)
         return torch.sin(intermediate), intermediate
     pass
     
     
-class SirenQPT(nn.Module):
+class SirenQAT(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30., engine = 'fbgemm'):
+                 first_omega_0=30, hidden_omega_0=30.):
         super().__init__()
         
         self.net = []
-        self.net.append(SineLayerQPT(in_features, hidden_features, 
+        self.net.append(SineLayerQAT(in_features, hidden_features, 
                                   is_first=True, omega_0=first_omega_0))
 
         for i in range(hidden_layers):
-            a_layer = SineLayerQPT(hidden_features, hidden_features, 
-                                      is_first=False, omega_0=hidden_omega_0)
-            a_layer.qconfig = torch.quantization.get_default_qat_qconfig(f'{engine}')
-            a_layer = torch.quantization.prepare(a_layer)
-            self.net.append(a_layer)
+            self.net.append(SineLayerQAT(hidden_features, hidden_features, 
+                                      is_first=False, omega_0=hidden_omega_0))
 
         if outermost_linear:
             final_linear = nn.Linear(hidden_features, out_features)
@@ -103,18 +80,14 @@ class SirenQPT(nn.Module):
                 
             self.net.append(final_linear)
         else:
-            self.net.append(SineLayerQPT(hidden_features, out_features, 
+            self.net.append(SineLayerQAT(hidden_features, out_features, 
                                       is_first=False, omega_0=hidden_omega_0))
         
         self.net = nn.Sequential(*self.net)
-        # self.quant = QuantStub()
-        # self.dequant = DeQuantStub()
         pass
     
     def forward(self, coords):
-        # x = self.quant(coords)
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
-        # output = self.dequant(self.net(x))
         output = self.net(coords)
         return output, coords        
 
@@ -127,7 +100,7 @@ class SirenQPT(nn.Module):
         x = coords.clone().detach().requires_grad_(True)
         activations['input'] = x
         for i, layer in enumerate(self.net):
-            if isinstance(layer, SineLayerQPT):
+            if isinstance(layer, SineLayerQAT):
                 x, intermed = layer.forward_with_intermediate(x)
                 
                 if retain_grad:
