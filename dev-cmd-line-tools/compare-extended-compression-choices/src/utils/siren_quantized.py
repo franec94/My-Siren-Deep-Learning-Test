@@ -87,10 +87,11 @@ class SineLayerQuantized(nn.Module):
         x = qmul.mul_scalar(x, scalar_omega_0)
 
         # Unquantized Processed data
-        x_dequant = self.dequant(x)
+        # x_dequant = self.dequant(x)
         # Let unquantized data flow through Activation
-        x_out = torch.sin(x_dequant)
+        # x_out = torch.sin(x_dequant)
         
+        x_out = torch.sin(x)
         return x_out, x_dequant
     pass
     
