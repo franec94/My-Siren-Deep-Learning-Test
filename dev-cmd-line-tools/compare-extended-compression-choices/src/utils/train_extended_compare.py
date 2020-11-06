@@ -276,6 +276,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 quant_tech = opt.quantization_enabled
                 opt.quantization_enabled = None
                 model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = 'cuda')
+                tqdm.write(f"Model's kind Siren: {type(model)}")
+                logging.info(f"Model's kind Siren: {type(model)}")
                 # tqdm.write(f"Model created on device: {device}")
                 # logging.info(f"Model created on device: {device}")
 
