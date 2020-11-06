@@ -398,21 +398,23 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             
             # --- Show AVG stats per Arch.
             if verbose >= 1:
+                tqdm.write("-" * 25, "Stats", "-" * 25)
                 stop_time = time.time() - start_time_ao
                 # Show Average stats about current arch
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] --> arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
+                        "Per Arch stats arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 # Show Global Average stats about training process.
                 avg_train_losses = global_avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
+                        "Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
-            logging.info("[*] --> arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+            tqdm.write("-" * 25, "Stats", "-" * 25)
+            logging.info("Per Arch stats: arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
-            logging.info("[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
+            logging.info("Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
             if opt.enable_tensorboard_logging:
                 writer_tb.add_scalar('train_mse_avg', avg_train_losses[0], step)
