@@ -125,6 +125,8 @@ class SirenQPT(nn.Module):
     def forward(self, coords):
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
         coords_quanted = self.quant(coords)
+        print(type(coords))
+        print(type(coords_quanted))
         x = self.net(coords_quanted)
         output = self.dequant(x)
         return output, coords        

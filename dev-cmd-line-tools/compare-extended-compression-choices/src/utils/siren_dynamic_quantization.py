@@ -243,13 +243,13 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    model_fp32 = Siren(
+    """model_fp32 = Siren(
         in_features=2,
         out_features=1,
         hidden_features=int(arch_hyperparams['hidden_features']),
         hidden_layers=int(arch_hyperparams['hidden_layers']),
         # outermost_linear=True).to(device=device)
-        outermost_linear=True)
+        outermost_linear=True)"""
     model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
     eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores
@@ -324,11 +324,11 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
     if opt.quantization_enabled != None:
         # --- Dynamic Quantization: TODO test it.
         if opt.quantization_enabled == 'dynamic':
-            """eval_scores = compute_quantization_dyanmic_mode(
+            eval_scores = compute_quantization_dyanmic_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
-                opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
+                opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)
             pass
         
         # --- Static Quantization: TODO test it.
