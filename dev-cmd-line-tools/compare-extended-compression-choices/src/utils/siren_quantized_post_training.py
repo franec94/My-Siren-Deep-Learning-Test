@@ -63,7 +63,8 @@ class SineLayerQuantizedPostTraining(nn.Module):
     
         x = self.omega_0 * x
         x = torch.sin(x)
-        return self.dequant(x)
+        # x = self.dequant(x)
+        return x
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)

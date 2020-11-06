@@ -147,15 +147,17 @@ def get_static_quantization_model(metadata_model_dict = None, model_path = None,
     return model_fp32_prepared
 
 
-def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
+def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get posterior quantization Siren model."""
 
-    model_fp32 = SirenQuantizedQuantizedPostTraining(
-        in_features=2,
-        out_features=1,
-        hidden_features=int(metadata_model_dict['hidden_features']),
-        hidden_layers=int(metadata_model_dict['hidden_layers']),
-        outermost_linear=True) # outermost_linear=True).to(device=device)
+    if model_fp32 == None:
+        model_fp32 = SirenQuantizedQuantizedPostTraining(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            outermost_linear=True) # outermost_linear=True).to(device=device)
+        pass
     if model_path != None:
         state_dict = torch.load(model_path)
         model_fp32.load_state_dict(state_dict)
@@ -264,7 +266,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
         elif opt.quantization_enabled == 'posterior':
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             model = None
-            model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
+            model = get_post_training_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
             # Calibrate model
             _ = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
