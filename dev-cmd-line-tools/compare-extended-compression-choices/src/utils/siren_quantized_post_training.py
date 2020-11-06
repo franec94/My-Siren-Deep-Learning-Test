@@ -60,6 +60,8 @@ class SineLayerQPT(nn.Module):
         qmul = QFunctional()
         # x = self.quant(self.linear(input))
         x = self.quant(self.linear(input))
+        print(type(x))
+        print(type(omega_0_int8))
         x = qmul.mul_scalar(x, omega_0_int8)
         x = self.dequant(x)
         # return torch.sin(self.omega_0 * self.linear(input))
