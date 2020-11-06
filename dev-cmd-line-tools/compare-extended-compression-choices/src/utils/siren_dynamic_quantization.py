@@ -254,7 +254,7 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
 
 
 def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-     """Evaluate PyTorch model already trained by means of static quantization.
+    """Evaluate PyTorch model already trained by means of static quantization.
     Return:
     ------
     :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
