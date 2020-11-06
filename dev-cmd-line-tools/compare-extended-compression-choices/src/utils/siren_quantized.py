@@ -71,7 +71,7 @@ class SineLayerQuantized(nn.Module):
         x = self.omega_0 * x
         x = torch.sin(x)
         
-        x = self.dequant(x)
+        # x = self.dequant(x)
         # Let unquantized data flow through Activation 
         return x
     
