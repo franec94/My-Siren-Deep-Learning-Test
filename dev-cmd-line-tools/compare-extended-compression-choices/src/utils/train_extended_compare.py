@@ -306,8 +306,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Set start time and show messages.
                 start_time_to = time.time()
                 tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
-                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
-                logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
+                tqdm.write(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
+                logging.info(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
 
                 model_trained = train_extended_compare_loop(
                     model=model,
@@ -327,14 +327,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 
                 stop_time = time.time() - start_time_to
                 tqdm.write(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
-                logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No:({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+                logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
 
                 # --- Evaluate model's on validation data.
                 eval_start_time = time.time()
                 tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 train_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
-                    device=device, loss_fn=loss_fn,
+                    device='cuda', loss_fn=loss_fn,
                     quantization_enabled=opt.quantization_enabled)
                 eval_duration_time = time.time() - eval_start_time
                 logging.info("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
