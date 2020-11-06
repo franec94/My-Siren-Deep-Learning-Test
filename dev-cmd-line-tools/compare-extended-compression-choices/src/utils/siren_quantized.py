@@ -31,9 +31,11 @@ class SineLayerQuantized(nn.Module):
     def __init__(self, in_features, out_features, bias=True,
                  is_first=False, omega_0=30):
         super().__init__()
+
         self.omega_0 = omega_0
         self.is_first = is_first
         
+        self.quant = QuantStub()
         self.in_features = in_features
         self.linear = nn.Linear(in_features, out_features, bias=bias)
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
@@ -41,7 +43,6 @@ class SineLayerQuantized(nn.Module):
         self.init_weights()
 
         # Objetc to handle quantization/unquantizing data.
-        self.quant = QuantStub()
         self.dequant = DeQuantStub()
         pass
     
@@ -58,21 +59,11 @@ class SineLayerQuantized(nn.Module):
     def forward(self, input):
         # Quantize input data
         input_quant = self.quant(input)
-
-        # Process quantized data
         x = self.linear(input_quant)
-
-        # Unquantized Processed data
-        
-        # qmul = QFunctional()
-        # scalar_omega_0 = torch.Tensor([self.omega_0])
-        # scalar_omega_0 = torch.quantize_per_tensor(scalar_omega_0, 0.01, 0, torch.qint8)
-        # x = qmul.mul_scalar(x, scalar_omega_0)
+        x = self.dequant(x)
+    
         x = self.omega_0 * x
         x = torch.sin(x)
-        
-        # x = self.dequant(x)
-        # Let unquantized data flow through Activation 
         return x
     
     def forward_with_intermediate(self, input):
