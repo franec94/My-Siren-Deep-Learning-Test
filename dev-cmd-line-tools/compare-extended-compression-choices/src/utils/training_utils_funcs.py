@@ -108,13 +108,11 @@ def get_data_ready_for_model(model_input, gt, quantization_enabled = None, devic
             # gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8)    
             pass
     else:
+        model_input = model_input['coords'].cuda()
+        gt = gt['img'].cuda()
         if quantization_enabled  != None:
             # model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
             # gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
-            pass
-        else:
-            model_input = model_input['coords'].cuda()
-            gt = gt['img'].cuda()
             pass
         pass
     return model_input, gt

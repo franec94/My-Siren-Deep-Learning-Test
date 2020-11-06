@@ -371,7 +371,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     )
 
                 # --- Show quantized scores if necessary.
-                opt.quantization_enabled = quant_tech
+                # opt.quantization_enabled = quant_tech
                 res_quantized = []
                 if opt.quantization_enabled != None:
                     eval_start_time = time.time()
