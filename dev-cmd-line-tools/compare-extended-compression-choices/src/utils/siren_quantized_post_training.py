@@ -48,6 +48,7 @@ class SineLayerQPT(nn.Module):
         self.init_weights()
         # self.quant = QuantStub()
         # self.dequant = DeQuantStub()
+        self.mult_x_omega0 = nn.quantized.FloatFunctional()
         pass
     
     def init_weights(self):
@@ -63,7 +64,9 @@ class SineLayerQPT(nn.Module):
     def forward(self, input):
         """Compute SineLlayerPTQ forward pass."""
         x = self.linear(input)
-        return torch.sin(self.omega_0 * x)
+        # return torch.sin(self.omega_0 * x)
+        x = self.mult_x_omega0.mul_scalar(x, self.omega_0)
+        return torch.sin(x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
