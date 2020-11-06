@@ -318,7 +318,7 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Compute quantized results."""
 
-    model, eval_scores = None, None
+    eval_scores = None
     if opt.quantization_enabled != None:
         # --- Dynamic Quantization: TODO test it.
         if opt.quantization_enabled == 'dynamic':

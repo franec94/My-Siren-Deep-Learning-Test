@@ -65,7 +65,8 @@ class SineLayerQPT(nn.Module):
         # Quantize work:
         input_quant = self.quant(input)
         x = self.linear(input_quant)
-        self.q_mul.mul_scalar(x, self.omega_0)
+        omega_0_int8 = torch.quantize_per_tensor(torch.tensor(self.omega_0), 1.0, 0, torch.qint8)
+        self.q_mul.mul_scalar(x, omega_0_int8)
         x = torch.sin(x)
         x = self.dequant(x)
         return x
