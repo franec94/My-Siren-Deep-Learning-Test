@@ -41,7 +41,7 @@ class SineLayerQuantizedPostTraining(nn.Module):
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
-
+        self.q_mul = QFunctional()
         # Objetc to handle quantization/unquantizing data.
         self.dequant = DeQuantStub()
         pass
@@ -60,10 +60,11 @@ class SineLayerQuantizedPostTraining(nn.Module):
         # Quantize input data
         input_quant = self.quant(input)
         x = self.linear(input_quant)
-    
-        x = self.omega_0 * x
+
+        self.q_mul.mul_scalar(x, self.omega_0)
+        # x = self.omega_0 * x
         x = torch.sin(x)
-        # x = self.dequant(x)
+        x = self.dequant(x)
         return x
     
     def forward_with_intermediate(self, input):
