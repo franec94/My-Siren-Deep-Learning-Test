@@ -185,7 +185,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     """
 
     # --- Local variables.
-    fields_info_models = 'Model_Type,Device,Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
+    fields_info_models = 'Model_Type,Device Train,Device Quant Eval,Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
     SomeInfosModel = collections.namedtuple('SomeInfosModel', fields_info_models) # Variable used for storing and displaying infos during training.
 
     writer_tb = None    # Variable for logging data for displaying them later via Tensorboard.
@@ -290,7 +290,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Show infos about model to be tested.
                 record_info = SomeInfosModel._make([
                     str(model).split('(')[0],
-                    device,
+                    'cuda', 'cpu',
                     arch_no + opt.resume_from, trial_no,
                     arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'],
                     seed, tot_weights_model, tot_weights_model*32])
