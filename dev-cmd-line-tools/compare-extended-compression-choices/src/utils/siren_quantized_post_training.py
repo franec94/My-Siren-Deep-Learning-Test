@@ -57,12 +57,15 @@ class SineLayerQuantizedPostTraining(nn.Module):
         pass
         
     def forward(self, input):
-        # Quantize input data
+        # Original work:
+        # x = self.linear(input_quant)
+        # x = self.omega_0 * x
+        # return torch.sin(x)
+
+        # Quantize work:
         input_quant = self.quant(input)
         x = self.linear(input_quant)
-
         self.q_mul.mul_scalar(x, self.omega_0)
-        # x = self.omega_0 * x
         x = torch.sin(x)
         x = self.dequant(x)
         return x
