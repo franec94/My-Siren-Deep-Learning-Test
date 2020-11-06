@@ -305,7 +305,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
-                logging.info("-" * 50); tqdm.write("-" * 50)
+                # logging.info("-" * 50); tqdm.write("-" * 50)
                 train_h = "-" * 25 + " Train " + "-" * 25
                 logging.info(train_h); tqdm.write(train_h)
                 tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
@@ -385,7 +385,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     logging.info("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
                     tqdm.write("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
                     pass
-                logging.info("-" * 50); tqdm.write("-" * 50)
+                # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record performance metrices for later investigations.
                 # history_combs.append(np.concat(train_scores, [stop_time]))
