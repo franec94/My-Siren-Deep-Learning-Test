@@ -305,6 +305,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
+                tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
                 tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) running...")
 
@@ -325,11 +326,12 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     data_range = data_range)
                 
                 stop_time = time.time() - start_time_to
-                tqdm.write(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
-                logging.info(f"Arch no.={arch_no + opt.resume_from} | trial no.=({trial_no+1}/{opt.num_attempts}) | eta: {stop_time}")
+                tqdm.write(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+                logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No:({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
 
                 # --- Evaluate model's on validation data.
                 eval_start_time = time.time()
+                tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 train_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
                     device=device, loss_fn=loss_fn,
@@ -342,9 +344,9 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 opt.quantization_enabled = quant_tech
                 if opt.quantization_enabled != None:
                     res_quantized = compute_quantization(img_dataset=img_dataset, opt=opt, model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
-                    tqdm.write("Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                    tqdm.write("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
                         % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
-                    logging.info("Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                    logging.info("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
                         % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
                     pass
                 logging.info("-" * 50); tqdm.write("-" * 50)
@@ -362,11 +364,11 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
-                        "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
                         % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time))
                     pass
                 logging.info(
-                        "Arch no.=%d, Trial no.=%d, loss=%0.6f, PSNR=%0.6f, SSIM=%0.6f, eta=%0.6f"
+                        "arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
                         % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2], stop_time)
                     )
                 
@@ -390,17 +392,17 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Show Average stats about current arch
                 avg_train_losses = avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] --> Arch no.=%d, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        "[*] --> arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 # Show Global Average stats about training process.
                 avg_train_losses = global_avg_train_losses.mean(axis = 0)
                 tqdm.write(
-                        "[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+                        "[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
                 pass
-            logging.info("[*] --> Arch no.=%d stats, loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+            logging.info("[*] --> arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
                         % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
-            logging.info("[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg)=%0.6f, SSIM(avg)=%0.6f, eta=%0.6f"
+            logging.info("[*] --> Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f, eta(sec)=%0.6f"
                         % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2], stop_time))
             if opt.enable_tensorboard_logging:
                 writer_tb.add_scalar('train_mse_avg', avg_train_losses[0], step)

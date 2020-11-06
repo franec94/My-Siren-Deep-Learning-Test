@@ -250,7 +250,8 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 outermost_linear=True)
             model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
-            eval_scores = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            # Calibrate model
+            _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
             model_int8 = torch.quantization.convert(model_fp32_prepared)
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
@@ -263,7 +264,8 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
             model = None
             model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
-            eval_scores = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+            # Calibrate model
+            _ = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
             model_int8 = torch.quantization.convert(model)
             input_fp32 = _prepare_data_loaders(img_dataset, opt)
@@ -349,8 +351,8 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
         val_input, val_gt = next(iter(evaluate_dataloader))
 
         if device == 'cpu':
-            val_input = val_input['coords'].to(device)
-            val_gt = val_gt['img'].to(device)
+            val_input = val_input['coords'].to('cpu')
+            val_gt = val_gt['img'].to('cpu')
         else:
             val_input = val_input['coords'].cuda() # .to(device)
             val_gt = val_gt['img'].cuda() # .to(device)
