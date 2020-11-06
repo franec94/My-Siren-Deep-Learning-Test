@@ -343,7 +343,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Show quantized scores if necessary.
                 opt.quantization_enabled = quant_tech
                 if opt.quantization_enabled != None:
-                    res_quantized = compute_quantization(img_dataset=img_dataset, opt=opt, model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
+                    res_quantized = compute_quantization(
+                        img_dataset=img_dataset,
+                        opt=opt,
+                        model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
                     tqdm.write("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
                         % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2], stop_time))
                     logging.info("arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f, eta(sec)=%0.6f"
