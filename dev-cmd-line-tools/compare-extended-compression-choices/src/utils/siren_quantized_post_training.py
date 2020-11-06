@@ -34,8 +34,7 @@ class SineLayerQPT(nn.Module):
 
         self.omega_0 = omega_0
         self.is_first = is_first
-        
-        self.quant = QuantStub()
+
         self.in_features = in_features
         self.linear = nn.Linear(in_features, out_features, bias=bias)
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
@@ -54,15 +53,8 @@ class SineLayerQPT(nn.Module):
         pass
         
     def forward(self, input):
-        # Original work:
-        # x = self.linear(input_quant)
-        # x = self.omega_0 * x
-        # return torch.sin(x)
-        # x = self.linear(input)
-        # omega_0_int8 = torch.quantize_per_tensor(torch.tensor(self.omega_0), 1.0, 0, torch.qint8)
-        # self.q_mul.mul_scalar(x, omega_0_int8)
-        omega_0_int8 = torch.Tensor([self.omega_0])
-        omega_0_int8 = torch.quantize_per_tensor(omega_0_int8, 0.01, 0, torch.qint8)
+        omega_0 = torch.Tensor([self.omega_0])
+        omega_0_int8 = torch.quantize_per_tensor(omega_0, 0.01, 0, torch.qint8)
         qmul = QFunctional()
         x = qmul.mul_scalar(self.linear(input), omega_0_int8)
         return torch.sin(x)
@@ -109,9 +101,7 @@ class SirenQPT(nn.Module):
         pass
     
     def forward(self, coords):
-        # x = self.quant(coords)
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
-        # output = self.dequant(self.net(x))
         coords_quanted = self.quant(coords)
         x = self.net(coords_quanted)
         output = self.dequant(x)
@@ -145,4 +135,12 @@ class SirenQPT(nn.Module):
             activation_count += 1
 
         return activations
+        
+    def fuse_model(self):
+        for m in self.modules():
+            if type(m) == SineLayerQPT:
+                torch.quantization.fuse_modules(m, [nn.Linear], inplace=True)
+                pass
+            pass
+        pass
     pass

@@ -179,11 +179,13 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
 
     # Check if modules should be fused.
     if fuse_modules != None:
-        model_fp32_fused = torch.quantization.fuse_modules(model_fp32, fuse_modules)
+        # model_fp32_fused = torch.quantization.fuse_modules(model_fp32, fuse_modules)
         # torch.quantization.prepare(model_fp32_fused, inplace=True)
-        model_fp32_prepared = torch.quantization.prepare(model_fp32_fused)
+        model_fp32.fuse_model()
+        model_fp32_prepared = torch.quantization.prepare(model_fp32)
     else:
         # torch.quantization.prepare(model_fp32, inplace=True)
+        model_fp32.fuse_model()
         model_fp32_prepared = torch.quantization.prepare(model_fp32)
         pass
 
