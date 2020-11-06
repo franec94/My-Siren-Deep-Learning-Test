@@ -86,7 +86,7 @@ class SirenQuantized(nn.Module):
             a_layer = SineLayerQuantized(hidden_features, hidden_features, 
                                       is_first=False, omega_0=hidden_omega_0)
             a_layer.qconfig = torch.quantization.get_default_qat_qconfig(f'{engine}')
-            a_layer = torch.quantization.prepare(qconfig)
+            a_layer = torch.quantization.prepare(a_layer)
             self.net.append(a_layer)
 
         if outermost_linear:
