@@ -180,11 +180,11 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
     # Check if modules should be fused.
     if fuse_modules != None:
         model_fp32_fused = torch.quantization.fuse_modules(model_fp32, fuse_modules)
-        torch.quantization.prepare(model_fp32_fused, inplace=True)
-        # model_fp32_prepared = torch.quantization.prepare(model_fp32_fused)
+        # torch.quantization.prepare(model_fp32_fused, inplace=True)
+        model_fp32_prepared = torch.quantization.prepare(model_fp32_fused)
     else:
-        torch.quantization.prepare(model_fp32, inplace=True)
-        # model_fp32_prepared = torch.quantization.prepare(model_fp32)
+        # torch.quantization.prepare(model_fp32, inplace=True)
+        model_fp32_prepared = torch.quantization.prepare(model_fp32)
         pass
 
     if model_fp32_prepared == None: Exception(f"model_fp32_prepared is None, when quantization is Post Training!")
@@ -260,7 +260,9 @@ def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, 
     :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
     """
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    model_fp32_prepared = get_static_quantization_model(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model_fp32)
+    model_fp32_prepared = get_static_quantization_model(
+        model_path = model_path, metadata_model_dict = arch_hyperparams,
+        fuse_modules = fuse_modules, device = f"{device}", qconfig = f"{qconfig}", model_fp32 = model_fp32)
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
     # Calibrate model
     _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
