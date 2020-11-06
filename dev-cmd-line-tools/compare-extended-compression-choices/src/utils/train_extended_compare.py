@@ -306,6 +306,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # Set start time and show messages.
                 start_time_to = time.time()
                 logging.info("-" * 50); tqdm.write("-" * 50)
+                train_h = "-" * 25 + " Train " + "-" * 25
+                logging.info(train_h); tqdm.write(train_h)
                 tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
                 tqdm.write(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
@@ -334,6 +336,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # --- Evaluate model's on validation data.
                 eval_start_time = time.time()
+                eval_h = "-" * 25 + " Eval " + "-" * 25
+                logging.info(eval_h); tqdm.write(eval_h)
                 tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 train_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
