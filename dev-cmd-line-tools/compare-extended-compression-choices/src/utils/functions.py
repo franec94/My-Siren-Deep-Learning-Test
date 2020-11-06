@@ -224,7 +224,7 @@ def check_quantization_tech_provided(opt):
     if opt.quantization_enabled == None: return opt
 
     quant_tech = opt.quantization_enabled.lower()
-    if quant_tech not in "dynamic,static,posterior,quantization_aware_training".split(","):
+    if quant_tech not in "dynamic,static,post_train,quantization_aware_training".split(","):
         raise Exception(f"Error: {quant_tech} not allowed!")
 
     opt.quantization_enabled = quant_tech
