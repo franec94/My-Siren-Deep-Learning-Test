@@ -63,7 +63,7 @@ class SineLayerQuantized(nn.Module):
     
         x = self.omega_0 * x
         x = torch.sin(x)
-        return x
+        return self.dequant(x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
@@ -75,7 +75,7 @@ class SineLayerQuantized(nn.Module):
     
 class SirenQuantized(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30.):
+                 first_omega_0=30, hidden_omega_0=30., engine = 'fbgemm'):
         super().__init__()
         
         self.net = []
@@ -83,8 +83,10 @@ class SirenQuantized(nn.Module):
                                   is_first=True, omega_0=first_omega_0))
 
         for i in range(hidden_layers):
-            self.net.append(SineLayerQuantized(hidden_features, hidden_features, 
-                                      is_first=False, omega_0=hidden_omega_0))
+            a_layer = SineLayerQuantized(hidden_features, hidden_features, 
+                                      is_first=False, omega_0=hidden_omega_0)
+            a_layer.qconfig = torch.quantization.get_default_qat_qconfig(f'{engine}')
+            self.net.append(a_layer)
 
         if outermost_linear:
             final_linear = nn.Linear(hidden_features, out_features)
