@@ -292,7 +292,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'],
                     seed, tot_weights_model, tot_weights_model*32])
                 table_vals = list(record_info._asdict().items())
-                table = tabulate.tabulate(table_vals)
+                table = tabulate.tabulate(table_vals, headers="Info,Detail".split(","))
                 tqdm.write(f"{table}")
                 logging.info(f"{table}")
 
