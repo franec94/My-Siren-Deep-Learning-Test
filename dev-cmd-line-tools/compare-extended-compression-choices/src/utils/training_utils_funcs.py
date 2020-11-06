@@ -93,7 +93,7 @@ def get_data_ready_for_model(model_input, gt, quantization_enabled = None, devic
     -------
     :model_input: input to be processed by PyTorch model\n
     :gt: reference data\n
-    :quantization_enabled: str object, quantization technique name, allowed values: [dynamic,static,posterior,quantization_aware_training]\n
+    :quantization_enabled: str object, quantization technique name, allowed values: [dynamic,static,post_train,quantization_aware_training]\n
     :device: str object, allowed values: 'cpu', 'gpu', 'cuda'\n
 
     Return:
@@ -104,13 +104,14 @@ def get_data_ready_for_model(model_input, gt, quantization_enabled = None, devic
         model_input = model_input['coords'].to('cpu')
         gt = gt['img'].to('cpu')
         if quantization_enabled  != None:
-            model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8)
-            gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8)    
+            # model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8)
+            # gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8)    
             pass
     else:
         if quantization_enabled  != None:
-            model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
-            gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
+            # model_input = torch.quantize_per_tensor(model_input, 0.01, 0, torch.qint8).cuda()
+            # gt = torch.quantize_per_tensor(gt, 0.01, 0, torch.qint8).cuda()
+            pass
         else:
             model_input = model_input['coords'].cuda()
             gt = gt['img'].cuda()

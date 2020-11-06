@@ -19,6 +19,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class SineLayerQPT(nn.Module):
+    """
+    SineLayerQPT PyTorch's module for costructing Siren-like Neuarl Net Architectures.
+    """
     # See paper sec. 3.2, final paragraph, and supplement Sec. 1.5 for discussion of omega_0.
     
     # If is_first=True, omega_0 is a frequency factor which simply multiplies the activations before the 
@@ -30,6 +33,9 @@ class SineLayerQPT(nn.Module):
     
     def __init__(self, in_features, out_features, bias=True,
                  is_first=False, omega_0=30):
+        """
+        Constructor for SineLayerQPT PyTorch's module for costructing Siren-like Neuarl Net Architectures.
+        """
         super().__init__()
 
         self.omega_0 = omega_0
@@ -40,7 +46,7 @@ class SineLayerQPT(nn.Module):
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
-        self.quant = QuantStub()
+        # self.quant = QuantStub()
         # self.dequant = DeQuantStub()
         pass
     
@@ -55,31 +61,9 @@ class SineLayerQPT(nn.Module):
         pass
         
     def forward(self, input):
-        """
-        omega_0 = torch.Tensor([self.omega_0])
-        omega_0_int8 = torch.quantize_per_tensor(omega_0, 0.01, 0, torch.qint8)
-        qmul = QFunctional()
-        # x = self.quant(self.linear(input))
-        x = self.quant(self.linear(input))
-        print(type(x))
-        print(type(omega_0_int8))
-        x = qmul.mul_scalar(x, omega_0_int8)
-        x = self.dequant(x)
-        # return torch.sin(self.omega_0 * self.linear(input))
-        return torch.sin(x)
-        """
+        """Compute SineLlayerPTQ forward pass."""
         x = self.linear(input)
-        print(type(input))
-        print(type(x))
-        raise Exception("")
-        omega_0_tensor = torch.Tensor([self.omega_0])
-        # omega_0_int8 = torch.quantize_per_tensor(omega_0_tensor,  1.0, 0, torch.qint32)
-        omega_0_int8 = self.quant(omega_0_tensor)
-        qmul = QFunctional()
-        x = qmul.mul_scalar(x, omega_0_int8)
-
-        # return torch.sin(self.omega_0 * x)
-        return torch.sin(x)
+        return torch.sin(self.omega_0 * x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
@@ -90,8 +74,15 @@ class SineLayerQPT(nn.Module):
     
     
 class SirenQPT(nn.Module):
+    """
+    SirenQPT class implements a Siren based Neural Network Architecture for quantization applied post trainining.
+    """
+        
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30., engine = 'fbgemm'):
+                 first_omega_0=30, hidden_omega_0=30., engine = 'fbgemm', quantize=False):
+        """
+        Initialize a new instance from SirenQPT class, which define and implement a Siren based model for Post-Training Quantization.
+        """
         super().__init__()
         
         self.net = []
@@ -118,17 +109,26 @@ class SirenQPT(nn.Module):
                                       is_first=False, omega_0=hidden_omega_0))
         
         self.net = nn.Sequential(*self.net)
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
+        self.quantize = quantize
+        self.engine = engine
+        if quantize:
+            self.quant = torch.quantization.QuantStub()
+            self.dequant = torch.quantization.DeQuantStub()
+            pass
         pass
     
     def forward(self, coords):
+        """Forward pass, if quantize was passed as True then quantization and dequantazing operations are done respectively
+        before net computation starts and before returning model's output.
+        """
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
-        coords_quanted = self.quant(coords)
-        print(type(coords))
-        print(type(coords_quanted))
-        x = self.net(coords_quanted)
-        output = self.dequant(x)
+        if self.quantize:
+            coords_quanted = self.quant(coords)
+            x = self.net(coords_quanted)
+            output = self.dequant(x)
+        else:
+            output = self.net(coords)
+            pass
         return output, coords        
 
     def forward_with_activations(self, coords, retain_grad=False):
@@ -161,9 +161,14 @@ class SirenQPT(nn.Module):
         return activations
         
     def fuse_model(self):
-        for m in self.modules():
-            if type(m) == SineLayerQPT:
-                # torch.quantization.fuse_modules(m, ['linear'], inplace=True)
+        """Call it in order to try fusing module from which net is done, it really takes effect when quantize input paramenter
+        was set to True at instantiating time.
+        """
+        if self.quantize:
+            for m in self.modules():
+                if type(m) == SineLayerQPT:
+                    # torch.quantization.fuse_modules(m, ['linear'], inplace=True)
+                    pass
                 pass
             pass
         pass

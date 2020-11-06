@@ -76,6 +76,7 @@ import src.utils.dataio as dataio
 from src.utils.siren import Siren
 from src.utils.siren_quantized import SirenQuantized
 from src.utils.siren_quantized_post_training import SirenQPT
+from src.utils.siren_quantizatin_aware_train import SirenQAT
 
 # ----------------------------------------------------------------------------------------------- #
 # Functions
@@ -161,6 +162,7 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
             out_features=1,
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
+            quantize=True,
             outermost_linear=True) # outermost_linear=True).to(device=device)
         pass
     # Load weights if requested.
@@ -172,7 +174,7 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
     else:
-        raise Exception("Posterior quantization do not support CUDA/GPU backend for computations!")
+        raise Exception("Post Train quantization do not support CUDA/GPU backend for computations!")
     
     # Set backend for Quantization computations.
     model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
@@ -339,8 +341,8 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
 
-        # --- Posterior Quantization: TODO test it.
-        elif opt.quantization_enabled == 'posterior':
+        # --- Post Train Quantization: TODO test it.
+        elif opt.quantization_enabled == 'post_train':
             eval_scores = compute_quantization_post_train_mode(
                 model_path,
                 arch_hyperparams,
@@ -378,8 +380,8 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
                 hidden_layers=int(arch_hyperparams['hidden_layers']),
                 # outermost_linear=True).to(device=device)
                 outermost_linear=True)
-            model = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
-        elif opt.quantization_enabled =='static':
+            # model = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+        elif opt.quantization_enabled == 'static':
             model = Siren(
                 in_features=2,
                 out_features=1,
@@ -387,7 +389,18 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
                 hidden_layers=int(arch_hyperparams['hidden_layers']),
                 # outermost_linear=True).to(device=device)
                 outermost_linear=True)
-            model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+            # model = get_static_quantization_model(metadata_model_dict = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model)
+            pass
+        elif opt.quantization_enabled == 'post_train':
+            model = SirenQPT(
+                in_features=2,
+                out_features=1,
+                hidden_features=int(arch_hyperparams['hidden_features']),
+                hidden_layers=int(arch_hyperparams['hidden_layers']),
+                # outermost_linear=True).to(device=device)
+                outermost_linear=True,
+                quantize=False
+            )
             pass
         else:
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
