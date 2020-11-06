@@ -265,7 +265,6 @@ def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, 
     model_fp32_prepared = get_static_quantization_model(
         model_path = model_path, metadata_model_dict = arch_hyperparams,
         fuse_modules = fuse_modules, device = f"{device}", qconfig = f"{qconfig}", model_fp32 = model_fp32)
-    input_fp32 = _prepare_data_loaders(img_dataset, opt)
     # Calibrate model
     _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
@@ -284,10 +283,9 @@ def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_datas
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    model_fp32_prepared = model_fp32
     model_fp32_prepared = get_post_training_quantization_model(
         model_path = model_path, metadata_model_dict = arch_hyperparams,
-        fuse_modules = fuse_modules, device = f"{device}", qconfig = f"{qconfig}", model_fp32 = model_fp32_prepared)
+        fuse_modules = fuse_modules, device = f"{device}", qconfig = f"{qconfig}", model_fp32 = model_fp32)
     
     # Calibrate model
     _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')

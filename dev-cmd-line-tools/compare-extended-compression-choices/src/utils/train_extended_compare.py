@@ -260,7 +260,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # --- Train with the same configuration n-times (at least one).
             # logging.info("-" * 50); tqdm.write("-" * 50)
             seed = int(arch_hyperparams['seeds'])
-            avg_train_losses = None
+            avg_train_scores = None
             for trial_no in range(opt.num_attempts):
                 # --- Create dir for record results for current trial.
                 tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
@@ -339,7 +339,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 eval_h = "-" * 25 + " Eval " + "-" * 25
                 logging.info(eval_h); tqdm.write(eval_h)
                 tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
-                train_scores = evaluate_model(
+                eval_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
                     device='cuda', loss_fn=loss_fn,
                     quantization_enabled=opt.quantization_enabled)
@@ -348,28 +348,29 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write("- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
 
                 # --- Record train_scpres for later average computations.
-                if avg_train_losses is None:
-                    avg_train_losses =  np.array([train_scores])
+                if avg_train_scores is None:
+                    avg_train_scores =  np.array([eval_scores])
                 else:
-                    avg_train_losses = np.concatenate((avg_train_losses, [train_scores]), axis=0)
+                    avg_train_scores = np.concatenate((avg_train_scores, [eval_scores]), axis=0)
                     pass
                 if global_avg_train_losses is None:
-                    global_avg_train_losses = np.array([train_scores])
+                    global_avg_train_losses = np.array([eval_scores])
                 else:
-                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [train_scores]), axis=0)
+                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [eval_scores]), axis=0)
                 # --- Show some output per arch per trial.
                 if verbose == 1:
                     tqdm.write(
                         "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
-                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2]))
+                        % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2]))
                     pass
                 logging.info(
                         "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
-                        % (arch_no, trial_no, train_scores[0], train_scores[1], train_scores[2])
+                        % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2])
                     )
 
                 # --- Show quantized scores if necessary.
                 opt.quantization_enabled = quant_tech
+                res_quantized = []
                 if opt.quantization_enabled != None:
                     eval_start_time = time.time()
                     tqdm.write(f"Evaluating Quant. Tech.: {opt.quantization_enabled}")
@@ -388,14 +389,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record performance metrices for later investigations.
-                # history_combs.append(np.concat(train_scores, [stop_time]))
+                # history_combs.append(np.concat(eval_scores, [stop_time]))
                 history_combs.append(
                     np.concatenate(
-                        (
-                            [tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],
-                            train_scores,
-                            [stop_time]
-                        ),
+                        ([tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],eval_scores, res_quantized, [stop_time]),
                         axis=None)
                 )
                 pass
@@ -406,25 +403,23 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 tqdm.write(stats_h)
                 stop_time = time.time() - start_time_ao
                 # Show Average stats about current arch
-                avg_train_losses = avg_train_losses.mean(axis = 0)
-                tqdm.write(
-                        "- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
-                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
+                avg_train_scores = avg_train_scores.mean(axis = 0)
+                tqdm.write("- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (arch_step, avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
                 # Show Global Average stats about training process.
-                avg_train_losses = global_avg_train_losses.mean(axis = 0)
-                tqdm.write(
-                        "- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
-                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
+                avg_train_scores = global_avg_train_losses.mean(axis = 0)
+                tqdm.write("- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
                 pass
             logging.info(stats_h)
             logging.info("Per Arch stats: arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
-                        % (arch_step, avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
+                        % (arch_step, avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
             logging.info("Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
-                        % (avg_train_losses[0], avg_train_losses[1], avg_train_losses[2]))
+                        % (avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
             if opt.enable_tensorboard_logging:
-                writer_tb.add_scalar('train_mse_avg', avg_train_losses[0], step)
-                writer_tb.add_scalar('train_psnr_avg', avg_train_losses[1], step)
-                writer_tb.add_scalar('train_ssim_avg', avg_train_losses[2], step)
+                writer_tb.add_scalar('train_mse_avg', avg_train_scores[0], step)
+                writer_tb.add_scalar('train_psnr_avg', avg_train_scores[1], step)
+                writer_tb.add_scalar('train_ssim_avg', avg_train_scores[2], step)
                 pass
             
             # --- Save data following step strategy.
@@ -434,21 +429,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     """
                     path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
                     result = np.array(history_combs)
-                    np.savetxt(
-                        path_result_comb_train,
-                        result
-                    )
+                    np.savetxt(path_result_comb_train, result)
                     """
                     path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
                     result = np.array(history_combs)
-                    np.savetxt(
-                        path_result_comb_train,
-                        result
-                    )
+                    np.savetxt(path_result_comb_train,result)
                 except Exception as _:
                     raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
-                step = 0
-                arch_step += 1
+                step = 0; arch_step += 1
                 pass
             step += 1
             # --- Update counter used to handle processing bar.
