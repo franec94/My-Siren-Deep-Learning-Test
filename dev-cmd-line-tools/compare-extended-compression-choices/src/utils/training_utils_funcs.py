@@ -88,8 +88,18 @@ except:
 
 
 def get_data_ready_for_model(model_input, gt, quantization_enabled = None, device = 'cpu'):
-    """Setup data to be feeded into the model, as the latter will expect."""
+    """Setup data to be feeded into the model, as the latter will expect.
+    Params:
+    -------
+    :model_input: input to be processed by PyTorch model\n
+    :gt: reference data\n
+    :quantization_enabled: str object, quantization technique name, allowed values: [dynamic,static,posterior,quantization_aware_training]\n
+    :device: str object, allowed values: 'cpu', 'gpu', 'cuda'\n
 
+    Return:
+    -------
+    :model_input, gt: data ready to be feeded into PyTorch model
+    """
     if device == 'cpu':
         model_input = model_input['coords'].to('cpu')
         gt = gt['img'].to('cpu')
@@ -108,8 +118,19 @@ def get_data_ready_for_model(model_input, gt, quantization_enabled = None, devic
         pass
     return model_input, gt
 
-def compute_desired_metrices(model_output, gt):
-    """Compute PSNR and SSIM scores."""
+
+def compute_desired_metrices(model_output, gt, data_range=1.):
+    """Compute PSNR and SSIM scores.
+    Params:
+    -------
+    :model_output: output produced by a Pytorch model\n
+    :gt: reference data\n
+    :data_range: int, range of input data\n
+
+    Return:
+    -------
+    :val_psnr, val_mssim: scores from metrices PSNR, and SSIM
+    """
 
     sidelenght = model_output.size()[1]
 
@@ -120,12 +141,23 @@ def compute_desired_metrices(model_output, gt):
     arr_output = (arr_output / 2.) + 0.5
     arr_output = np.clip(arr_output, a_min=0., a_max=1.)
 
-    val_psnr = psnr(arr_gt, arr_output,data_range=1.)
-    val_mssim = ssim(arr_gt, arr_output,data_range=1.)
+    val_psnr = psnr(arr_gt, arr_output,data_range=data_range)
+    val_mssim = ssim(arr_gt, arr_output,data_range=data_range)
     return val_psnr, val_mssim
 
+
 def save_data_to_file(root_dir, model, train_scores):
-    """Save recorded data, i.e. weights and train scores, during training into a file location."""
+    """Save recorded data, i.e. weights and train scores, during training into a file location.
+    Params:
+    -------
+    :root_dir: str, dir within save model's weights and training scores\n
+    :model: PyThorch like object representing a model\n
+    :train_scores: np.array like object representing training scores accumulated at training time\n
+
+    Return:
+    -------
+    None
+    """
     try:
         tmp_file_path = os.path.join(root_dir, 'model_final.pth')
         torch.save(model.state_dict(),
@@ -137,6 +169,7 @@ def save_data_to_file(root_dir, model, train_scores):
     except Exception as _:
                 raise Exception(f"Error when saving file: filename={tmp_file_path} .")
     pass
+
 
 def show_quantized_computed_scores():
     pass
