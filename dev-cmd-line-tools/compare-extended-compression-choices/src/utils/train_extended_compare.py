@@ -124,7 +124,7 @@ def train_extended_compare_loop(
         # --- Loop for let model's arch be improved, updateding weights values.
 
         model_input, gt = \
-            get_data_ready_for_model(model_input, gt, device = 'cpu')
+            get_data_ready_for_model(model_input, gt, device = device)
 
 
         for epoch in range(epochs):
