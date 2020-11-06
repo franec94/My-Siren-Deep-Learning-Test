@@ -305,6 +305,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Train model.
                 # Set start time and show messages.
                 start_time_to = time.time()
+                logging.info("-" * 50); tqdm.write("-" * 50)
                 tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
                 tqdm.write(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
                 logging.info(f"Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
@@ -326,12 +327,13 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     data_range = data_range)
                 
                 stop_time = time.time() - start_time_to
-                tqdm.write(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
-                logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+                logging.info("Train total time (seconds): {0:.1f}".format(stop_time))
+                tqdm.write("Train total time (seconds): {0:.1f}".format(stop_time))
+                # tqdm.write(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+                # logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
 
                 # --- Evaluate model's on validation data.
                 eval_start_time = time.time()
-                logging.info("-" * 50); tqdm.write("-" * 50)
                 tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 train_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
