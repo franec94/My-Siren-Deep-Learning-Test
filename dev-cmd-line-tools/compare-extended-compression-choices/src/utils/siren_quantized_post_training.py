@@ -61,7 +61,11 @@ class SineLayerQPT(nn.Module):
         # x = self.linear(input)
         # omega_0_int8 = torch.quantize_per_tensor(torch.tensor(self.omega_0), 1.0, 0, torch.qint8)
         # self.q_mul.mul_scalar(x, omega_0_int8)
-        return torch.sin(self.omega_0 * self.linear(input))
+        omega_0_int8 = torch.Tensor([self.omega_0])
+        omega_0_int8 = torch.quantize_per_tensor(omega_0_int8, 0.01, 0, torch.qint8)
+        qmul = QFunctional()
+        x = qmul.mul_scalar(self.linear(input), omega_0_int8)
+        return torch.sin(x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
