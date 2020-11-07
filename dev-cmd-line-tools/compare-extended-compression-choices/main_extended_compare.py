@@ -48,7 +48,8 @@ def set_device_for_torch(device, opt, engine = 'fbgemm'):
             else torch.device('gpu'))
             engine = None
         else:
-            device = torch.device('cpu')    
+            device = (torch.device('cuda:0') if torch.cuda.is_available()
+            else torch.device('gpu'))
             torch.backends.quantized.engine = engine
             pass
     except:
