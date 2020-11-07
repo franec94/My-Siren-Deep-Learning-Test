@@ -43,6 +43,7 @@ class SineLayerQPT(nn.Module):
 
         self.in_features = in_features
         self.linear = nn.Linear(in_features, out_features, bias=bias)
+        self.relu = nn.ReLU()
         # self.linear = nn.quantized.dynamic.modules.Linear(in_features, out_features, bias_=bias)
         
         self.init_weights()
@@ -66,7 +67,8 @@ class SineLayerQPT(nn.Module):
         x = self.linear(input)
         # return torch.sin(self.omega_0 * x)
         x = self.mult_x_omega0.mul_scalar(x, self.omega_0)
-        return torch.sin(x)
+        return self.relu(x)
+        # return torch.sin(x)
     
     def forward_with_intermediate(self, input):
         input_quant = self.quant(input)
