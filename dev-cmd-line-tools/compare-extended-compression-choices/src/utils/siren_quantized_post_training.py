@@ -172,7 +172,7 @@ class SirenQPT(nn.Module):
         if self.quantize:
             for m in self.modules():
                 if type(m) == SineLayerQPT:
-                    # torch.quantization.fuse_modules(m, ['linear'], inplace=True)
+                    torch.quantization.fuse_modules(m, ['linear', 'relu'], inplace=True)
                     pass
                 pass
             pass
