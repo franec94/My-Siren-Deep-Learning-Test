@@ -159,6 +159,9 @@ def main():
         opt=opt,
         model_dir=root_path,
         verbose=opt.verbose,
+        save_metrices=True,
+        steps_til_summary = opt.steps_til_summary,
+        data_range=1
     )
 
     print(f"End training [{curr_date}][timestamp={curr_timestamp}] eta: {time.time() - start_time} seconds.")

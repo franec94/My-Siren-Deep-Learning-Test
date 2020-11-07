@@ -61,90 +61,9 @@ from src.utils.siren_dynamic_quantization import prepare_model, compute_quantiza
 from src.utils.siren_dynamic_quantization import get_dynamic_quantization_model, get_static_quantization_model
 from src.utils.siren_dynamic_quantization import get_post_training_quantization_model, get_quantization_aware_training
 
-# ----------------------------------------------------------------------------------------------- #
+# --------------------------------------------- #
 # Functions
-# ----------------------------------------------------------------------------------------------- #
-
 # --------------------------------------------- #
-# Local Utils
-# --------------------------------------------- #
-
-def _log_infos(info_msg, header_msg = None, logging = None, tqdm = None, verbose = 0):
-    """Log information messages to logging and tqdm objects.
-    Params:
-    -------
-    :info_msg: either a str object or list of objects to be logged.\n
-    :header_msg: str object used as header or separator, default None means no header will be shown.\n
-    :logging: logging python's std lib object, if None no information will be logged via logging.\n
-    :tqdm: tqdm python object, if None no information will be logged via tqdm.\n
-    Return:
-    -------
-    None
-    """
-
-    if not isinstance(info_msg , list) :
-        info_msg = [info_msg]
-        pass
-    
-    if logging != None:
-        if header_msg != None:
-            logging.info(f"{header_msg}")
-            pass
-        for a_msg in info_msg:
-            logging.info(f"{a_msg}")
-            pass
-        pass
-    if tqdm != None:
-        if verbose == 0: return
-        if header_msg != None:
-            tqdm.write(f"{header_msg}")
-            pass
-        for a_msg in info_msg:
-            tqdm.write(f"{a_msg}")
-            pass
-        pass
-    pass
-
-
-def update_avg_stats_arrays(avg_train_scores, global_avg_train_losses, eval_scores):
-    """Updated arrays used to show avg stats
-    Params:
-    -------
-    :avg_train_scores: np.ndarray or None, dest of eval_scores data for computing current arch stasts.\n
-    :global_avg_train_losses: np.ndarray or None, dest of eval_scores data for computing global stasts.\n
-    :eval_scores: np.ndarray like object containing new data to be added for later stats evaluating.\n
-    Return:
-    -------
-    :avg_train_scores, global_avg_train_losses:
-    """
-    if avg_train_scores is None:
-        avg_train_scores =  np.array([eval_scores])
-    else:
-        avg_train_scores = np.concatenate((avg_train_scores, [eval_scores]), axis=0)
-        pass
-    
-    if global_avg_train_losses is None:
-        global_avg_train_losses = np.array([eval_scores])
-    else:
-        global_avg_train_losses = np.concatenate((global_avg_train_losses, [eval_scores]), axis=0)
-    return avg_train_scores, global_avg_train_losses
-
-
-def _show_table_info_curr_trial(record_info, headers="Info,Detail".split(","), header_msg = None, logging = None, tqdm = None, verbose = 0):
-    """Show Current Infos about trial that will be carryed out."""
-    table_vals = list(record_info._asdict().items())
-    # table = tabulate.tabulate(table_vals, headers="Info,Detail".split(","))
-    table = tabulate.tabulate(table_vals, headers=headers)
-    # tqdm.write(f"{table}")
-    # logging.info(f"{table}")
-    _log_infos(info_msg = f"{table}", header_msg = None, logging = None, tqdm = None, verbose = 0)
-    pass
-
-
-# --------------------------------------------- #
-# Train Protocol Definition
-# --------------------------------------------- #
-
 
 def train_extended_compare_loop(
     model, train_dataloader,
@@ -260,7 +179,7 @@ def train_extended_compare_loop(
     return model
 
 
-def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', steps_til_summary = 1, verbose = 0, save_metrices = False, data_range = 255):
+def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, opt, model_dir = None, loss_fn=nn.MSELoss(), summary_fn=None, device = 'cpu', verbose = 0, save_metrices = False, data_range = 255):
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
@@ -273,12 +192,14 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     history_combs = []  # Variable for recording combinations explored.
     step = 1            # Variable for keep trace of which step we are in.
     arch_step = 0       # Variable for displaying which arch wre are considering.
-    is_first_arch = True
+
+    # steps_til_summary = len(opt.seeds) * len(opt.hidden_layers)
+    steps_til_summary = 1 # variable for recording and saving data with a given frequence, into output files.
 
     # Variables for most inner loop, here.
-    model, global_avg_train_losses = None, None
-    train_dataloader, val_dataloader = None, None
-    
+    model, train_dataloader, val_dataloader = None, None, None
+    global_avg_train_losses = None
+
     # ---  Setup logger.
     log_filename = os.path.join(model_dir, 'train.log')
     logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
@@ -296,15 +217,27 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
         # chosen hyper-params.
         # print()
         for arch_no, arch_hyperparams in enumerate(grid_arch_hyperparams):
+            if device != 'cpu' and device != 'gpu':
+                torch.cuda.empty_cache()
+                pass
             # --- Start time: it's the point in time from which the current train
             # begins, when new hyper-params are selected and evaluted in terms of performances.
             if verbose >= 1:
                 start_time_ao = time.time()
-                pass
+            # print(hidden_features, hidden_layers)
+
+            # --- Print hyperparams to be tested.
+            # logging.info("_" * 50); logging.info("_" * 50)
+            # tqdm.write("_" * 50); tqdm.write("_" * 50)
 
             sep_str_arch_no = "=" * 25 + f" ARCH {arch_no + opt.resume_from} " + "=" * 25
             header_arch = '_' * len(sep_str_arch_no)
-            _log_infos(info_msg=sep_str_arch_no, header_msg=header_arch, logging=logging, tqdm=tqdm, verbose=1)
+            logging.info(header_arch); logging.info(sep_str_arch_no)
+            tqdm.write(header_arch); tqdm.write(sep_str_arch_no)
+
+            # arch_hyperparams_str = '\n'.join([f"{str(k)}: {str(v)}" for k,v in arch_hyperparams.items()])
+            # tqdm.write(f"{arch_hyperparams_str}")
+            # logging.info(arch_hyperparams_str)
 
             # --- Rescale image to be correctly processed by the net.
             # sidelength = int(arch_hyperparams['hidden_features'])
@@ -340,14 +273,17 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 random.seed(seed)
 
                 # --- Prepare siren model.
-                device_tmp = 'cuda'
-                if device_tmp != 'cpu' and device_tmp != 'gpu':
-                    torch.cuda.empty_cache()
-                    pass
-                model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = f'{device_tmp}')
+                model = prepare_model(opt, arch_hyperparams = arch_hyperparams, device = 'cuda')
+                # tqdm.write(f"Model's kind Siren: {type(model)}"); logging.info(f"Model's kind Siren: {type(model)}")
+                # tqdm.write(f"Model's kind Siren: {str(model).split('(')[0]}"); logging.info(f"Model's kind Siren: {str(model).split('(')[0]}")
+                # tqdm.write(f"Model created on device: {device}")
+                # logging.info(f"Model created on device: {device}")
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())
+                # tqdm.write(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info(f"Model's size (# parameters): {tot_weights_model} | Model's size (# bits, 1 weight = 32 bits): {tot_weights_model * 32}")
+                # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Show infos about model to be tested.
                 record_info = SomeInfosModel._make([
@@ -356,7 +292,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     arch_no + opt.resume_from, trial_no,
                     arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'],
                     seed, tot_weights_model, tot_weights_model*32])
-                _show_table_info_curr_trial(record_info, headers="Info,Detail".split(","), header_msg = None, logging = logging, tqdm = tqdm, verbose = 1)
+                table_vals = list(record_info._asdict().items())
+                table = tabulate.tabulate(table_vals, headers="Info,Detail".split(","))
+                tqdm.write(f"{table}")
+                logging.info(f"{table}")
 
                 # --- Show model's architecture and more details.
                 # if device != 'cpu' and device != 'gpu':
@@ -367,11 +306,15 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 except: pass
 
                 # --- Train model.
-                train_h = "-" * 25 + " Train " + "-" * 25
-                info_msg = [f"Train Mode: On", f"- Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running..."]
-                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
-                
+                # Set start time and show messages.
                 start_time_to = time.time()
+                # logging.info("-" * 50); tqdm.write("-" * 50)
+                train_h = "-" * 25 + " Train " + "-" * 25
+                logging.info(train_h); tqdm.write(train_h)
+                tqdm.write(f"Train Mode: On"); logging.info("Train Mode: On")
+                tqdm.write(f"- Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
+                logging.info(f"- Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running...")
+
                 model_trained = train_extended_compare_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -387,48 +330,69 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     save_metrices = save_metrices,
                     log_for_tensorboard=opt.enable_tensorboard_logging,
                     data_range = data_range)
+                
                 stop_time = time.time() - start_time_to
-                _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
-                
+                logging.info("- Train total time (seconds): {0:.1f}".format(stop_time))
+                tqdm.write("- Train total time (seconds): {0:.1f}".format(stop_time))
+                # tqdm.write(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+                # logging.info(f"Arch No: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) | Eta(sec): {stop_time}")
+
                 # --- Evaluate model's on validation data.
-                eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = f"Eval Mode: On"
-                _log_infos(info_msg = info_msg, header_msg = eval_h, logging=logging, tqdm=tqdm, verbose = 1)
-                
                 eval_start_time = time.time()
+                eval_h = "-" * 25 + " Eval " + "-" * 25
+                logging.info(eval_h); tqdm.write(eval_h)
+                tqdm.write(f"Eval Mode: On"); logging.info(f"Eval Mode: On")
                 eval_scores = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
                     device='cuda', loss_fn=loss_fn,
                     quantization_enabled=opt.quantization_enabled)
                 eval_duration_time = time.time() - eval_start_time
+                logging.info("- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
+                tqdm.write("- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
 
-                info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2]),
-                                        "- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time)]
-                _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
-
-                # --- Record eval_scores for later average computations.
-                avg_train_scores, global_avg_train_losses = \
-                    update_avg_stats_arrays(avg_train_scores, global_avg_train_losses, eval_scores)
+                # --- Record train_scpres for later average computations.
+                if avg_train_scores is None:
+                    avg_train_scores =  np.array([eval_scores])
+                else:
+                    avg_train_scores = np.concatenate((avg_train_scores, [eval_scores]), axis=0)
+                    pass
+                if global_avg_train_losses is None:
+                    global_avg_train_losses = np.array([eval_scores])
+                else:
+                    global_avg_train_losses = np.concatenate((global_avg_train_losses, [eval_scores]), axis=0)
+                # --- Show some output per arch per trial.
+                if verbose == 1:
+                    tqdm.write(
+                        "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2]))
+                    pass
+                logging.info(
+                        "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2])
+                    )
 
                 # --- Show quantized scores if necessary.
+                # opt.quantization_enabled = quant_tech
                 res_quantized = []
                 if opt.quantization_enabled != None:
-                    _log_infos(info_msg = f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}", header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
-                    
                     eval_start_time = time.time()
+                    tqdm.write(f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}")
+                    logging.info(f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}")
                     res_quantized = compute_quantization(
                         img_dataset=img_dataset,
                         opt=opt,
                         model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
-                    eval_duration_time = time.time() - eval_start_time
-
-                    info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]),
-                                            "- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time)]
-                    _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
+                    tqdm.write("- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]))
+                    logging.info("- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f"
+                        % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]))
+                    logging.info("- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
+                    tqdm.write("- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
                     pass
+                # logging.info("-" * 50); tqdm.write("-" * 50)
 
                 # --- Record performance metrices for later investigations.
+                # history_combs.append(np.concat(eval_scores, [stop_time]))
                 history_combs.append(
                     np.concatenate(
                         ([tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],eval_scores, res_quantized, [stop_time]),
@@ -437,14 +401,24 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pass
             
             # --- Show AVG stats per Arch.
-            stats_h = "-" * 25 + " Stats " + "-" * 25                                                              # Header employed
-            avg_train_scores = avg_train_scores.mean(axis = 0)                                                     # Average computed
-            info_stats = ["- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f" \
-                                % (arch_step, avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]),      # Data to show
-                          "- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f" \
-                                % (avg_train_scores[0], avg_train_scores[1], avg_train_scores[2])]
-            _log_infos(info_msg = info_stats, header_msg=stats_h, logging=logging, tqdm=tqdm, verbose = verbose)   # Log requested data
-
+            stats_h = "-" * 25 + " Stats " + "-" * 25
+            if verbose >= 1:
+                tqdm.write(stats_h)
+                stop_time = time.time() - start_time_ao
+                # Show Average stats about current arch
+                avg_train_scores = avg_train_scores.mean(axis = 0)
+                tqdm.write("- Per Arch stats: arch_no=%d, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (arch_step, avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
+                # Show Global Average stats about training process.
+                avg_train_scores = global_avg_train_losses.mean(axis = 0)
+                tqdm.write("- Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
+                pass
+            logging.info(stats_h)
+            logging.info("Per Arch stats: arch_no=%d stats, loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (arch_step, avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
+            logging.info("Global stats: loss(avg)=%0.6f, PSNR(avg-db)=%0.6f, SSIM(avg)=%0.6f"
+                        % (avg_train_scores[0], avg_train_scores[1], avg_train_scores[2]))
             if opt.enable_tensorboard_logging:
                 writer_tb.add_scalar('train_mse_avg', avg_train_scores[0], step)
                 writer_tb.add_scalar('train_psnr_avg', avg_train_scores[1], step)
@@ -452,25 +426,20 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pass
             
             # --- Save data following step strategy.
-            if arch_no % steps_til_summary == 0:
+            if step // steps_til_summary == step:
                 # Save into output file recorded metrices across different trials.
-                if is_first_arch != True:
-                    try:
-                        """
-                        path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
-                        result = np.array(history_combs)
-                        np.savetxt(path_result_comb_train, result)
-                        """
-                        path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
-                        result = np.array(history_combs)
-                        np.savetxt(path_result_comb_train,result)
-                        history_combs = []
-                    except Exception as _:
-                        raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
-                    arch_step += 1
-                else:
-                    is_first_arch = False
-                    pass
+                try:
+                    """
+                    path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
+                    result = np.array(history_combs)
+                    np.savetxt(path_result_comb_train, result)
+                    """
+                    path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
+                    result = np.array(history_combs)
+                    np.savetxt(path_result_comb_train,result)
+                except Exception as _:
+                    raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
+                step = 0; arch_step += 1
                 pass
             step += 1
             # --- Update counter used to handle processing bar.

@@ -66,6 +66,9 @@ def get_cmd_line_opts():
     p.add_argument('--quantization_enabled', required=False, type=str, default=None, 
         help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,static,post_train,quantization_aware_training])'
     )
+    p.add_argument('--steps_til_summary', required=False, type=int, default=1, 
+        help='Step, i.e. number of archs tested, before results are stored for summary gathering. (Default: 1)'
+    )
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()

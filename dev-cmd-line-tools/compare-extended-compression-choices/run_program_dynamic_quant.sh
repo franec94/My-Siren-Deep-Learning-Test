@@ -15,11 +15,11 @@ CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --logging_root '../../../../results/dynamic_quant/cameramen' \
   --experiment_name 'train' \
   --sidelength 256 \
-  --num_epochs 100000 \
+  --num_epochs 200000 \
   --hidden_features 32 \
   --num_attempts 1 \
-  --seeds 0 42 123 1234 101 \
-  --hidden_layers 2 3 4 5 6 7 8 9 \
+  --seeds 0 42 123 \
+  --hidden_layers 5 6 7 8 9 10 \
   --quantization_enabled dynamic \
   --resume_from 0 \
   --end_to  1 \
