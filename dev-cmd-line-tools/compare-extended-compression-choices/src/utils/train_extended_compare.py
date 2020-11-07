@@ -391,7 +391,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 # --- Evaluate model's on validation data.
-                eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = f"Eval Mode: On"
+                eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"Eval Mode: On", f"Eval device: cuda"]
                 _log_infos(info_msg = info_msg, header_msg = eval_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 eval_start_time = time.time()
@@ -413,7 +413,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # --- Show quantized scores if necessary.
                 res_quantized = []
                 if opt.quantization_enabled != None:
-                    _log_infos(info_msg = f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}", header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
+                    info_msg = [f"Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}", f"Eval device: cpu"]
+                    _log_infos(info_msg = info_msg, header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
                     
                     eval_start_time = time.time()
                     res_quantized = compute_quantization(
