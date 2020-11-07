@@ -48,6 +48,9 @@ def get_cmd_line_opts():
     p.add_argument('--hidden_layers',  nargs='+', type=int, required=False, default=[1,2,3,4,5],
         help='List of hidden layers (default: [1,2,3,4,5]).'
     )
+    p.add_argument('--frequences',  nargs='+', type=int, required=False, default=None,
+        help='List of frequences to be employed when quantization_enabled flag is set to paszke_quant (default: None).'
+    )
     p.add_argument('--num_attempts', type=int, required=False, default=5,
         help='Number of attempts per architecture sticking a particular seed value (default: 5).'
     )
@@ -69,6 +72,8 @@ def get_cmd_line_opts():
     p.add_argument('--steps_til_summary', required=False, type=int, default=0, 
         help='Step, i.e. number of archs tested, before results are stored for summary gathering. (Default: 0)'
     )
+
+    
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()

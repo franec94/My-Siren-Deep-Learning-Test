@@ -110,6 +110,11 @@ def get_arch_hyperparams(opt, image_resolution):
         'hidden_features': hidden_features_list
     }
 
+    if opt.quantization_enabled.lower() == "paszke_quant":
+        param_grid['frequency'] = opt.frequences
+        pass
+    
+
     return list(ParameterGrid(param_grid))
 
 
@@ -224,8 +229,20 @@ def check_quantization_tech_provided(opt):
     if opt.quantization_enabled == None: return opt
 
     quant_tech = opt.quantization_enabled.lower()
-    if quant_tech not in "dynamic,static,post_train,quantization_aware_training".split(","):
+    if quant_tech not in "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(","):
         raise Exception(f"Error: {quant_tech} not allowed!")
 
     opt.quantization_enabled = quant_tech
     return opt
+
+
+def check_frequencies(opt):
+    if opt.quantization_enabled == None: return
+    if opt.quantization_enabled == 'paszke_quant':
+        if opt.frequences == None:
+            raise Exception('Error no frequences provided for Pazke Quant Tech.')
+        for f in opt.frequences:
+            if f < 0:
+                raise Exception(f'Error frequence {f} value is not allowed.')
+        pass
+    pass

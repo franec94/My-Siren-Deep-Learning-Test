@@ -84,23 +84,6 @@ def main():
     field_vals = []
     SomeInfos = collections.namedtuple('SomeInfos', field_names)
 
-    # --- Get input image to be compressed.
-    img_dataset, img, image_resolution = \
-        get_input_image(opt)
-
-    # --- Get Hyper-params list.
-    grid_arch_hyperparams = \
-        get_arch_hyperparams(opt, image_resolution)
-
-    # --- Check verbose style.
-    if opt.verbose not in [0, 1, 2]:
-        raise ValueError(f"opt.verbose = {opt.verbose} not allowed!")
-
-    # --- Set Hyper-params to be tested.
-    # logging.info("Set Hyper-params to be tested")
-    opt, pos_start, pos_end = \
-        set_hyperparams_to_be_tested(opt, grid_arch_hyperparams)
-
     # --- Create logging dirs.
     root_path, curr_date, curr_timestamp = \
         create_train_logging_dir(opt)
@@ -123,11 +106,6 @@ def main():
     log_parser(root_path, parser, opt, debug_mode = False)
     logging.info(parser.format_values())
 
-    # --- Show overall number of trials.
-    # show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False)
-    tot_archs = len(grid_arch_hyperparams)
-    tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
-
     # --- Set device upon which compute model's fitting
     # or evaluation, depending on the current desired task.
     device, cuda_devices_no, engine = set_device_for_torch(device, opt)
@@ -137,6 +115,31 @@ def main():
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
+
+    # --- Check frequences if any.
+    check_frequencies(opt)
+
+    # --- Get input image to be compressed.
+    img_dataset, img, image_resolution = \
+        get_input_image(opt)
+
+    # --- Get Hyper-params list.
+    grid_arch_hyperparams = \
+        get_arch_hyperparams(opt, image_resolution)
+
+    # --- Show overall number of trials.
+    # show_number_of_trials(opt, grid_arch_hyperparams, via_tabulate = False)
+    tot_archs = len(grid_arch_hyperparams)
+    tot_trials = len(grid_arch_hyperparams) * opt.num_attempts
+    
+    # --- Check verbose style.
+    if opt.verbose not in [0, 1, 2]:
+        raise ValueError(f"opt.verbose = {opt.verbose} not allowed!")
+
+    # --- Set Hyper-params to be tested.
+    # logging.info("Set Hyper-params to be tested")
+    opt, pos_start, pos_end = \
+        set_hyperparams_to_be_tested(opt, grid_arch_hyperparams)
     # print(f"Quantization selected: {opt.quantization_enabled}.")
     # logging.info(f"Quantization selected: {opt.quantization_enabled}.")
 
