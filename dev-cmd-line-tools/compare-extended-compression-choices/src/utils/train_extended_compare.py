@@ -368,7 +368,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # --- Train model.
                 train_h = "-" * 25 + " Train " + "-" * 25
-                info_msg = [f"[*] Train Mode: On", f"- Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running..."]
+                info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Arch no: {arch_no + opt.resume_from} | Trial No: ({trial_no+1}/{opt.num_attempts}) running..."]
                 _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 start_time_to = time.time()
