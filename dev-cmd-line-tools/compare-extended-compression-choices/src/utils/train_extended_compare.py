@@ -388,7 +388,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     log_for_tensorboard=opt.enable_tensorboard_logging,
                     data_range = data_range)
                 stop_time = time.time() - start_time_to
-                _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
+                _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 # --- Evaluate model's on validation data.
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"Eval Mode: On", f"Eval device: cuda"]
