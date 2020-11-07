@@ -137,7 +137,7 @@ def _show_table_info_curr_trial(record_info, headers="Info,Detail".split(","), h
     table = tabulate.tabulate(table_vals, headers=headers)
     # tqdm.write(f"{table}")
     # logging.info(f"{table}")
-    _log_infos(info_msg = f"{table}", header_msg = None, logging = None, tqdm = None, verbose = 0)
+    _log_infos(info_msg = f"{table}", header_msg = None, logging = logging, tqdm = tqdm, verbose = verbose)
     pass
 
 
@@ -455,6 +455,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # --- Save data following step strategy.
             if arch_no % steps_til_summary == 0:
                 # Save into output file recorded metrices across different trials.
+                tqdm.write(f"Reached {arch_no}. Saving data...")
                 if is_first_arch != True:
                     try:
                         """
