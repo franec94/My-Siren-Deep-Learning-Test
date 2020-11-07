@@ -23,6 +23,7 @@ CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --quantization_enabled dynamic \
   --resume_from 0 \
   --end_to  1 \
+  --steps_til_summary 3 \
   --enable_tensorboard_logging \
   --verbose 1 \
   --show_number_of_trials \
