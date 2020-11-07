@@ -232,10 +232,61 @@ def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse
     model_fp32_prepared = torch.quantization.prepare_qat(model_fp32)
     return model_fp32_prepared
 
+def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Build model for Paszek quant evaluation."""
+    
+    if device == 'cpu':
+        model_fp32 = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            outermost_linear=True)
+        if model_path != None:
+            state_dict = torch.load(model_path)
+            # model.load_state_dict(state_dict).to('cpu')
+            model_fp32.load_state_dict(state_dict)
+            pass
+        model_fp32.to(device='cpu')
+    else:
+        model_fp32 = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            outermost_linear=True)
+        if model_path != None:
+            state_dict = torch.load(model_path)
+            # model.load_state_dict(state_dict).to('cpu')
+            model_fp32.load_state_dict(state_dict)
+            pass
+        model_fp32.load_state_dict(state_dict).cuda()
+        pass
+    if fuse_modules != None:
+        pass
+    model_fp32 = quantize_model(model = model_fp32, frequency = metadata_model_dict['frequency'])
+    return model_fp32
+
 
 # --------------------------------------------- #
 # Compute Quantization
 # --------------------------------------------- #
+
+def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Compute post train scores by means of Paszek Quant Mode."""
+    eval_scores = None
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+
+    model_int8 = get_paszke_quant_model(
+        metadata_model_dict = arch_hyperparams,
+        model_path = model_path,
+        fuse_modules = fuse_modules,
+        device = f'{device}',
+        qconfig = f'{qconfig}',
+        model_fp32 = model_fp32)
+    
+    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
+    return eval_scores
 
 def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of dynamic quantization.
@@ -360,6 +411,14 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 opt,
                 fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
+        elif opt.quantization_enabled =='paszke_quant':
+            eval_scores = compute_quantization_paszke_quant_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt,
+                fuse_modules = None, device = 'cpu', qconfig = f"{qconfig}", model_fp32 = None)
+            pass
         else:
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
     return eval_scores
@@ -368,11 +427,40 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
 # --------------------------------------------- #
 # Utils Functions
 # --------------------------------------------- #
+
+def quantize_model(model, frequency):
+    """Quantize pytorch model, after training, that is made from sine functions as activations.
+    The code provided for function implementation has been picked from works done
+    by PyTorch Paszke et al. (2017:
+     - A. Paszke, S. Gross, S. Chintala, G. Chanan, E. Yang, Z. DeVito, Z. Lin, A. Desmaison, L. Antiga, and A. Lerer. Automatic differentiation in PyTorch. Proc. Neural Information Processing Systems, 2017.
+       https://openreview.net/forum?id=BJJsrmfCZ
+    Other works that cited the code snippet exploited here for implementing such a function:
+     - On Periodic Functions as Regularizers for Quantization of Neural Networks
+       https://www.researchgate.net/publication/329207332_On_Periodic_Functions_as_Regularizers_for_Quantization_of_Neural_Networks
+    Params:
+    -------
+    :model: Pytorch model with sine or trigonometric functions used as activation functions.\n
+    :frequency: number that is used for tuning quantization.\n
+
+    Return:
+    -------
+    :model: updated for quantization.
+    """
+    def quantize_weights(m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            c = m.weight.abs().max().data
+            m.weight.data.mul_(frequency/c)
+            m.weight.data.round_()
+            m.weight.data.mul_(c/frequency)
+    model.apply(quantize_weights)
+    return model
+
+
 def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
     """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
     model = None
     if opt.quantization_enabled != None:
-        if opt.quantization_enabled == 'dynamic':
+        if opt.quantization_enabled in 'dynamic,paszke_quant'.split(","):
             model = Siren(
                 in_features=2,
                 out_features=1,

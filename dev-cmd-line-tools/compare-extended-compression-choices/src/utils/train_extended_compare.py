@@ -453,25 +453,27 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 pass
             
             # --- Save data following step strategy.
-            if arch_no % steps_til_summary == 0:
-                # Save into output file recorded metrices across different trials.
-                tqdm.write(f"Reached {arch_no}. Saving data...")
-                if is_first_arch != True:
-                    try:
-                        """
-                        path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
-                        result = np.array(history_combs)
-                        np.savetxt(path_result_comb_train, result)
-                        """
-                        path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
-                        result = np.array(history_combs)
-                        np.savetxt(path_result_comb_train,result)
-                        history_combs = []
-                    except Exception as _:
-                        raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
-                    arch_step += 1
-                else:
-                    is_first_arch = False
+            if steps_til_summary > 0:
+                if arch_no % steps_til_summary == 0:
+                    # Save into output file recorded metrices across different trials.
+                    tqdm.write(f"Reached {arch_no}. Saving data...")
+                    if is_first_arch != True:
+                        try:
+                            """
+                            path_result_comb_train = f'/content/result_comb_train_{arch_step + opt.resume_from}.txt'
+                            result = np.array(history_combs)
+                            np.savetxt(path_result_comb_train, result)
+                            """
+                            path_result_comb_train = os.path.join(model_dir, f'result_comb_train_{arch_step + opt.resume_from}.txt')
+                            result = np.array(history_combs)
+                            np.savetxt(path_result_comb_train,result)
+                            history_combs = []
+                        except Exception as _:
+                            raise Exception(f"Error when saving file: filename={path_result_comb_train} .")
+                        arch_step += 1
+                    else:
+                        is_first_arch = False
+                        pass
                     pass
                 pass
             step += 1
