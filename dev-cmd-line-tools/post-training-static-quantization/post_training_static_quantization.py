@@ -123,6 +123,8 @@ def main():
     # --- Check frequences if any.
     check_frequencies(opt)
 
+    opt = check_sidelength(opt)
+
     # --- Filter unwanted resources.
     opt = filter_model_files_opt_args(opt)
     opt = map_filter_model_dirs_opt_args(opt)

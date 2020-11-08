@@ -264,4 +264,4 @@ def check_sidelength(opt):
         return a_sl
 
     opt.sidelength = list(map(check_and_map_sl, opt.sidelength))
-    pass
+    return opt
