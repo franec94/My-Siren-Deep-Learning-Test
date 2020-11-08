@@ -67,7 +67,7 @@ import torch.quantization
 # Import: custom, from this project
 # --------------------------------------------- #
 from src.utils.archs.siren import Siren
-from src.utils.archssiren_quantized import SirenQuantized
+from src.utils.archs.siren_quantized import SirenQuantized
 import src.utils.dataio as dataio
 from src.utils.functions import get_input_image
 
