@@ -27,6 +27,7 @@ import random
 import shutil
 import sys
 import re
+import tabulate
 import time
 # import visdom
 
@@ -89,10 +90,51 @@ from src.utils.quant_utils.quant_utils_functions import _evaluate_model
 from src.utils.quant_utils.quant_utils_functions import _prepare_data_loaders
 from src.utils.quant_utils.quant_utils_functions import prepare_model
 
+from src.utils.functions import get_input_image
+
+
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
+
+    eval_scores = []
+    if quant_tech == None:
+        eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
+        model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda')
+        eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
+        pass
+
+    return eval_scores
 
 def evaluate_models_from_files(opt):
+
+    # Prepare named-tuple for model's detail data.
     tuple_data = [opt.model_files, opt.hl, opt.hf, opt.sidelength]
-    InfoModel = collections.namedtuple('InfoModel', "filename,hidden_layers,hidden_features,sidelength")
+    InfoModel = collections.namedtuple('InfoModel', "model_filename,hidden_layers,hidden_features,sidelength")
+
+    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
+    InfoResults = collections.namedtuple('InfoResults', fields_name)
+
+    if opt.quantization_enabled != None:
+        if isinstance(opt.quantization_enabled, str):
+            quant_tech_list = [opt.quantization_enabled]
+        else:
+            quant_tech_list = opt.quantization_enabled
+    else:
+        quant_tech_list = []
+
+    records_list = []
     for a_model_conf in list(map(InfoModel._make, zip(*tuple_data))):
-        pprint(a_model_conf)
+        image_dataset = get_input_image(opt = opt)
+
+        eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf, quant_tech = None, device = 'cuda')
+        record_eval_scores = InfoResults._make(list(a_model_conf._asdict.values)() + eval_scores)
+        records_list.append(record_eval_scores)
+        # pprint(a_model_conf)
+        for a_tech in quant_tech_list:
+            pass
+        pass
+
+    if len(records_list) != 0:
+        table = tabulate.tabulate(tabular_data=records_list, headers=fields_name)
+        print(table)
+        pass
     pass
