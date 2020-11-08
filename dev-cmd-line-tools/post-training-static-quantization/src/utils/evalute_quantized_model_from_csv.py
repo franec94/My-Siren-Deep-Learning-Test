@@ -330,6 +330,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
 
         model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
+        pprint(model_conf)
 
         # --- Get input image to be evaluated.
         # img_dataset, img, image_resolution = \
