@@ -321,7 +321,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
             files_not_found.append(vals.path)
             continue
 
-        model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl), model_filename=vals.path)
+        model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl), model_filename=vals.path, sidelength=int(vals.cropped_width))
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
 
         model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
