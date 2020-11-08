@@ -126,7 +126,7 @@ def evaluate_models_from_files(opt):
         image_dataset = get_input_image(opt = opt)
 
         eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf, quant_tech = None, device = 'cuda')
-        record_eval_scores = InfoResults._make(list(a_model_conf._asdict.values)() + eval_scores)
+        record_eval_scores = InfoResults._make(list(a_model_conf._asdict.values()) + eval_scores)
         records_list.append(record_eval_scores)
         # pprint(a_model_conf)
         for a_tech in quant_tech_list:
