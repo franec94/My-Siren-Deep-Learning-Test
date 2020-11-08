@@ -338,7 +338,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         
         eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = None, device = 'cuda')
 
-        vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, None] + list(eval_scores)
+        vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, 'None'] + list(eval_scores)
         a_record = InfoResults._make(vals_r)
         records_list.append(a_record)
 
