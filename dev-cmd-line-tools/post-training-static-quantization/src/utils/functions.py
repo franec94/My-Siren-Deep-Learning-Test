@@ -66,6 +66,13 @@ def get_input_image(opt):
     """Get input image, either provided as path to file from command line. If no
     input image file will be provided from command line, default cameramen image will be fetched from
     skimage python library as default image.
+
+    Return:
+    -------
+    :img_dataset, img, image_resolution: where:\n
+    - img_dataset: instance from Pytorch DataSet\n
+    - img: PIL.image instance\n
+    - image_resolution: (int, int) size of the image
     """
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()

@@ -134,7 +134,7 @@ def evaluate_models_from_files(opt):
 
     records_list = []
     for a_model_conf in list(map(InfoModel._make, zip(*tuple_data))):
-        image_dataset = get_input_image(opt = opt)
+        img_dataset, _, _ = get_input_image(opt = opt)
         pprint(a_model_conf)
 
         a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [None])
