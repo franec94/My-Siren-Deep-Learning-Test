@@ -116,7 +116,10 @@ def evaluate_models_from_files(opt):
 
     # Prepare named-tuple for model's detail data.
     tuple_data = [opt.model_files, opt.hl, opt.hf, opt.sidelength]
-    InfoModel = collections.namedtuple('InfoModel', "model_filename,hidden_layers,hidden_features,sidelength, quantization_enabled")
+    InfoModel = collections.namedtuple('InfoModel', "model_filename,hidden_layers,hidden_features,sidelength")
+
+    tuple_data = [opt.model_files, opt.hl, opt.hf, opt.sidelength]
+    InfoModel2 = collections.namedtuple('InfoModel', "model_filename,hidden_layers,hidden_features,sidelength, quantization_enabled")
 
     fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
@@ -135,8 +138,11 @@ def evaluate_models_from_files(opt):
         pprint(a_model_conf)
 
         a_model_conf.quantization_enabled = None
-        eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf, quant_tech = None, device = 'cuda')
-        record_eval_scores = InfoResults._make(list(a_model_conf._asdict.values()) + eval_scores)
+        a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [None])
+
+        eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = None, device = 'cuda')
+        
+        record_eval_scores = InfoResults._make(list(a_model_conf_2._asdict.values()) + eval_scores)
         records_list.append(record_eval_scores)
         
         for a_tech in quant_tech_list:
