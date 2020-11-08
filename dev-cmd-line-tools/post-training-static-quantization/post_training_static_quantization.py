@@ -72,7 +72,7 @@ def process_posterior_quantization_mode(opt):
     if result_tuples == None or len(result_tuples) == 0:
         print("No models evaluated in Plain mode.")
     else:
-        print("Some models evaluated in Plain mode.")
+        print("Some models evaluated in quant mode.")
         result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
         df_results = pd.DataFrame(data = result_tuples)
         print(df_results.head(5))
@@ -116,6 +116,12 @@ def main():
     # --- Log parsed cmd args.
     log_parser(root_path, parser, opt, debug_mode = DEBUG_MODE)
     logging.info(parser.format_values())
+
+    # --- Check quantization tech, if provided:
+    opt = check_quantization_tech_provided(opt)
+
+    # --- Check frequences if any.
+    check_frequencies(opt)
 
     # --- Filter unwanted resources.
     opt = filter_model_files_opt_args(opt)

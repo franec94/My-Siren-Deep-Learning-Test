@@ -37,7 +37,19 @@ def get_cmd_line_opts():
     p.add_argument('--post_train_quant_eval_mode',  action='store_true', required=False, default=False,
         help='Evaluate traiend models with quantization added a posteriori (PTQ). (default: False).'
     )
+    p.add_argument('--quantization_enabled', nargs='+', required=False, type=str, default=None, 
+        help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,paszke_quant,static,post_train,quantization_aware_training])'
+    )
 
+    p.add_argument('--hf', required=False, type=int, nargs='+', default=None, 
+        help='List hidden features with which define a model. (Default: None)'
+    )
+    p.add_argument('--hl', required=False, type=int, nargs='+', default=None, 
+        help='List hidden layers with which define a model. (Default: None)'
+    )
+    p.add_argument('--sidelength', required=False, type=str, nargs='+', default=None, 
+        help='List hidden layers with which define a model. (Default: None)'
+    )
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()

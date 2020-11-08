@@ -52,6 +52,8 @@ def check_cmd_line_options(opt, parser):
 
 
 def show_model_summary(model):
+    """Show model summary."""
+    
     # Print model's state_dict
     print("Model's state_dict:")
     for param_tensor in model.state_dict():
@@ -61,6 +63,10 @@ def show_model_summary(model):
 
 
 def get_input_image(opt):
+    """Get input image, either provided as path to file from command line. If no
+    input image file will be provided from command line, default cameramen image will be fetched from
+    skimage python library as default image.
+    """
     if opt.image_filepath is None:
         img_dataset = dataio.Camera()
         img = Image.fromarray(skimage.data.camera())
@@ -83,6 +89,9 @@ def get_input_image(opt):
 
 
 def create_train_logging_dir(opt, debug_mode = False):
+    """Create dir where all results will be stored, within local file system.
+    If debug_mode is False no dir will be created and therefore, no data will be saved.
+    """
     p = re.compile(r'\.')
     curr_time = datetime.datetime.now()
     curr_date = curr_time.strftime("%d-%m-%Y")
@@ -104,6 +113,9 @@ def create_train_logging_dir(opt, debug_mode = False):
 
 
 def log_parser(root_path, parser, opt, debug_mode = False):
+    """Save parser information and options loaded from it as .txt and pickle files respectively.
+    If debug_mode is False no data will be saved.
+    """
     if debug_mode is False:
         parser_logged = os.path.join(root_path, 'parser_logged.txt')
         with open(parser_logged, "w") as f:
@@ -127,6 +139,8 @@ def  get_root_level_logger(root_path, debug_mode = False):
     pass
 
 def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
+    """Check wheter list of input .csv files contains .csv files, and filter out those which do not are .csv files."""
+
     def is_file_filter(a_file, logger = logger):
         is_file_res = os.path.isfile(f"{a_file}")
         if logger != None:
@@ -146,6 +160,8 @@ def filter_model_files_csv_opt_args(args, logger = None, ext = [".csv"]):
 
 
 def filter_model_files_opt_args(args, logger = None, ext = [".pth"]):
+    """Check wheter list of input files contains .pth files, and filter out those which do not are .pth files."""
+
     def is_file_filter(a_file, logger = logger):
         is_file_res = os.path.isfile(f"{a_file}")
         if logger != None:
@@ -164,6 +180,8 @@ def filter_model_files_opt_args(args, logger = None, ext = [".pth"]):
     return args
 
 def map_filter_model_dirs_opt_args(args, logger = None, ext = [".pth"]):
+    """Check wheter list of input dirs contains dirs, and filter out those which do not are dirs."""
+
     def is_dir_valid(a_dir, logger = logger, ext = ext):
         is_valid_res = os.path.isdir(f"{a_dir}")
         if logger != None:
@@ -173,3 +191,72 @@ def map_filter_model_dirs_opt_args(args, logger = None, ext = [".pth"]):
 
     args.model_dirs = list(filter(is_dir_valid, args.model_dirs))
     return args
+
+
+def check_quantization_tech_provided(opt):
+    """Check quantization technique provided for training a Siren based model:
+    - allowed techniques: [dynamic,static,posterior,quantization_aware_training]
+    If none model is provided the default value will be None.
+    """
+    if opt.quantization_enabled == None: return opt
+
+    if isinstance(opt.quantization_enabled, str):
+        quant_tech = opt.quantization_enabled.lower()
+        if quant_tech not in "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(","):
+            raise Exception(f"Error: {quant_tech} not allowed!")
+        opt.quantization_enabled = quant_tech
+    else:
+        quant_tech_list = []
+        for quant_tech in opt.quantization_enabled:
+            quant_tech = quant_tech.lower()
+            if quant_tech not in "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(","):
+                raise Exception(f"Error: {quant_tech} not allowed!")
+            quant_tech_list.append(quant_tech)
+        opt.quantization_enabled = quant_tech_list
+    return opt
+
+
+def check_frequencies(opt):
+    """Check Frequencies only if quant tech has been considered paszke_quant."""
+
+    if opt.quantization_enabled == None: return
+    if isinstance(opt.quantization_enabled, str):
+        if opt.quantization_enabled == 'paszke_quant':
+            if opt.frequences == None:
+                raise Exception('Error no frequences provided for Pazke Quant Tech.')
+            for f in opt.frequences:
+                if f < 0:
+                    raise Exception(f'Error frequence {f} value is not allowed.')
+            pass
+    else:
+        if 'paszke_quant' in opt.quantization_enabled:
+            if opt.frequences == None:
+                raise Exception('Error no frequences provided for Pazke Quant Tech.')
+            for f in opt.frequences:
+                if f < 0:
+                    raise Exception(f'Error frequence {f} value is not allowed.')
+            pass
+    pass
+
+def check_sidelength(opt):
+    """Check Sidelength ."""
+    if opt.hf == None and opt.hl == None:
+        return
+    if opt.hf == None or opt.hl == None:
+        raise Exception('Missing input arguments to keep on checking sidelength, since either opt.hf or opt.hl are None')
+
+    def check_and_map_sl(a_sl):
+        a_sl = eval(a_sl)
+        if isinstance(a_sl, int):
+            if a_sl <= 0: raise Exception("A sidelength provided is negative, which is not allowed!")
+        if isinstance(a_sl, list) or isinstance(a_sl, tuple):
+            if len(a_sl) > 2: raise Exception("To many values provided for defining sidelength")
+            if len(a_sl) == 0: raise Exception("No values provided for defining sidelength")
+            if len(a_sl) == 1:
+                a_sl = (a_sl, a_sl)
+            val_1, val_2 = a_sl
+            if val_1 <= 0 or val_2: raise Exception("A sidelength provided is negative, which is not allowed!")
+        return a_sl
+
+    opt.sidelength = list(map(check_and_map_sl, opt.sidelength))
+    pass
