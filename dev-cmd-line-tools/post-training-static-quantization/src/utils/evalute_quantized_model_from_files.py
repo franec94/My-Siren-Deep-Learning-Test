@@ -91,7 +91,7 @@ from src.utils.quant_utils.quant_utils_functions import prepare_model
 
 
 def evaluate_models_from_files(opt):
-    tuple_data = tuple(opt.model_files, opt.hl, opt.hf, opt.crop_format)
+    tuple_data = tuple(opt.model_files, opt.hl, opt.hf, opt.sidelength)
     InfoModel = collections.namedtuple('InfoModel', "filename,hidden_layers,hidden_features,sidelength")
     for a_model_conf in list(map(InfoModel._make, zip(*tuple_data))):
         pprint(a_model_conf)
