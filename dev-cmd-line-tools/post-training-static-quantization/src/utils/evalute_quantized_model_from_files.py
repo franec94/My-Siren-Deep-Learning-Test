@@ -127,6 +127,8 @@ def evaluate_models_from_files(opt):
     fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
 
+    pprint(opt)
+
     if opt.quantization_enabled != None:
         if isinstance(opt.quantization_enabled, str):
             quant_tech_list = [opt.quantization_enabled]
