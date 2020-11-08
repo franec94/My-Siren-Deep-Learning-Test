@@ -226,7 +226,7 @@ def check_quantization_tech_provided(opt):
 def check_frequencies(opt):
     """Check Frequencies only if quant tech has been considered paszke_quant."""
 
-    if opt.quantization_enabled == None: return
+    if opt.quantization_enabled == None: return opt
     if isinstance(opt.quantization_enabled, str):
         if opt.quantization_enabled == 'paszke_quant':
             if opt.frequences == None:
