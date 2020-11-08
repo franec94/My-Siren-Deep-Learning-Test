@@ -321,7 +321,10 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
             files_not_found.append(vals.path)
             continue
 
-        model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl), model_filename=vals.path, sidelength=int(vals.cropped_width))
+        model_params = dict(hidden_features=int(vals.hf),
+            hidden_layers=int(vals.hl),
+            quantization_enabled=None,
+            model_filename=vals.path, sidelength=int(vals.cropped_width))
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
 
         model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
@@ -339,7 +342,10 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
 
         for a_tech in quant_tech_list:
             print('Eval quant tech:', a_tech)
-
+            model_params = dict(hidden_features=int(vals.hf),
+                hidden_layers=int(vals.hl),
+                quantization_enabled=a_tech,
+                model_filename=vals.path, sidelength=int(vals.cropped_width))
             eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu')
             vals = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + eval_scores
             a_record = InfoResults._make(vals)
