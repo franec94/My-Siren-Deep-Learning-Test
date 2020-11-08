@@ -247,13 +247,18 @@ def check_sidelength(opt):
 
     def check_and_map_sl(a_sl):
         a_sl = eval(a_sl)
+        if isinstance(a_sl, str):
+            a_sl = int(a_sl)
+            if a_sl <= 0: raise Exception("A sidelength provided is negative, which is not allowed!")
         if isinstance(a_sl, int):
             if a_sl <= 0: raise Exception("A sidelength provided is negative, which is not allowed!")
         if isinstance(a_sl, list) or isinstance(a_sl, tuple):
             if len(a_sl) > 2: raise Exception("To many values provided for defining sidelength")
             if len(a_sl) == 0: raise Exception("No values provided for defining sidelength")
             if len(a_sl) == 1:
-                a_sl = (a_sl, a_sl)
+                a_sl = (int(a_sl[0]), int(a_sl[0]))
+            
+            a_sl = (int(a_sl[0]), int(a_sl[1]))
             val_1, val_2 = a_sl
             if val_1 <= 0 or val_2: raise Exception("A sidelength provided is negative, which is not allowed!")
         return a_sl
