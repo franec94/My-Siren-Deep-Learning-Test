@@ -298,7 +298,7 @@ def quantize_model(model, frequency):
     return model
 
 
-def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
+def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_file = None):
     """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
     model = None
     if opt.quantization_enabled != None:
@@ -338,21 +338,44 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
     else:
         if device == 'cpu':
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True).to('cpu')
+            if model_weights_file == None:
+                model = Siren(
+                    in_features=2,
+                    out_features=1,
+                    hidden_features=int(arch_hyperparams['hidden_features']),
+                    hidden_layers=int(arch_hyperparams['hidden_layers']),
+                    # outermost_linear=True).to(device=device)
+                    outermost_linear=True).to('cpu')
+                model.load_state_dict(model_weights_file)
+                model = model.to('cpu')
+            else:
+                model = Siren(
+                    in_features=2,
+                    out_features=1,
+                    hidden_features=int(arch_hyperparams['hidden_features']),
+                    hidden_layers=int(arch_hyperparams['hidden_layers']),
+                    # outermost_linear=True).to(device=device)
+                    outermost_linear=True)
+                model.to('cpu')
+            
         else:
-            model = Siren(
-                in_features=2,
-                out_features=1,
-                hidden_features=int(arch_hyperparams['hidden_features']),
-                hidden_layers=int(arch_hyperparams['hidden_layers']),
-                # outermost_linear=True).to(device=device)
-                outermost_linear=True).cuda()
+            if model_weights_file != None:
+                model = Siren(
+                    in_features=2,
+                    out_features=1,
+                    hidden_features=int(arch_hyperparams['hidden_features']),
+                    hidden_layers=int(arch_hyperparams['hidden_layers']),
+                    # outermost_linear=True).to(device=device)
+                    outermost_linear=True).cuda()
+                model.load_state_dict(model_weights_file)
+            else:
+                model = Siren(
+                    in_features=2,
+                    out_features=1,
+                    hidden_features=int(arch_hyperparams['hidden_features']),
+                    hidden_layers=int(arch_hyperparams['hidden_layers']),
+                    # outermost_linear=True).to(device=device)
+                    outermost_linear=True).cuda()
         pass
     return model
 
