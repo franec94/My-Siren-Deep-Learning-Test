@@ -130,11 +130,13 @@ def evaluate_models_from_files(opt):
     pprint(opt)
 
     if opt.quantization_enabled != None:
+        print('opt.quantization_enabled != None')
         if isinstance(opt.quantization_enabled, str):
             quant_tech_list = [opt.quantization_enabled]
         else:
             quant_tech_list = opt.quantization_enabled
     else:
+        print('opt.quantization_enabled = None')
         quant_tech_list = []
 
     records_list = []
@@ -151,6 +153,7 @@ def evaluate_models_from_files(opt):
         records_list.append(record_eval_scores)
         
         for a_tech in quant_tech_list:
+            print('Eval quant tech:', a_tech)
             a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [a_tech])
 
             eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = a_tech, device = 'cpu')
