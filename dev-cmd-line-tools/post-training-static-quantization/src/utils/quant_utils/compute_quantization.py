@@ -128,7 +128,7 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
         hidden_layers=int(arch_hyperparams['hidden_layers']),
         # outermost_linear=True).to(device=device)
         outermost_linear=True)"""
-    model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
+    model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, model_path = model_path, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
     eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores
 
