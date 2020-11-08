@@ -74,7 +74,10 @@ def process_posterior_quantization_mode(opt):
         print("Some models evaluated in quant mode.")
         result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
         df_results = pd.DataFrame(data = result_tuples)
-        print(df_results.head(5))
+        # print(df_results.head(5))
+
+        table = tabulate.tabulate(tabular_data=df_results.values[:5], headers=df_results.columns)
+        print(table)
         pass
     if files_not_found != None and len(files_not_found) != 0:
         print(files_not_found[:5])
