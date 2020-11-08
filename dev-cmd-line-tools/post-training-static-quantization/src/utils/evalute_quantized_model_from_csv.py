@@ -77,6 +77,8 @@ from src.utils.quant_utils.quant_utils_functions import prepare_model
 from src.utils.functions import get_input_image
 from src.utils.quant_utils.compute_quantization import compute_quantization
 
+import src.utils.quant_utils.quant_utils_functions._evaluate_model as _evaluate_model_2
+
 
 def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
 

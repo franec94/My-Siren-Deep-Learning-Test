@@ -18,8 +18,6 @@ warnings.filterwarnings(
     module=r'torch.quantization'
 )
 
-from src.utils.quant_utils.quant_utils_functions import _evaluate_model as _evaluate_model_2
-
 # ----------------------------------------------------------------------------------------------- #
 # Globals
 # ----------------------------------------------------------------------------------------------- #
