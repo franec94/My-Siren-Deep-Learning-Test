@@ -316,7 +316,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         quant_tech_list = []
 
     records_list = []
-    for row in cropped_images_df[:5].values:
+    for row in cropped_images_df[:].values:
         vals = Columns._make(row)
 
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
