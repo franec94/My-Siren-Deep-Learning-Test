@@ -191,6 +191,8 @@ if __name__ == "__main__":
     np.random.seed(seed)
     random.seed(seed)
 
+    pprint(opt)
+
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
