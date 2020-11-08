@@ -137,11 +137,10 @@ def evaluate_models_from_files(opt):
         image_dataset = get_input_image(opt = opt)
         pprint(a_model_conf)
 
-        a_model_conf.quantization_enabled = None
         a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [None])
 
         eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = None, device = 'cuda')
-        
+
         record_eval_scores = InfoResults._make(list(a_model_conf_2._asdict.values()) + eval_scores)
         records_list.append(record_eval_scores)
         
