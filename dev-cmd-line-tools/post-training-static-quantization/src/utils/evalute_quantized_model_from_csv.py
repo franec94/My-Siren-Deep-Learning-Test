@@ -550,7 +550,7 @@ def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, ar
     files_not_found = []
     for a_file_csv in file_csv_list:
         records_list_tmp, files_not_found_tmp = \
-            evaluate_post_train_quantized_models_by_csv(
+            evaluate_post_train_quantized_models_by_csv_2(
                 a_file_csv,
                 args,
                 device = device)
