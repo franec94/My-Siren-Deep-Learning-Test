@@ -133,9 +133,9 @@ def main():
     # --- Do job.
     if opt.model_files == None or opt.model_files == []:
         print("No input .pth files provided!")
-        evaluate_models_from_files(opt)
     else:
         print("TODO: processing input .pth files.")
+        evaluate_models_from_files(opt)
         pass
     
     if opt.model_dirs == None or opt.model_dirs == []:
