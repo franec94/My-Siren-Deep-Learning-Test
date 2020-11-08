@@ -110,6 +110,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
         pass
     else:
+        print('Eval:', quant_tech.upper())
         eval_scores = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
@@ -157,6 +158,9 @@ def evaluate_models_from_files(opt):
             a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [a_tech])
 
             eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = a_tech, device = 'cpu')
+            a_list = list(a_model_conf_2._asdict().values()) + list(eval_scores)
+            record_eval_scores = InfoResults._make(a_list)
+            records_list.append(record_eval_scores)
             pass
         pass
 
