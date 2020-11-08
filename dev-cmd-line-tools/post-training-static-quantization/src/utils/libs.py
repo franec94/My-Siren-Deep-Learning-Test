@@ -96,6 +96,8 @@ from src.utils.functions import get_input_image, get_root_level_logger, log_pars
 from src.utils.functions import filter_model_files_opt_args, filter_model_files_csv_opt_args
 from src.utils.functions import map_filter_model_dirs_opt_args, create_train_logging_dir
 
+from src.utils.evalute_quantized_model_from_files import evaluate_models_from_files
+
 from src.utils.evalute_quantized_model_from_csv import evaluate_plain_model
 from src.utils.evalute_quantized_model_from_csv import evaluate_post_train_quantized_models_by_csv, evaluate_post_train_posterion_quantized_models_by_csv_list
 from src.utils.evalute_quantized_model_from_csv import evaluate_post_train_models_by_csv, evaluate_post_train_models_by_csv_list
