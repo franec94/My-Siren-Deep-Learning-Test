@@ -346,7 +346,8 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_fi
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
                     # outermost_linear=True).to(device=device)
                     outermost_linear=True).to('cpu')
-                model.load_state_dict(model_weights_file)
+                weigths_dict = torch.load(model_weights_file)
+                model.load_state_dict(weigths_dict)
                 model = model.to('cpu')
             else:
                 model = Siren(
@@ -355,9 +356,7 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_fi
                     hidden_features=int(arch_hyperparams['hidden_features']),
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
                     # outermost_linear=True).to(device=device)
-                    outermost_linear=True)
-                model.to('cpu')
-            
+                    outermost_linear=True).to('cpu')
         else:
             if model_weights_file != None:
                 model = Siren(
@@ -367,7 +366,8 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_fi
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
                     # outermost_linear=True).to(device=device)
                     outermost_linear=True).cuda()
-                model.load_state_dict(model_weights_file)
+                weigths_dict = torch.load(model_weights_file)
+                model.load_state_dict(weigths_dict)
             else:
                 model = Siren(
                     in_features=2,
