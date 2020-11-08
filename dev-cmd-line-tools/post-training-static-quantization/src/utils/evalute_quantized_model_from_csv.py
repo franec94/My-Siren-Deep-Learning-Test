@@ -69,7 +69,38 @@ import torch.quantization
 from src.utils.archs.siren import Siren
 from src.utils.archs.siren_quantized import SirenQuantized
 import src.utils.dataio as dataio
+
+from src.utils.quant_utils.quant_utils_functions import _evaluate_model
+from src.utils.quant_utils.quant_utils_functions import _prepare_data_loaders
+from src.utils.quant_utils.quant_utils_functions import prepare_model
+
 from src.utils.functions import get_input_image
+from src.utils.quant_utils.compute_quantization import compute_quantization
+
+
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
+
+    eval_scores = []
+    if quant_tech == None:
+        try:
+            print("Try eval plain model on cuda device...")
+            eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
+            model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
+            eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
+        except:
+            print("No cuda device available, switching to cpu.")
+            print("Try eval plain model on cpu device...")
+            eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
+            model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cpu')
+            eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
+        pass
+    else:
+        print('Eval:', quant_tech.upper())
+        eval_scores = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
+        pass
+
+    return eval_scores
+
 
 def _print_size_of_model(model):
     """Print model's size."""
@@ -247,6 +278,76 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
     )
     return eval_scores, model
 
+
+def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cpu', verbose = 0):
+
+    cropped_images_df = _read_csv_data(a_file_csv)
+
+    if cropped_images_df.shape[0] == 0:
+        return []
+
+    # - Sort data
+    attrs_for_sorting = "timestamp,hf,hl".split(",")
+    cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
+
+    Columns = collections.namedtuple('Columns', cropped_images_df.columns)
+    Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
+    EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
+
+    field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
+    RecordTuple = collections.namedtuple('RecordTuple', field_names)
+
+    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
+    InfoResults = collections.namedtuple('InfoResults', fields_name)
+
+    records_list = []
+    files_not_found = []
+
+    if args.quantization_enabled != None:
+        print('opt.quantization_enabled != None')
+        if isinstance(args.quantization_enabled, str):
+            quant_tech_list = [args.quantization_enabled]
+        else:
+            quant_tech_list = args.quantization_enabled
+    else:
+        print('opt.quantization_enabled = None')
+        quant_tech_list = []
+
+    records_list = []
+    for row in cropped_images_df[:].values:
+        vals = Columns._make(row)
+
+        if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
+            files_not_found.append(vals.path)
+            continue
+
+        model_params = dict(hidden_features=int(vals.hf), hidden_layers=int(vals.hl), model_filename=vals.path)
+        opt = Options._make([args.image_filepath, int(vals.cropped_width)])
+
+        model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
+
+        # --- Get input image to be evaluated.
+        # img_dataset, img, image_resolution = \
+        img_dataset, _, _ = \
+            get_input_image(opt)
+        
+        eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = None, device = 'cuda')
+
+        vals = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, None] + eval_scores
+        a_record = InfoResults._make(vals)
+        records_list.append(a_record)
+
+        for a_tech in quant_tech_list:
+            print('Eval quant tech:', a_tech)
+
+            eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu')
+            vals = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + eval_scores
+            a_record = InfoResults._make(vals)
+            records_list.append(a_record)
+            pass
+        pass
+
+    return records_list, files_not_found
 
 def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu', verbose = 0):
     """

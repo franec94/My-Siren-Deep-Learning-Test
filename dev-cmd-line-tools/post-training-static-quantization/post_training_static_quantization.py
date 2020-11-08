@@ -151,6 +151,7 @@ def main():
     else:
         # print("TODO: processing input .csv files.")
         if opt.plain_eval_mode:
+            """
             _, _, df_results = process_plain_mode(opt)
             if isinstance(df_results, pd.DataFrame):
                 if df_results.shape[0] != 0:
@@ -166,6 +167,8 @@ def main():
             else:
                 print("No dataframe gotten in plain mode!")
                 pass
+            """
+            pass
         if opt.post_train_quant_eval_mode:
             process_posterior_quantization_mode(opt)
             pass
