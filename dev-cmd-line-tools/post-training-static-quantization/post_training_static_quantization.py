@@ -119,12 +119,12 @@ def main():
 
     # --- Check quantization tech, if provided:
     opt = check_quantization_tech_provided(opt)
+    pprint(opt)
     opt = check_sidelength(opt)
+    pprint(opt)
 
     # --- Check frequences if any.
     check_frequencies(opt)
-    opt = check_sidelength(opt)
-
     pprint(opt)
 
     # --- Filter unwanted resources.

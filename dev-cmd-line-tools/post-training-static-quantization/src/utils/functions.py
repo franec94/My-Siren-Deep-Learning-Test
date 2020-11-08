@@ -226,7 +226,7 @@ def check_quantization_tech_provided(opt):
 def check_frequencies(opt):
     """Check Frequencies only if quant tech has been considered paszke_quant."""
 
-    if opt.quantization_enabled == None: return opt
+    if opt.quantization_enabled == None: return
     if isinstance(opt.quantization_enabled, str):
         if opt.quantization_enabled == 'paszke_quant':
             if opt.frequences == None:
@@ -248,7 +248,7 @@ def check_frequencies(opt):
 def check_sidelength(opt):
     """Check Sidelength ."""
     if opt.hf == None and opt.hl == None:
-        return
+        return opt
     if opt.hf == None or opt.hl == None:
         raise Exception('Missing input arguments to keep on checking sidelength, since either opt.hf or opt.hl are None')
 
