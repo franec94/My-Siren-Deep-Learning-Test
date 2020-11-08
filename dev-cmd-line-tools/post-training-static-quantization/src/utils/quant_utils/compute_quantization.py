@@ -73,7 +73,7 @@ from torchvision.transforms import Resize, Compose, ToTensor, Normalize
 # Custom Project Imports
 # --------------------------------------------- #
 import src.utils.dataio as dataio
-from src.utils.siren import Siren
+from src.utils.archs.siren import Siren
 from src.utils.archs.siren_quantized import SirenQuantized
 from src.utils.archs.siren_quantized_post_training import SirenQPT
 from src.utils.archs.siren_quantizatin_aware_train import SirenQAT
