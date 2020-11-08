@@ -204,6 +204,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
     if opt.quantization_enabled != None:
         # --- Dynamic Quantization: TODO test it.
         if opt.quantization_enabled == 'dynamic':
+            print('Eval model for dyanmic quantized model...')
             eval_scores = compute_quantization_dyanmic_mode(
                 model_path,
                 arch_hyperparams,
