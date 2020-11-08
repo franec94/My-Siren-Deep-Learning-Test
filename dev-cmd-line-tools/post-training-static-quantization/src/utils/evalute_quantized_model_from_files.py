@@ -91,7 +91,7 @@ from src.utils.quant_utils.quant_utils_functions import _prepare_data_loaders
 from src.utils.quant_utils.quant_utils_functions import prepare_model
 
 from src.utils.functions import get_input_image
-
+from src.utils.quant_utils.compute_quantization import compute_quantization
 
 def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
 
@@ -110,7 +110,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
         pass
     else:
-        eval_scores = compute_quantization(img_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
+        eval_scores = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
     return eval_scores
