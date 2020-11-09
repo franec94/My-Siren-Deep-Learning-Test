@@ -84,12 +84,12 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
 
     eval_scores = []
     if quant_tech == None:
-        try:
+        if torch.cuda.is_available():
             print("Try eval plain model on cuda device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
             eval_scores = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cuda')
-        except:
+        else:
             print("No cuda device available, switching to cpu.")
             print("Try eval plain model on cpu device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
