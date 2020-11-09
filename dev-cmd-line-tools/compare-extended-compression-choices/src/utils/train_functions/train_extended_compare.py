@@ -331,7 +331,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             stop_times = []
             for trial_no in range(opt.num_attempts):
                 arch_no_tmp = arch_no + opt.resume_from
-                trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'], seed, tot_weights_model]
+                trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'], seed]
 
                 # --- Create dir for record results for current trial.
                 tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
@@ -352,6 +352,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
 
                 # print(model)
                 tot_weights_model = sum(p.numel() for p in model.parameters())
+                trial_specifics.append(tot_weights_model)
 
                 # --- Show infos about model to be tested.
                 record_info = SomeInfosModel._make([
