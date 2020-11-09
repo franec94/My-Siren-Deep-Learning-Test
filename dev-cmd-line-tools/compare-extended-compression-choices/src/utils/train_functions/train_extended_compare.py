@@ -302,7 +302,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 start_time_ao = time.time()
                 pass
 
-            sep_str_arch_no = "=" * 25 + f" ARCH {arch_no + opt.resume_from} " + "=" * 25
+            sep_str_arch_no = "=" * 50 + f" ARCH {arch_no + opt.resume_from} " + "=" * 50
             header_arch = '_' * len(sep_str_arch_no)
             _log_infos(info_msg=sep_str_arch_no, header_msg=header_arch, logging=logging, tqdm=tqdm, verbose=1)
 
