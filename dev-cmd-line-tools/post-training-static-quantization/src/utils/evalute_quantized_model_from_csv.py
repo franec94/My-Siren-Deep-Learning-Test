@@ -90,7 +90,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
-            eval_scores, eval_time = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cuda')
+            eval_scores, eta_eval = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cuda')
         else:
             print("No cuda device available, switching to cpu.")
             print("Try eval plain model on cpu device...")
