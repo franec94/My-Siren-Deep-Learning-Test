@@ -59,7 +59,7 @@ def process_plain_mode(opt):
     return result_tuples, files_not_found, df_results
 
 
-def process_posterior_quantization_mode(opt):
+def process_posterior_quantization_mode(opt, root_path):
     """
     Process models by means of posterior quantization mode.
     """
@@ -74,7 +74,11 @@ def process_posterior_quantization_mode(opt):
         print("Some models evaluated in quant mode.")
         result_tuples = list(map(operator.methodcaller('_asdict'), result_tuples))
         df_results = pd.DataFrame(data = result_tuples)
+
         # print(df_results.head(5))
+
+        df_filename = os.path.join(root_path, 'result_quant.csv')
+        df_results.to_csv(f'{df_filename}')
 
         table = tabulate.tabulate(tabular_data=df_results.values[:5], headers=df_results.columns)
         print(table)
@@ -174,7 +178,7 @@ def main():
             """
             pass
         if opt.post_train_quant_eval_mode:
-            process_posterior_quantization_mode(opt)
+            process_posterior_quantization_mode(opt, root_path)
             pass
         pass
 
