@@ -9,6 +9,7 @@ from __future__ import division
 # --------------------------------------------- #
 
 FILE_PATH = None
+TRIAL_PATH = None
 
 # --------------------------------------------- #
 # Standard Library | Third Party Libraries
@@ -253,7 +254,9 @@ def train_extended_compare_loop(
         pass # end outer loop
 
     # --- Save overall training results.
+    global TRIAL_PATH
     global FILE_PATH
+    TRIAL_PATH = checkpoints_dir
     FILE_PATH = os.path.join(checkpoints_dir, 'model_final.pth')
     save_data_to_file(root_dir = checkpoints_dir, model = model, train_scores = train_scores)
 
