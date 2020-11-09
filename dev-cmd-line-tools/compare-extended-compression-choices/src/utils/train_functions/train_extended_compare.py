@@ -331,7 +331,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             stop_times = []
             for trial_no in range(opt.num_attempts):
                 arch_no_tmp = arch_no + opt.resume_from
-                trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features'], tot_weights_model, seed]
+                trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'], seed, tot_weights_model]
 
                 # --- Create dir for record results for current trial.
                 tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
@@ -417,7 +417,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     update_avg_stats_arrays(avg_train_scores, global_avg_train_losses, eval_scores)
 
                 # --- Show quantized scores if necessary.
-                res_quantized = []
+                eval_quantized = []
                 if opt.quantization_enabled != None:
                     info_msg = [f"[*] Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}", f"[*] Eval device: cpu"]
                     _log_infos(info_msg = info_msg, header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
@@ -428,6 +428,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                         opt=opt,
                         model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
                     stop_times.append(eta_quant)
+                    trial_specifics.appen(size_model_quant)
                     # eval_duration_time = time.time() - eval_start_time
 
                     info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
