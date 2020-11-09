@@ -302,7 +302,9 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
 
-    model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
+    model_int8 = get_dynamic_quantization_model(
+        model_path = model_path,
+        metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
 
     size_model = get_size_of_model(model_int8)
 
