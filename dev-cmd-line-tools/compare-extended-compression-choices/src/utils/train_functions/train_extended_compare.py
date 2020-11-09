@@ -253,6 +253,7 @@ def train_extended_compare_loop(
         pass # end outer loop
 
     # --- Save overall training results.
+    global FILE_PATH
     FILE_PATH = os.path.join(checkpoints_dir, 'train_losses_final.txt')
     save_data_to_file(root_dir = checkpoints_dir, model = model, train_scores = train_scores)
 
@@ -264,6 +265,8 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
     """
     Protocol set to collect data about different hyper-params combination done between number of hidden features and number of hidden layers.
     """
+
+    global FILE_PATH
 
     # --- Local variables.
     fields_info_models = 'Model_Type,Device_Train,Device_Quant_Eval,Arch_No,Trial_No,Hidden_Features,Hidden_Layers,Seed,No_Weights,Size_Bits'.split(",")
