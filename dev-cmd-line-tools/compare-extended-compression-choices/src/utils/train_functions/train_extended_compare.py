@@ -408,9 +408,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 stop_times.append(eta_eval)
                 # eval_duration_time = time.time() - eval_start_time
 
-                info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2]),
-                                        "- Evaluate total time (seconds): {0:.1f}".format(eta_eval)]
+                info_eval_quant_stats = ["- Evaluate total time (seconds): {0:.5f}".format(eta_eval),
+                                         "- Model Size (MB): {0:.1f}".format(tot_weights_model * 4 /1e6),
+                                         "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
+                                                % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2])]
                 _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
 
                 # --- Record eval_scores for later average computations.
@@ -429,12 +430,13 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                         opt=opt,
                         model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
                     stop_times.append(eta_quant)
-                    trial_specifics.appen(size_model_quant)
+                    trial_specifics.append(size_model_quant)
                     # eval_duration_time = time.time() - eval_start_time
 
-                    info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, trial_no, eval_quantized[0], eval_quantized[1], eval_quantized[2]),
-                                            "- Evaluate total time (seconds): {0:.1f}".format(eta_quant)]
+                    info_eval_quant_stats = ["- Evaluate total time (seconds): {0:.5f}".format(eta_quant),
+                                             "- Model Size (MB): {0:.1f}".format(size_model_quant/1e6),
+                                             "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
+                                                % (arch_no, trial_no, eval_quantized[0], eval_quantized[1], eval_quantized[2])]
                     _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
                     pass
 
