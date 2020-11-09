@@ -254,7 +254,7 @@ def train_extended_compare_loop(
 
     # --- Save overall training results.
     global FILE_PATH
-    FILE_PATH = os.path.join(checkpoints_dir, 'train_losses_final.txt')
+    FILE_PATH = os.path.join(checkpoints_dir, 'model_final.pth')
     save_data_to_file(root_dir = checkpoints_dir, model = model, train_scores = train_scores)
 
     # Return best metrices.
