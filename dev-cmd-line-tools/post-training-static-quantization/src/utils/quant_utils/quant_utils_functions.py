@@ -418,7 +418,7 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
             pass
 
         # --- Compute estimation.
-        start_time = time().time()
+        start_time = time.time()
         val_output, _ = model(val_input)
         eval_time = time.time() - start_time
 
