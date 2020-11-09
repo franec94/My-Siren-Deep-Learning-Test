@@ -92,6 +92,7 @@ from src.utils.quant_utils.quant_utils_functions import prepare_model
 
 from src.utils.functions import get_input_image
 from src.utils.quant_utils.compute_quantization import compute_quantization
+from src.utils.quant_utils.compute_quantization import get_size_of_model
 
 def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
 
@@ -101,20 +102,22 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             print("Try eval plain model on cuda device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
-            eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
+            size_model = get_size_of_model(model)
+            eval_scores, eval_eta = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
         except:
             print("No cuda device available, switching to cpu.")
             print("Try eval plain model on cpu device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cpu')
-            eval_scores = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
+            size_model = get_size_of_model(model)
+            eval_scores, eval_eta = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
         pass
     else:
         print('Eval:', quant_tech.upper())
-        eval_scores = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
+        eval_scores, eta_eval, size_model  = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
-    return eval_scores
+    return eval_scores, eval_eta, size_model
 
 def evaluate_models_from_files(opt):
 
@@ -125,7 +128,7 @@ def evaluate_models_from_files(opt):
     tuple_data = [opt.model_files, opt.hl, opt.hf, opt.sidelength]
     InfoModel2 = collections.namedtuple('InfoModel', "model_filename,hidden_layers,hidden_features,sidelength, quantization_enabled")
 
-    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
+    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
 
     pprint(opt)
@@ -147,9 +150,9 @@ def evaluate_models_from_files(opt):
 
         a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [None])
 
-        eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = None, device = 'cuda')
+        eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = None, device = 'cuda')
 
-        a_list = list(a_model_conf_2._asdict().values()) + list(eval_scores)
+        a_list = list(a_model_conf_2._asdict().values()) + list(eval_scores) + [eta_eval, size_model]
         record_eval_scores = InfoResults._make(a_list)
         records_list.append(record_eval_scores)
         
@@ -157,8 +160,8 @@ def evaluate_models_from_files(opt):
             print('Eval quant tech:', a_tech)
             a_model_conf_2 = InfoModel2._make(list(a_model_conf._asdict().values()) + [a_tech])
 
-            eval_scores = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = a_tech, device = 'cpu')
-            a_list = list(a_model_conf_2._asdict().values()) + list(eval_scores)
+            eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = image_dataset, model_conf = a_model_conf_2, quant_tech = a_tech, device = 'cpu')
+            a_list = list(a_model_conf_2._asdict().values()) + list(eval_scores) + [eta_eval, size_model]
             record_eval_scores = InfoResults._make(a_list)
             records_list.append(record_eval_scores)
             pass

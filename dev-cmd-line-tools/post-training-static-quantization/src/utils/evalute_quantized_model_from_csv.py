@@ -299,7 +299,8 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
     field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
     RecordTuple = collections.namedtuple('RecordTuple', field_names)
 
-    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
+    # fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
+    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
 
     records_list = []
@@ -337,10 +338,10 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         img_dataset, _, _ = \
             get_input_image(opt)
         
-        eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = None, device = 'cuda')
+        eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = None, device = 'cuda')
         pprint(eval_scores)
 
-        vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, 'None'] + list(eval_scores)
+        vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, 'None'] + list(eval_scores) + [eta_eval, size_model]
         a_record = InfoResults._make(vals_r)
         records_list.append(a_record)
 
@@ -351,9 +352,9 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 quantization_enabled=a_tech,
                 model_filename=vals.path, sidelength=int(vals.cropped_width))
             model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
-            eval_scores = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu')
+            eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu')
             pprint(eval_scores)
-            vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores)
+            vals_r = [vals.path, int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores) + [eta_eval, size_model]
             a_record = InfoResults._make(vals_r)
             records_list.append(a_record)
             pass

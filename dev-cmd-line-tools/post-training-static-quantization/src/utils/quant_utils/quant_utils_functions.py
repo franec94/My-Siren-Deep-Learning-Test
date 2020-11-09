@@ -418,7 +418,9 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
             pass
 
         # --- Compute estimation.
+        start_time = time().time()
         val_output, _ = model(val_input)
+        eval_time = time.time() - start_time
 
         # --- Prepare data for calculating metrices scores.
         # sidelenght = int(math.sqrt(val_output.size()[1]))
@@ -442,4 +444,4 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
         # --- Record results.
         eval_scores = np.array([train_loss.item(), val_psnr, val_mssim])
         pass
-    return eval_scores
+    return eval_scores, eval_time
