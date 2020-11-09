@@ -100,14 +100,15 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
             # outermost_linear=True).to(device=device)
             outermost_linear=True)
         pass
-    if model_path != None:
-        state_dict = torch.load(model_path)
-        model_fp32.load_state_dict(state_dict)
-        pass
     if device == 'cpu':
         model_fp32 = model_fp32.to('cpu')
     else:
         model_fp32 = model_fp32.cuda()
+        pass
+    if model_path != None:
+        print('Load Model weigths!')
+        state_dict = torch.load(model_path)
+        model_fp32.load_state_dict(state_dict)
         pass
     model_int8 = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
