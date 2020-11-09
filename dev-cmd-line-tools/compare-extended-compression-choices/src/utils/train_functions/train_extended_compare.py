@@ -330,6 +330,10 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             avg_train_scores = None
             stop_times = []
             for trial_no in range(opt.num_attempts):
+                sep_str_trial_no = "-" * 25 + f" ARCH {trial_no} " + "-" * 25
+                header_trial = '_' * len(sep_str_trial_no)
+                _log_infos(info_msg=sep_str_trial_no, header_msg=header_trial, logging=logging, tqdm=tqdm, verbose=1)
+                
                 arch_no_tmp = arch_no + opt.resume_from
                 trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_features'], arch_hyperparams['hidden_layers'], seed]
 
@@ -409,7 +413,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                 # eval_duration_time = time.time() - eval_start_time
 
                 info_eval_quant_stats = ["- Evaluate total time (seconds): {0:.5f}".format(eta_eval),
-                                         "- Model Size (MB): {0:.1f}".format(tot_weights_model * 4 /1e6),
+                                         "- Model Size (Bite): {0:.1f}".format(tot_weights_model * 4),
                                          "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
                                                 % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2])]
                 _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
@@ -434,7 +438,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     # eval_duration_time = time.time() - eval_start_time
 
                     info_eval_quant_stats = ["- Evaluate total time (seconds): {0:.5f}".format(eta_quant),
-                                             "- Model Size (MB): {0:.1f}".format(size_model_quant/1e6),
+                                             "- Model Size (Bite): {0:.1f}".format(size_model_quant),
                                              "- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
                                                 % (arch_no, trial_no, eval_quantized[0], eval_quantized[1], eval_quantized[2])]
                     _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
