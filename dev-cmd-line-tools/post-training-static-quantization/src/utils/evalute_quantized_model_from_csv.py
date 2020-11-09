@@ -86,21 +86,21 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
     eval_scores = []
     if quant_tech == None:
         if torch.cuda.is_available():
-            print("Try eval plain model on cuda device...")
+            # print("Try eval plain model on cuda device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
             eval_scores, eta_eval = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cuda')
         else:
-            print("No cuda device available, switching to cpu.")
-            print("Try eval plain model on cpu device...")
+            # print("No cuda device available, switching to cpu.")
+            # print("Try eval plain model on cpu device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cpu',  model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
             eval_scores, eta_eval = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cpu')
         pass
     else:
-        print('Eval:', quant_tech.upper())
+        # print('Eval:', quant_tech.upper())
         eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
@@ -310,13 +310,13 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
     files_not_found = []
 
     if args.quantization_enabled != None:
-        print('opt.quantization_enabled != None')
+        # print('opt.quantization_enabled != None')
         if isinstance(args.quantization_enabled, str):
             quant_tech_list = [args.quantization_enabled]
         else:
             quant_tech_list = args.quantization_enabled
     else:
-        print('opt.quantization_enabled = None')
+        # print('opt.quantization_enabled = None')
         quant_tech_list = []
 
     records_list = []
@@ -349,7 +349,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         records_list.append(a_record)
 
         for a_tech in quant_tech_list:
-            print('Eval quant tech:', a_tech)
+            # print('Eval quant tech:', a_tech)
             model_params = dict(hidden_features=int(vals.hf),
                 hidden_layers=int(vals.hl),
                 quantization_enabled=a_tech,

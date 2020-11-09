@@ -91,7 +91,7 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
     """Get dynamic quantization Siren model."""
 
     if model_fp32 == None:
-        print('Creating model...')
+        # print('Creating model...')
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
         model_fp32 = Siren(
             in_features=2,
@@ -102,10 +102,10 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
             outermost_linear=True)
         pass
     if device == 'cpu':
-        print('Load Model to cpu device!')
+        # print('Load Model to cpu device!')
         model_fp32 = model_fp32.to('cpu')
         if model_path != None:
-            print('Load Model weigths!')
+            # print('Load Model weigths!')
             state_dict = torch.load(model_path, map_location=torch.device('cpu'))
             model_fp32.load_state_dict(state_dict)
             pass
@@ -113,13 +113,13 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
     else:
         model_fp32 = model_fp32.cuda()
         if model_path != None:
-            print('Load Model weigths!')
+            # print('Load Model weigths!')
             state_dict = torch.load(model_path, map_location=torch.device('cuda'))
             model_fp32.load_state_dict(state_dict)
             pass
         pass
 
-    print('Quantize model...')
+    # print('Quantize model...')
     model_int8 = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
