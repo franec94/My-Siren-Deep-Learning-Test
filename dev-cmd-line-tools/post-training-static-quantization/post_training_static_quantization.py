@@ -121,22 +121,39 @@ def main():
 
     # --- Log parsed cmd args.
     log_parser(root_path, parser, opt, debug_mode = DEBUG_MODE)
+    logging.info(f'Date: {curr_date} | Timestamp: {curr_timestamp}')
+    logging.info(f'Created root dir: {root_path}')
     logging.info(parser.format_values())
 
     # --- Check quantization tech, if provided:
+    logging.info(f'check_quantization_tech_provided ...')
     opt = check_quantization_tech_provided(opt)
-    pprint(opt)
+    logging.info(f'check_quantization_tech_provided: OK')
+    # pprint(opt)
+
+    logging.info(f'check_sidelength ...')
     opt = check_sidelength(opt)
-    pprint(opt)
+    logging.info(f'check_sidelength: OK')
+    # pprint(opt)
 
     # --- Check frequences if any.
+    logging.info(f'check_frequencies ...')
     check_frequencies(opt)
-    pprint(opt)
+    logging.info(f'check_frequencies: OK')
+    # pprint(opt)
 
     # --- Filter unwanted resources.
+    logging.info(f'filter_model_files_opt_args ...')
     opt = filter_model_files_opt_args(opt)
+    logging.info(f'filter_model_files_opt_args OK')
+
+    logging.info(f'map_filter_model_dirs_opt_args ...')
     opt = map_filter_model_dirs_opt_args(opt)
+    logging.info(f'filter_model_files_opt_args OK')
+
+    logging.info(f'filter_model_files_csv_opt_args ...')
     opt = filter_model_files_csv_opt_args(opt)
+    logging.info(f'filter_model_files_csv_opt_args OK')
 
     # if args.model_files == None or args.model_files == []: raise Exception("Error: no models to process!")
 
@@ -178,7 +195,9 @@ def main():
             """
             pass
         if opt.post_train_quant_eval_mode:
+            logging.info(f'process_posterior_quantization_mode ...')
             process_posterior_quantization_mode(opt, root_path)
+            logging.info(f'process_posterior_quantization_mode: DONE.')
             pass
         pass
 
