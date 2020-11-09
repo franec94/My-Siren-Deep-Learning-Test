@@ -110,11 +110,12 @@ def get_arch_hyperparams(opt, image_resolution):
         'hidden_features': hidden_features_list
     }
 
-    if opt.quantization_enabled.lower() == "paszke_quant":
-        param_grid['frequency'] = opt.frequences
+    if opt.quantization_enabled != None:
+        if opt.quantization_enabled.lower() == "paszke_quant":
+            param_grid['frequency'] = opt.frequences
+            pass
         pass
     
-
     return list(ParameterGrid(param_grid))
 
 
