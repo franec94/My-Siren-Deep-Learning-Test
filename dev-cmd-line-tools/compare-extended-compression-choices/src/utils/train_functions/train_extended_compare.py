@@ -328,9 +328,13 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             # logging.info("-" * 50); tqdm.write("-" * 50)
             seed = int(arch_hyperparams['seeds'])
             avg_train_scores = None
+            stop_times = []
             for trial_no in range(opt.num_attempts):
+                arch_no_tmp = arch_no + opt.resume_from
+                trial_specifics = [arch_no_tmp, trial_no, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features'], tot_weights_model, seed]
+
                 # --- Create dir for record results for current trial.
-                tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no + opt.resume_from}", f"trial_no_{trial_no}")
+                tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
                 try: os.makedirs(tmp_model_dir)
                 except: pass
                 
@@ -388,22 +392,24 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     log_for_tensorboard=opt.enable_tensorboard_logging,
                     data_range = data_range)
                 stop_time = time.time() - start_time_to
+                stop_times.append(stop_time)
                 _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 # --- Evaluate model's on validation data.
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval device: cuda"]
                 _log_infos(info_msg = info_msg, header_msg = eval_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
-                eval_start_time = time.time()
-                eval_scores = evaluate_model(
+                # eval_start_time = time.time()
+                eval_scores, eta_eval = evaluate_model(
                     model = model_trained, eval_dataloader=val_dataloader,
                     device='cuda', loss_fn=loss_fn,
                     quantization_enabled=opt.quantization_enabled)
-                eval_duration_time = time.time() - eval_start_time
+                stop_times.append(eta_eval)
+                # eval_duration_time = time.time() - eval_start_time
 
                 info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
                                                 % (arch_no, trial_no, eval_scores[0], eval_scores[1], eval_scores[2]),
-                                        "- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time)]
+                                        "- Evaluate total time (seconds): {0:.1f}".format(eta_eval)]
                 _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
 
                 # --- Record eval_scores for later average computations.
@@ -416,24 +422,23 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
                     info_msg = [f"[*] Evaluating Quant. Tech.: {opt.quantization_enabled.upper()}", f"[*] Eval device: cpu"]
                     _log_infos(info_msg = info_msg, header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
                     
-                    eval_start_time = time.time()
-                    res_quantized = compute_quantization(
+                    # eval_start_time = time.time()
+                    eval_quantized, eta_quant, size_model_quant = compute_quantization(
                         img_dataset=img_dataset,
                         opt=opt,
                         model_path=FILE_PATH, arch_hyperparams=arch_hyperparams, device='cpu')
-                    eval_duration_time = time.time() - eval_start_time
+                    stop_times.append(eta_quant)
+                    # eval_duration_time = time.time() - eval_start_time
 
                     info_eval_quant_stats = ["- arch_no=%d, trial_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, trial_no, res_quantized[0], res_quantized[1], res_quantized[2]),
-                                            "- Evaluate total time (seconds): {0:.1f}".format(eval_duration_time)]
+                                                % (arch_no, trial_no, eval_quantized[0], eval_quantized[1], eval_quantized[2]),
+                                            "- Evaluate total time (seconds): {0:.1f}".format(eta_quant)]
                     _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
                     pass
 
                 # --- Record performance metrices for later investigations.
                 history_combs.append(
-                    np.concatenate(
-                        ([tot_weights_model, seed, arch_hyperparams['hidden_layers'], arch_hyperparams['hidden_features']],eval_scores, res_quantized, [stop_time]),
-                        axis=None)
+                    np.concatenate( (trial_specifics, eval_scores, eval_quantized, stop_times), axis=None)
                 )
                 pass
             

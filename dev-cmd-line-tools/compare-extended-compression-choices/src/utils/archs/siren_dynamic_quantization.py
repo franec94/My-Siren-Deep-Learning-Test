@@ -233,6 +233,7 @@ def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse
     model_fp32_prepared = torch.quantization.prepare_qat(model_fp32)
     return model_fp32_prepared
 
+
 def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Build model for Paszek quant evaluation."""
     
@@ -285,9 +286,11 @@ def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dat
         device = f'{device}',
         qconfig = f'{qconfig}',
         model_fp32 = model_fp32)
+
+    size_model = get_size_of_model(model_int8)
     
-    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
-    return eval_scores
+    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
+    return eval_scores, eta_eval, size_model 
 
 def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of dynamic quantization.
@@ -297,16 +300,13 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    """model_fp32 = Siren(
-        in_features=2,
-        out_features=1,
-        hidden_features=int(arch_hyperparams['hidden_features']),
-        hidden_layers=int(arch_hyperparams['hidden_layers']),
-        # outermost_linear=True).to(device=device)
-        outermost_linear=True)"""
+
     model_int8 = get_dynamic_quantization_model(metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
-    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-    return eval_scores
+
+    size_model = get_size_of_model(model_int8)
+
+    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores, eta_eval, size_model 
 
 
 def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
@@ -324,9 +324,11 @@ def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, 
 
     # Evaluate quantized int8 model
     model_int8 = torch.quantization.convert(model_fp32_prepared)
+    size_model = get_size_of_model(model_int8)
+
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-    return eval_scores
+    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores, eta_eval, size_model 
 
 
 def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
@@ -346,9 +348,11 @@ def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_datas
 
     # Evaluate quantized int8 model
     model_int8 = torch.quantization.convert(model_fp32_prepared)
+    size_model = get_size_of_model(model_int8)
+
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-    return eval_scores
+    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores, eta_eval, size_model 
 
 
 def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
@@ -360,13 +364,15 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
     model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
-    eval_scores = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    eval_scores, eta_eval = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
     model_int8 = torch.quantization.convert(model)
+    size_model = get_size_of_model(model_int8)
+
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
     
-    eval_scores = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
-    return eval_scores
+    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    return eval_scores, eta_eval, size_model 
 
 
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
@@ -376,7 +382,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
     if opt.quantization_enabled != None:
         # --- Dynamic Quantization: TODO test it.
         if opt.quantization_enabled == 'dynamic':
-            eval_scores = compute_quantization_dyanmic_mode(
+            eval_scores, eta_eval, size_model = compute_quantization_dyanmic_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
@@ -385,7 +391,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
         
         # --- Static Quantization: TODO test it.
         elif opt.quantization_enabled == 'static':
-            """eval_scores = compute_quantization_static_mode(
+            """eval_scores, eta_eval, size_model = compute_quantization_static_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
@@ -395,7 +401,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
 
         # --- Post Train Quantization: TODO test it.
         elif opt.quantization_enabled == 'post_train':
-            eval_scores = compute_quantization_post_train_mode(
+            eval_scores, eta_eval, size_model = compute_quantization_post_train_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
@@ -413,7 +419,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
         elif opt.quantization_enabled =='paszke_quant':
-            eval_scores = compute_quantization_paszke_quant_mode(
+            eval_scores, eta_eval, size_model = compute_quantization_paszke_quant_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
@@ -422,7 +428,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
             pass
         else:
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
-    return eval_scores
+    return eval_scores, eta_eval, size_model 
 
 
 # --------------------------------------------- #
@@ -539,7 +545,9 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
             pass
 
         # --- Compute estimation.
+        start_time = time.time()
         val_output, _ = model(val_input)
+        eta_eval = time.time() - start_time
 
         # --- Prepare data for calculating metrices scores.
         # sidelenght = int(math.sqrt(val_output.size()[1]))
@@ -563,4 +571,19 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
         # --- Record results.
         eval_scores = np.array([train_loss.item(), val_psnr, val_mssim])
         pass
-    return eval_scores
+    return eval_scores, eta_eval
+
+
+def print_size_of_model(model):
+    torch.save(model.state_dict(), "temp.p")
+    print('Size (MB):', os.path.getsize("temp.p")/1e6)
+    os.remove('temp.p')
+    pass
+
+
+def get_size_of_model(model):
+    torch.save(model.state_dict(), "temp.p")
+    # print('Size (MB):', os.path.getsize("temp.p")/1e6)
+    model_size = os.path.getsize("temp.p")
+    os.remove('temp.p')
+    return model_size

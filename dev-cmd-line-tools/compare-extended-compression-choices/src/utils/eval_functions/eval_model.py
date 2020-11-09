@@ -109,7 +109,9 @@ def evaluate_model_old_mode(model, val_dataloader, quantization_enabled = None, 
             pass
 
         # --- Compute estimation.
+        start_time = time.time()
         val_output, _ = model(val_input)
+        eta_eval = time.time() - start_time
 
         # --- Prepare data for calculating metrices scores.
         # sidelenght = int(math.sqrt(val_output.size()[1]))
@@ -133,7 +135,7 @@ def evaluate_model_old_mode(model, val_dataloader, quantization_enabled = None, 
         # --- Record results.
         # train_scores = np.array([[train_loss, val_psnr, val_mssim]])
         train_scores = np.array([train_loss.item(), val_psnr, val_mssim])
-    return train_scores
+    return train_scores, eta_eval
 
 def evaluate_model(model, eval_dataloader, device = 'cpu', loss_fn = nn.MSELoss(), quantization_enabled = None, verbose = 0, logging_flag = False, tqdm = None):
     """Evaluate model, computing: loss score, PSNR and MSSI metrices, when model swithced in eval mode..
@@ -151,6 +153,7 @@ def evaluate_model(model, eval_dataloader, device = 'cpu', loss_fn = nn.MSELoss(
     Return:
     -------
     :eval_scores: np.array object, containing loss, psnr, mssi scores compute when model swithced in eval mode.
+    :eta_eval: float representing time necessary for evaluating the model against the provided input
     """
     eval_scores = None # Define a priori to use later.
     model.eval()
@@ -164,7 +167,9 @@ def evaluate_model(model, eval_dataloader, device = 'cpu', loss_fn = nn.MSELoss(
             device = device)
         
         # --- Compute estimation.
+        start_time = time.time()
         eval_output, _ = model(eval_input)
+        eta_eval = time.time() - start_time
 
         # --- Prepare data for calculating metrices scores.
         # sidelenght = int(math.sqrt(val_output.size()[1]))
@@ -177,4 +182,4 @@ def evaluate_model(model, eval_dataloader, device = 'cpu', loss_fn = nn.MSELoss(
         # train_scores = np.array([[train_loss, val_psnr, val_mssim]])
         eval_scores = np.array([eval_loss.item(), eval_psnr, eval_mssim])
         pass
-    return eval_scores
+    return eval_scores, eta_eval
