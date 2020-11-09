@@ -36,7 +36,7 @@ def process_plain_mode(opt):
     """
     df_results = None
 
-    print("Work: processing input .csv files - Plain mode.")
+    print("Work: processing input .csv files - Plain mode...")
     result_tuples, files_not_found = \
         evaluate_post_train_models_by_csv_list(
             opt.log_models,
@@ -63,7 +63,7 @@ def process_posterior_quantization_mode(opt, root_path):
     """
     Process models by means of posterior quantization mode.
     """
-    print("Work: processing input .csv files - Quantization mode.")
+    print("Work: processing input .csv files - Quantization mode...")
     result_tuples, files_not_found = \
         evaluate_post_train_posterion_quantized_models_by_csv_list(
             opt.log_models,
