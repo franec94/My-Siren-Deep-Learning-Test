@@ -344,7 +344,7 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_fi
             raise Exception(f"Error: {opt.quantization_enabled} not allowed!")
     else:
         if device == 'cpu':
-            if model_weights_file == None:
+            if model_weights_file != None:
                 model = Siren(
                     in_features=2,
                     out_features=1,

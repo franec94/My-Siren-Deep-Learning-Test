@@ -365,6 +365,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
 
     return records_list, files_not_found
 
+
 def evaluate_post_train_quantized_models_by_csv(a_file_csv, args, device = 'cpu', verbose = 0):
     """
     Evaluate posterior quantized models fetching data and weigths from information gotten reading a .csv file.
