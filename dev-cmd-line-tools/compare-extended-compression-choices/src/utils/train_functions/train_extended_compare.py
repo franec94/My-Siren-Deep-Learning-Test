@@ -330,7 +330,7 @@ def train_extended_protocol_compare_archs(grid_arch_hyperparams, img_dataset, op
             avg_train_scores = None
             stop_times = []
             for trial_no in range(opt.num_attempts):
-                sep_str_trial_no = "-" * 25 + f" ARCH {trial_no} " + "-" * 25
+                sep_str_trial_no = "-" * 25 + f" ARCH {arch_no + opt.resume_from} / TRIAL {trial_no} " + "-" * 25
                 header_trial = '_' * len(sep_str_trial_no)
                 _log_infos(info_msg=sep_str_trial_no, header_msg=header_trial, logging=logging, tqdm=tqdm, verbose=1)
                 
