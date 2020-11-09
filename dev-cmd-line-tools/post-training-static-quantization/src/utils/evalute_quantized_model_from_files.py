@@ -104,7 +104,8 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
             eval_scores, eta_eval = _evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
-        except:
+        except Exception as err:
+            print(str(err))
             print("No cuda device available, switching to cpu.")
             print("Try eval plain model on cpu device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
@@ -114,7 +115,11 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
         pass
     else:
         print('Eval:', quant_tech.upper())
-        eval_scores, eta_eval, size_model  = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
+        eval_scores, eta_eval, size_model  = compute_quantization(
+            img_dataset = image_dataset, opt = model_conf,
+            model_path = model_conf.model_filename,
+            arch_hyperparams = model_conf._asdict(), 
+            fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
     return eval_scores, eta_eval, size_model
