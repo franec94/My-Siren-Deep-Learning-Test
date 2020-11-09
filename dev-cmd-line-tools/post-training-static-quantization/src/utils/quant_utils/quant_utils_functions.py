@@ -352,7 +352,7 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu', model_weights_fi
                     hidden_layers=int(arch_hyperparams['hidden_layers']),
                     # outermost_linear=True).to(device=device)
                     outermost_linear=True).to('cpu')
-                weigths_dict = torch.load(model_weights_file)
+                weigths_dict = torch.load(model_weights_file, map_location=torch.device('cpu'))
                 model.load_state_dict(weigths_dict)
                 model = model.to('cpu')
             else:
