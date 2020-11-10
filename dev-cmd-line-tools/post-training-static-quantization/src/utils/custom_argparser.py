@@ -1,5 +1,6 @@
 import configargparse
 
+QUANT_TECHS = "dynamic,paszke_quant,static,post_train,quantization_aware_training,custom_quant".split(",")
 
 def get_cmd_line_opts():
     p = configargparse.ArgumentParser()
@@ -37,8 +38,10 @@ def get_cmd_line_opts():
     p.add_argument('--post_train_quant_eval_mode',  action='store_true', required=False, default=False,
         help='Evaluate traiend models with quantization added a posteriori (PTQ). (default: False).'
     )
+    
+    quant_list = ','.join([str(xx) for xx in QUANT_TECHS])
     p.add_argument('--quantization_enabled', nargs='+', required=False, type=str, default=None, 
-        help='Set it to enable dynamic quantization training. (Default: None, Allowed: [dynamic,paszke_quant,static,post_train,quantization_aware_training])'
+        help=f'Set it to enable dynamic quantization training. (Default: None, Allowed: [{quant_list}])'
     )
 
     p.add_argument('--hf', required=False, type=int, nargs='+', default=None, 

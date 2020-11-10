@@ -76,6 +76,7 @@ from src.utils.archs.siren import Siren
 from src.utils.archs.siren_quantized import SirenQuantized
 from src.utils.archs.siren_quantized_post_training import SirenQPT
 from src.utils.archs.siren_quantizatin_aware_train import SirenQAT
+from src.utils.archs.siren_custom_quant import SirenCQ
 
 import src.utils.dataio as dataio
 
@@ -83,24 +84,7 @@ import src.utils.dataio as dataio
 # Functions
 # ----------------------------------------------------------------------------------------------- #
 
-
-# --------------------------------------------- #
-# Getter functions
-# --------------------------------------------- #
-def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get dynamic quantization Siren model."""
-
-    if model_fp32 == None:
-        # print('Creating model...')
-        if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
-        model_fp32 = Siren(
-            in_features=2,
-            out_features=1,
-            hidden_features=int(metadata_model_dict['hidden_features']),
-            hidden_layers=int(metadata_model_dict['hidden_layers']),
-            # outermost_linear=True).to(device=device)
-            outermost_linear=True)
-        pass
+def check_device_and_weigths_to_laod(model_fp32, device = 'cpu', model_path = None):
     if device == 'cpu':
         # print('Load Model to cpu device!')
         model_fp32 = model_fp32.to('cpu')
@@ -118,6 +102,42 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
             model_fp32.load_state_dict(state_dict)
             pass
         pass
+    return model_fp32
+
+# --------------------------------------------- #
+# Getter functions
+# --------------------------------------------- #
+
+def get_custom_quant_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    if model_fp32 == None:
+        # print('Creating model...')
+        if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
+        model_fp32 = SirenCQ(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            # outermost_linear=True).to(device=device)
+            outermost_linear=True)
+        pass
+    model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
+    return model_fp32
+
+def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Get dynamic quantization Siren model."""
+
+    if model_fp32 == None:
+        # print('Creating model...')
+        if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
+        model_fp32 = Siren(
+            in_features=2,
+            out_features=1,
+            hidden_features=int(metadata_model_dict['hidden_features']),
+            hidden_layers=int(metadata_model_dict['hidden_layers']),
+            # outermost_linear=True).to(device=device)
+            outermost_linear=True)
+        pass
+    model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
 
     # print('Quantize model...')
     model_int8 = torch.quantization.quantize_dynamic(
@@ -141,15 +161,7 @@ def get_static_quantization_model(metadata_model_dict = None, model_path = None,
             # outermost_linear=True).to(device=device)
             outermost_linear=True)
         pass
-    if model_path != None:
-        state_dict = torch.load(model_path)
-        model_fp32.load_state_dict(state_dict)
-        pass
-    if device == 'cpu':
-        model_fp32 = model_fp32.to('cpu')
-    else:
-        model_fp32 = model_fp32.cuda()
-        pass
+    model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
     
     if fuse_modules != None:
         model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
@@ -178,15 +190,9 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
             outermost_linear=True) # outermost_linear=True).to(device=device)
         pass
     # Set model to cpu device.
-    if device == 'cpu':
-        model_fp32 = model_fp32.to('cpu')
-    else:
+    if device != 'cpu':
         raise Exception("Post Train quantization do not support CUDA/GPU backend for computations!")
-    # Load weights if requested.
-    if model_path != None:
-        state_dict = torch.load(model_path)
-        model_fp32.load_state_dict(state_dict)
-        pass
+    model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
     
     # Set backend for Quantization computations.
     model_fp32.qconfig = torch.quantization.get_default_qconfig(f'{qconfig}')
@@ -284,6 +290,26 @@ def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules 
 # --------------------------------------------- #
 # Compute Quantization
 # --------------------------------------------- #
+
+def compute_quantization_custom_quant_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Compute post train scores by means of Custom Quant Mode."""
+    eval_scores = None
+    input_fp32 = _prepare_data_loaders(img_dataset, opt)
+
+    model = get_custom_quant_model(
+        metadata_model_dict = arch_hyperparams,
+        model_path = model_path,
+        # fuse_modules = fuse_modules,
+        device = f'{device}',
+        qconfig = f'{qconfig}',
+        model_fp32 = model_fp32)
+    
+    model.gather_stats(input_fp32)
+    size_model = get_size_of_model(model)
+    
+    eval_scores, eta_eval = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
+    return eval_scores, eta_eval, size_model 
+
 
 def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Compute post train scores by means of Paszek Quant Mode."""
@@ -433,6 +459,14 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None)"""
             pass
         elif opt.quantization_enabled =='paszke_quant':
+            eval_scores, eta_eval, size_model = compute_quantization_paszke_quant_mode(
+                model_path,
+                arch_hyperparams,
+                img_dataset,
+                opt,
+                fuse_modules = None, device = 'cpu', qconfig = f"{qconfig}", model_fp32 = None)
+            pass
+        elif opt.quantization_enabled =='custom_quant':
             eval_scores, eta_eval, size_model = compute_quantization_paszke_quant_mode(
                 model_path,
                 arch_hyperparams,

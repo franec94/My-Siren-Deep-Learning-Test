@@ -40,6 +40,7 @@ from skimage.metrics import mean_squared_error
 # Import: custom, from this project
 # --------------------------------------------- #
 import src.utils.dataio as dataio
+from src.utils.custom_argparser import QUANT_TECHS
 
 def check_cmd_line_options(opt, parser):
     
@@ -206,10 +207,12 @@ def check_quantization_tech_provided(opt):
     If none model is provided the default value will be None.
     """
     if opt.quantization_enabled == None: return opt
-
+ 
+    # quant_techs = "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(",")
+    quant_techs = QUANT_TECHS 
     if isinstance(opt.quantization_enabled, str):
         quant_tech = opt.quantization_enabled.lower()
-        if quant_tech not in "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(","):
+        if quant_tech not in quant_techs:
             raise Exception(f"Error: {quant_tech} not allowed!")
         opt.quantization_enabled = quant_tech
     else:
