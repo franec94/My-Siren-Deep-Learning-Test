@@ -82,14 +82,14 @@ def process_posterior_quantization_mode(opt, root_path):
 
         print()
         str_h = '=' * 50  + ' Head results: ' + '=' * 50
-        print('_' * str_h)
+        print('_' * len(str_h))
         print(str_h)
         table = tabulate.tabulate(tabular_data=df_results.values[:5], headers=df_results.columns)
         print(table)
 
         print()
         str_h = '=' * 50  + ' Tail results: ' + '=' * 50
-        print('_' * str_h)
+        print('_' * len(str_h))
         print(str_h)
         table = tabulate.tabulate(tabular_data=df_results.values[-5:-1], headers=df_results.columns)
         print(table)
