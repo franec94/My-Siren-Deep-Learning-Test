@@ -186,6 +186,7 @@ class SirenCQ(nn.Module):
                             stat = stats[f'{module_name}'],
                             scale_x = x.scale,
                             zp_x = x.zero_point,
+                            sym_flag=self.quant_sym,
                             num_bits = self.num_bits)
                     else:
                         x, scale_next, zero_point_next = quantize_layer(
@@ -194,6 +195,7 @@ class SirenCQ(nn.Module):
                             stat = stats[f'{module_name}'],
                             scale_x = scale_next,
                             zp_x = zero_point_next,
+                            sym_flag=self.quant_sym,
                             num_bits = self.num_bits)
                         pass
                     if ii + 2 != n:

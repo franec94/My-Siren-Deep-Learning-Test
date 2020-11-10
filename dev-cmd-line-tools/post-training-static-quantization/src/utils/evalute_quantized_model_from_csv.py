@@ -81,7 +81,7 @@ from src.utils.quant_utils.quant_utils_functions import _evaluate_model as _eval
 from src.utils.quant_utils.compute_quantization import get_size_of_model
 
 
-def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8):
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8, quant_sym = False):
     """Evalaute model. """
 
     eval_scores = []
@@ -107,6 +107,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             quant = True
             arch_hyperparams['quant'] = quant
             arch_hyperparams['num_bits'] = num_bits
+            arch_hyperparams['quant_sym'] = quant_sym
             pass
         eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
