@@ -219,7 +219,7 @@ def check_quantization_tech_provided(opt):
         quant_tech_list = []
         for quant_tech in opt.quantization_enabled:
             quant_tech = quant_tech.lower()
-            if quant_tech not in "dynamic,static,post_train,paszke_quant,quantization_aware_training".split(","):
+            if quant_tech not in quant_techs:
                 raise Exception(f"Error: {quant_tech} not allowed!")
             quant_tech_list.append(quant_tech)
         opt.quantization_enabled = quant_tech_list
