@@ -128,16 +128,16 @@ class SirenCQ(nn.Module):
             self.net.append(SineLayerCQ(hidden_features, out_features, 
                                       is_first=False, omega_0=hidden_omega_0))
         
-        prev = None
+        prev_module, prev_name = None, None
         self.net = nn.Sequential(*self.net)
-        for a_module in self.net:
+        for a_name, a_module in self.net.named_modules():
             if type(a_module) == SineLayerCQ:
                 if prev == None:
-                    prev = a_module
+                    prev_name, prev_module = a_name, a_module
                 else:
-                    prev.succ_layer_name = a_module._get_name()
-                    a_module.prev_layer_name = prev._get_name()
-                    prev = a_module
+                    prev_module.succ_layer_name = a_name
+                    a_module.prev_layer_name = prev_name
+                    prev_name, prev_module = a_name, a_module
                     pass
                 pass
             pass
