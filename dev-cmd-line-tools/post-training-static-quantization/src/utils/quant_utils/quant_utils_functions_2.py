@@ -189,7 +189,7 @@ def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8, sym_flag = False
         scale_next, zero_point_next = calc_scale_zero_point_sym(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
     else:
         scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
-        passs
+        pass
 
     # Preparing input by saturating range to num_bits range.
     if sym:
