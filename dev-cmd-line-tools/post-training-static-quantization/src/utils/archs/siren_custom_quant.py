@@ -131,6 +131,7 @@ class SirenCQ(nn.Module):
         prev_module, prev_name = None, None
         self.net = nn.Sequential(*self.net)
         for a_name, a_module in self.net.named_modules():
+            print(a_name)
             if type(a_module) == SineLayerCQ:
                 if a_module.is_first:
                     prev_name, prev_module = a_name, a_module
