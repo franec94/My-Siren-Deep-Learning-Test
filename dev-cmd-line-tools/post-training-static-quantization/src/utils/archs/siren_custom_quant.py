@@ -184,6 +184,7 @@ class SirenCQ(nn.Module):
                     prev_module = a_module
             else:
                 # print(ii, module_name, "Discard.")
+                pass
             pass
         x = prev_module(x)
         x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
