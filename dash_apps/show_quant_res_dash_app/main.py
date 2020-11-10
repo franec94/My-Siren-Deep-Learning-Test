@@ -89,9 +89,9 @@ def main():
     # x = 'bpp'; y = "psnr"; 
     x = 'bpp'; hue='quant_tech'
     for y in y_list:
-        fig = px.scatter(data_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
+        fig = px.scatter(merged_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
                marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
-        fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren dataframes')
+        fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren+jpeg dataframes')
         complex_figs_list.append(fig)
         pass
     x = 'bpp'; hue='quant_tech_2'

@@ -16,4 +16,5 @@ DIR_DATA_CSV_LIST = [ \
     "D:\\data\\data_thesys\\data_post\\base_data\\03-11-2020\\1604414366-573355", \
     "D:\\data\\data_thesys\\data_post\\base_data\\05-11-2020\\1604594787-201566", \
     "D:\\data\\data_thesys\\data_post\\quantized_data\\1604779421-808068", \
+    "D:\\data\data_thesys\\data_post\\quantized_data\\09-11-2020\\1604945671-727386", \
 ]
