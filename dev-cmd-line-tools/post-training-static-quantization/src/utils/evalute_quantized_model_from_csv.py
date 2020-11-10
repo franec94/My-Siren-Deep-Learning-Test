@@ -363,7 +363,13 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 quantization_enabled=a_tech,
                 model_filename=vals.path, sidelength=int(vals.cropped_width))
             model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
-            eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu', num_bits=args.quant_bits)
+            eval_scores, eta_eval, size_model = _evaluate_model_local(
+                image_dataset = img_dataset,
+                model_conf = model_conf,
+                quant_tech = a_tech,
+                device = 'cpu',
+                num_bits=args.quant_bits,
+                quant_sym=args.quant_sym)
             # pprint(eval_scores)
             vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores) + [eta_eval, size_model]
             a_record = InfoResults._make(vals_r)
