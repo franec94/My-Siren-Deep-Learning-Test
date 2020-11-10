@@ -84,7 +84,7 @@ def calc_scale_zero_point(min_val, max_val, num_bits=8):
 
 
 def quantize_tensor(x, num_bits=8, min_val=None, max_val=None):
-    """Quantize Tensor."""
+    """Quantize Tensor: """
     
     if not min_val and not max_val: 
       min_val, max_val = x.min(), x.max()
@@ -101,7 +101,7 @@ def quantize_tensor(x, num_bits=8, min_val=None, max_val=None):
 
 
 def dequantize_tensor(q_x):
-    """Dequantize tensor."""
+    """Dequantize tensor: q_x.scale * (q_x.tensor.float() - q_x.zero_point)"""
 
     return q_x.scale * (q_x.tensor.float() - q_x.zero_point)
 
@@ -109,9 +109,24 @@ def dequantize_tensor(q_x):
 # Functions
 # --------------------------------------------- #
 
-def quantize_layer(x, layer, stat, scale_x, zp_x):
+def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8):
     """
     Quantize Layer.
+    Params:
+    -------
+    :x: input PyTorch tensor.\n
+    :layer: model's PyTorch layer, a.k.a module.\n
+    :stat: layer's stats related to the layer to be quatized.\n
+    :scale_x: scaler for amplitude scaling.\n
+    :zp_x: shift for scaling input tensor.\n
+    :num_bits: number of bits for defining the quantization.\n
+
+    Return:
+    -------
+    :x, scale_next, zero_point_next: where:
+    - x: scaled tensor.\n
+    - scale_next: how to scale the next layer.\n
+    - zero_point_next: how to shift the next layer.\n
     """
     # for both conv and linear layers
     W = layer.weight.data
@@ -119,8 +134,8 @@ def quantize_layer(x, layer, stat, scale_x, zp_x):
 
     # scale_x = x.scale
     # zp_x = x.zero_point
-    w = quantize_tensor(layer.weight.data) 
-    b = quantize_tensor(layer.bias.data)
+    w = quantize_tensor(x = layer.weight.data, num_bits = num_bits) 
+    b = quantize_tensor(x = layer.bias.data, num_bits = num_bits)
 
     layer.weight.data = w.tensor.float()
     layer.bias.data = b.tensor.float()
@@ -131,7 +146,7 @@ def quantize_layer(x, layer, stat, scale_x, zp_x):
     scale_b = b.scale
     zp_b = b.zero_point
   
-    scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'])
+    scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
 
     # Perparing input by shifting
     X = x.float() - zp_x

@@ -161,8 +161,11 @@ class SirenCQ(nn.Module):
     
 
     def _forward_quantized(self, x):
-        stats = self.stats; is_first = True
-        prev_module, scale_next, zero_point_next = None, None, None
+        stats = self.stats
+        is_first = True
+        prev_module = None
+        scale_next = None
+        zero_point_next = None
 
         n = len(list(self.net.named_modules()))
         for ii, (module_name, a_module) in  enumerate(self.net.named_modules()):
@@ -175,9 +178,22 @@ class SirenCQ(nn.Module):
                     omega_0 = self.first_omega_0
                 else:
                     if isinstance(x, QTensor):
-                        x, scale_next, zero_point_next = quantize_layer(x.tensor, prev_module, stats[f'{module_name}'], x.scale, x.zero_point)
+                        x, scale_next, zero_point_next = quantize_layer(
+                            x = x.tensor,
+                            layer = prev_module,
+                            stat = stats[f'{module_name}'],
+                            scale_x = x.scale,
+                            zp_x = x.zero_point,
+                            num_bits = self.num_bits)
                     else:
-                        x, scale_next, zero_point_next = quantize_layer(x, prev_module, stats[f'{module_name}'], scale_next, zero_point_next)
+                        x, scale_next, zero_point_next = quantize_layer(
+                            x = x,
+                            layer = prev_module,
+                            stat = stats[f'{module_name}'],
+                            scale_x = scale_next,
+                            zp_x = zero_point_next,
+                            num_bits = self.num_bits)
+                        pass
                     if ii + 2 != n:
                         x = torch.sin(x * int(omega_0))
                     omega_0 = self.hidden_omega_0
