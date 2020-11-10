@@ -163,6 +163,7 @@ class SirenCQ(nn.Module):
         prev_module = None
         for ii, (module_name, a_module) in  enumerate(self.net.named_modules()):
             if module_name in stats.keys():
+                print(ii, module_name, "Hit process.")
                 if is_first == True:
                     x = quantize_tensor(x, min_val=stats[f'{module_name}']['min'], max_val=stats[f'{module_name}']['max'])
                     prev_module = a_module
@@ -172,6 +173,8 @@ class SirenCQ(nn.Module):
                     if ii + 1 != n:
                         x = torch.sin(x)
                     prev_module = a_module
+            else:
+                print(ii, module_name, "Discard.")
             pass
         x = prev_module(x)
         x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
