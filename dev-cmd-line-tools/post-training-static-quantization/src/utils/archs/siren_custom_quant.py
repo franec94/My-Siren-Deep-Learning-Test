@@ -172,7 +172,7 @@ class SirenCQ(nn.Module):
                     if isinstance(x, QTensor):
                         x, scale_next, zero_point_next = quantize_layer(x.tensor, prev_module, stats[f'{module_name}'], x.scale, x.zero_point)
                     else:
-                        x, scale_next, zero_point_next = quantize_layer(x, prev_module, stats[f'{module_name}'], x.scale, x.zero_point)
+                        x, scale_next, zero_point_next = quantize_layer(x, prev_module, stats[f'{module_name}'], scale_next, zero_point_next)
                     if ii + 1 != n:
                         x = torch.sin(x)
                     prev_module = a_module
