@@ -105,6 +105,8 @@ class SirenCQ(nn.Module):
         self.quant = quant
         self.num_bits = num_bits
         self.stats = {}
+        self.first_omega_0 = first_omega_0
+        self.hidden_omega_0 = hidden_omega_0
         a_layer = SineLayerCQ(in_features, hidden_features, \
                                   quant=quant, \
                                   is_first=True, omega_0=first_omega_0)
@@ -168,13 +170,15 @@ class SirenCQ(nn.Module):
                     x = quantize_tensor(x, min_val=stats[f'{module_name}']['min'], max_val=stats[f'{module_name}']['max'])
                     prev_module = a_module
                     is_first = False
+                    omega_0 = self.first_omega_0
                 else:
                     if isinstance(x, QTensor):
                         x, scale_next, zero_point_next = quantize_layer(x.tensor, prev_module, stats[f'{module_name}'], x.scale, x.zero_point)
                     else:
                         x, scale_next, zero_point_next = quantize_layer(x, prev_module, stats[f'{module_name}'], scale_next, zero_point_next)
                     if ii + 1 != n:
-                        x = torch.sin(x)
+                        x = torch.sin(x * omega_0)
+                    omega_0 = self.hidden_omega_0
                     prev_module = a_module
             else:
                 print(ii, module_name, "Discard.")
