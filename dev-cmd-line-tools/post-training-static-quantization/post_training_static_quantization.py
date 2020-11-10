@@ -80,7 +80,12 @@ def process_posterior_quantization_mode(opt, root_path):
         df_filename = os.path.join(root_path, 'result_quant.csv')
         df_results.to_csv(f'{df_filename}')
 
+        print('Head results:')
         table = tabulate.tabulate(tabular_data=df_results.values[:5], headers=df_results.columns)
+        print(table)
+
+        print('Tail results:')
+        table = tabulate.tabulate(tabular_data=df_results.values[-5:-1], headers=df_results.columns)
         print(table)
         pass
     if files_not_found != None and len(files_not_found) != 0:
