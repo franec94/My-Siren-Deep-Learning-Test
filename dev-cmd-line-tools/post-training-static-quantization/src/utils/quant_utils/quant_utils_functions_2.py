@@ -49,7 +49,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.utils.archs.siren_custom_quant import SineLayerCQ, SirenCQ
+# from src.utils.archs.siren_custom_quant import SineLayerCQ
 
 # ----------------------------------------------------------------------------------------------- #
 # Objects
@@ -194,7 +194,7 @@ def gather_activation_stats(model, x, stats):
     :stats: dictionary with updated values.
     """
     for name_module, module_obj in model.named_modules():
-        if type(module_obj) == SineLayerCQ or type(module_obj) == nn.Linear:
+        if type(module_obj) == nn.Module or type(module_obj) == nn.Linear:
             stats = update_stats(x.clone().view(x.shape[0], -1), stats, f'{name_module}')
             x = module_obj(x)
             pass
