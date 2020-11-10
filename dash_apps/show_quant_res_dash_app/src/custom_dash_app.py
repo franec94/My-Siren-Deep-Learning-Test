@@ -47,7 +47,10 @@ def get_dash_app(figs_list, n_figs, tab_names_list):
         tab_names = iter(tab_names_list)
         tab_list = [] # card_list = []
         
-        tab_list.append(dbc.Tab(dbc.Card(figs_list, body=True), label=f'{next(tab_names)}'))
+        # n = len(figs_list) // n_figs
+        for start_pos, end_pos in zip(range(0, len(figs_list), n_figs), range(n_figs, len(figs_list)+1, n_figs)):
+            tab_list.append(dbc.Tab(dbc.Card(figs_list[start_pos:end_pos], body=True), label=f'{next(tab_names)}'))
+        # tab_list.append(dbc.Tab(dbc.Card(figs_list[start_pos:end_pos], body=True), label=f'{next(tab_names)}'))
         app.layout = dbc.Tabs(tab_list, id="tabs-with-classes")
     else:
         app.layout = html.Div(figs_list)

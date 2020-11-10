@@ -32,6 +32,7 @@ def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data
 
 
 def main():
+    
     data_df = get_data_from_local_list(dir_data_csv_list = src.libs.DIR_DATA_CSV_LIST, dir_data_csv = None, data_csv_name = 'result_quant.csv')
 
     def map_to_bpp_by_quant_tech(a_row):
@@ -56,7 +57,14 @@ def main():
         im_cropped.save(f, format='PNG')
         cropped_file_size_bits = f.getbuffer().nbytes * 8
         pass
-    result_tuples, failure_qualities = \
+    def map_to_CR_by_quant_tech(a_row, im_size = im_cropped):
+        model_size, quant_tech = a_row
+        if quant_tech != 'None':
+            return model_size * 8
+        else:
+            return model_size * 32
+    data_df['CR'] = list(map(map_to_CR_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
+    result_tuples, _ = \
         calculate_several_jpeg_compression(im_cropped, cropped_file_size_bits, qualities_arr)
     data = list(map(operator.methodcaller('_asdict'), result_tuples))
     jpeg_df = pd.DataFrame(data = data)
@@ -64,9 +72,9 @@ def main():
     jpeg_df['quant_tech_2'] = ["jpeg"] *  jpeg_df.shape[0]
 
 
-    siren_columns_for_merge = "mse,psnr,ssim,bpp,quant_tech,quant_tech_2".split(",")  # Here, list siren_df columns for merge purpose.
-    jpeg_columns_for_merge = "mse,psnr,ssim,bpp,quant_tech,quant_tech_2".split(",") 
-    columns_names_merge = "mse,psnr,ssim,bpp,quant_tech,quant_tech_2".split(",") 
+    siren_columns_for_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",")  # Here, list siren_df columns for merge purpose.
+    jpeg_columns_for_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",") 
+    columns_names_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",") 
 
     # Performe merging.
     data_frames_list = [
@@ -77,28 +85,39 @@ def main():
 
 
     complex_figs_list = []
-    x = 'bpp'; y = "psnr"; hue='quant_tech'
-    fig = px.scatter(data_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
+    y_list = "mse,psnr,ssim,CR".split(",")
+    # x = 'bpp'; y = "psnr"; 
+    x = 'bpp'; hue='quant_tech'
+    for y in y_list:
+        fig = px.scatter(data_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
+               marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
+        fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren dataframes')
+        complex_figs_list.append(fig)
+        pass
+    x = 'bpp'; hue='quant_tech_2'
+    for y in y_list:
+        fig = px.scatter(merged_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
            marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
-    complex_figs_list.append(fig)
-    x = 'bpp'; y = "psnr"; hue='quant_tech'
-    fig = px.scatter(merged_df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
-           marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
-    complex_figs_list.append(fig)
+        fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren+jpeg dataframes')
+        complex_figs_list.append(fig)
+        pass
     complex_figs_dash_list = list(map(lambda fig: dcc.Graph(figure=fig), complex_figs_list))
-    tab_names = 'Results'.split(",")
-
+    
+    tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM)'.split(";")
     app = get_dash_app(
         figs_list = complex_figs_dash_list,
-        n_figs = len(complex_figs_dash_list),
+        n_figs = len(y_list),
         tab_names_list = tab_names)
+    
     if NOTIFICATIONS_ENABLED_VIA_TOAST:
         from win10toast import ToastNotifier
         toaster = ToastNotifier()
-
         toaster.show_toast(
-            "Notification", f"Data Prepared!\nRunning Dash App\n",
+            "Notification", f"Data Prepared!\nRunning Dash App\nhttp://localhost:8050",
             threaded = True, icon_path=None, duration=3)
+        
+        import webbrowser
+        webbrowser.open("http://localhost:8050")
         pass
     app.run_server(debug=True, use_reloader=False, host='localhost') 
 
