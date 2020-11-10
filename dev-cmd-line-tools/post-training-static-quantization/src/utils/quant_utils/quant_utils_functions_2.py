@@ -204,6 +204,7 @@ def gather_activation_stats(model, x, stats):
             pass
         else:
             # print('No module:', name_module, type(module_obj))
+            pass
         pass
 
     return stats
