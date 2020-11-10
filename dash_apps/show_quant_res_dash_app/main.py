@@ -48,10 +48,10 @@ def main():
     data_df['bpp'] = list(map(map_to_bpp_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     data_df['quant_tech_2'] = list(map(map_to_quant_tech_hf, data_df[['hidden_features', 'quant_tech']].values))
 
+    # --- Run several trials for JPEG compression.
     im = load_target_image(image_file_path = None)
     im_cropped = get_cropped_by_center_image(im, target = 256)
     qualities_arr = np.arange(20, 95+1, dtype = np.int)
-    # --- Run several trials for JPEG compression.
     cropped_file_size_bits = None
     with BytesIO() as f:
         im_cropped.save(f, format='PNG')
@@ -60,9 +60,9 @@ def main():
     def map_to_CR_by_quant_tech(a_row, im_size = im_cropped):
         model_size, quant_tech = a_row
         if quant_tech != 'None':
-            return model_size * 8
+            return im_cropped / (model_size * 8)
         else:
-            return model_size * 32
+            return im_cropped / (model_size * 32)
     data_df['CR'] = list(map(map_to_CR_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     result_tuples, _ = \
         calculate_several_jpeg_compression(im_cropped, cropped_file_size_bits, qualities_arr)
