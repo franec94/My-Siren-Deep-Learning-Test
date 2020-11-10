@@ -117,7 +117,7 @@ def get_custom_quant_model(metadata_model_dict = None, model_path = None, set_la
             out_features=1,
             quant = metadata_model_dict['quant'],
             num_bits = metadata_model_dict['num_bits'],
-            quant_sym=arch_hyperparams['quant_sym'],
+            quant_sym=metadata_model_dict['quant_sym'],
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             # outermost_linear=True).to(device=device)
