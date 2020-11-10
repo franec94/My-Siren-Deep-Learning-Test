@@ -209,7 +209,7 @@ class SirenCQ(nn.Module):
         return activations
 
 
-    def gather_stats(self, test_loader):
+    def gather_stats(self, test_loader, device = 'cpu'):
         """Gather stats for quantizing computations, inferences.
         Params:
         -------
@@ -218,7 +218,7 @@ class SirenCQ(nn.Module):
         -------
         :stats_collected: python dictionary object,copied and retrieved with statistics collected.\n
         """
-        stats_collected = gather_stats_inner(self, test_loader, self.device().type)
+        stats_collected = gather_stats_inner(self, test_loader, device)
         self.stats = stats_collected
         return copy.deepcopy(stats_collected)
     pass

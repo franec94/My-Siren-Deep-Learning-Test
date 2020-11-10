@@ -101,7 +101,13 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
         pass
     else:
         # print('Eval:', quant_tech.upper())
-        eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = model_conf._asdict(), fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
+        arch_hyperparams = model_conf._asdict()
+        if model_conf.quantization_enabled == 'custom_quant':
+            quant = True; num_bits = 8
+            arch_hyperparams['quant'] = True
+            arch_hyperparams['num_bits'] = num_bits
+            pass
+        eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
 
     return eval_scores, eta_eval, size_model
