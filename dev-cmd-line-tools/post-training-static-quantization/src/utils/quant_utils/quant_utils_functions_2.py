@@ -193,7 +193,7 @@ def gather_activation_stats(model, x, stats):
     -------
     :stats: dictionary with updated values.
     """
-    n = len(model.net.named_modules())
+    n = len(list(model.net.named_modules()))
     for ii, (name_module, module_obj) in enumerate(model.net.named_modules()):
         if type(module_obj) == nn.Module or type(module_obj) == nn.Linear:
             print('Yes module:', name_module, type(module_obj))
