@@ -81,7 +81,8 @@ from src.utils.quant_utils.quant_utils_functions import _evaluate_model as _eval
 from src.utils.quant_utils.compute_quantization import get_size_of_model
 
 
-def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu'):
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8):
+    """Evalaute model. """
 
     eval_scores = []
     if quant_tech == None:
@@ -103,7 +104,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
         # print('Eval:', quant_tech.upper())
         arch_hyperparams = model_conf._asdict()
         if model_conf.quantization_enabled == 'custom_quant':
-            quant = True; num_bits = 8
+            quant = True
             arch_hyperparams['quant'] = quant
             arch_hyperparams['num_bits'] = num_bits
             pass
@@ -361,7 +362,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 quantization_enabled=a_tech,
                 model_filename=vals.path, sidelength=int(vals.cropped_width))
             model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
-            eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu')
+            eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = a_tech, device = 'cpu', num_bits=args.quant_bits)
             # pprint(eval_scores)
             vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores) + [eta_eval, size_model]
             a_record = InfoResults._make(vals_r)
