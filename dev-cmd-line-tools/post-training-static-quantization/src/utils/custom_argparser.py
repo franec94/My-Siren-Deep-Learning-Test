@@ -56,6 +56,9 @@ def get_cmd_line_opts():
     p.add_argument('--quant_bits', required=False, type=int, default=8, 
         help='Nmber of bits for custom quant. (Default: 8)'
     )
+    p.add_argument('--quant_sym', required=False, action='store_true', default=False, 
+        help='Sym quat chose. (Default: False)'
+    )
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()

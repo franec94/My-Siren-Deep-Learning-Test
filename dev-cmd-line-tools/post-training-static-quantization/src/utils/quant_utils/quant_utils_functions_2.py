@@ -60,6 +60,17 @@ QTensor = namedtuple('QTensor', ['tensor', 'scale', 'zero_point'])
 # ----------------------------------------------------------------------------------------------- #
 # Functions
 # ----------------------------------------------------------------------------------------------- #
+def calc_scale_zero_point_sym(min_val, max_val,num_bits=8):
+    """Calc Scale and zero point of next fixed to zero."""
+    max_val = max(abs(min_val), abs(max_val))
+    qmin = 0.
+    qmax = 2.**(num_bits-1) - 1.
+
+    scale = max_val / qmax
+
+    return scale, 0
+
+
 def calc_scale_zero_point(min_val, max_val, num_bits=8):
   """Calc Scale and zero point of next."""
 
@@ -81,6 +92,25 @@ def calc_scale_zero_point(min_val, max_val, num_bits=8):
   zero_point = int(zero_point)
 
   return scale, zero_point
+
+
+def quantize_tensor_sym(x, num_bits=8, min_val=None, max_val=None):
+    """Quantize tensor sym."""
+
+    if not min_val and not max_val: 
+        min_val, max_val = x.min(), x.max()
+
+    max_val = max(abs(min_val), abs(max_val))
+    qmin = 0.
+    qmax = 2.**(num_bits-1) - 1.
+
+    scale = max_val / qmax   
+
+    q_x = x/scale
+
+    q_x.clamp_(-qmax, qmax).round_()
+    q_x = q_x.round()
+    return QTensor(tensor=q_x, scale=scale, zero_point=0)
 
 
 def quantize_tensor(x, num_bits=8, min_val=None, max_val=None):
@@ -105,11 +135,15 @@ def dequantize_tensor(q_x):
 
     return q_x.scale * (q_x.tensor.float() - q_x.zero_point)
 
+
+def dequantize_tensor_sym(q_x):
+    """Dequantize tensor: q_x.scale * (q_x.tensor.float())"""
+    return q_x.scale * (q_x.tensor.float())
 # --------------------------------------------- #
 # Functions
 # --------------------------------------------- #
 
-def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8):
+def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8, sym_flag = False):
     """
     Quantize Layer.
     Params:
@@ -134,8 +168,13 @@ def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8):
 
     # scale_x = x.scale
     # zp_x = x.zero_point
-    w = quantize_tensor(x = layer.weight.data, num_bits = num_bits) 
-    b = quantize_tensor(x = layer.bias.data, num_bits = num_bits)
+    if sym_flag:
+        w = quantize_tensor_sym(layer.weight.data, num_bits=num_bits) 
+        b = quantize_tensor_sym(layer.bias.data, num_bits=num_bits)
+    else:
+        w = quantize_tensor(x = layer.weight.data, num_bits = num_bits) 
+        b = quantize_tensor(x = layer.bias.data, num_bits = num_bits)
+        pass
 
     layer.weight.data = w.tensor.float()
     layer.bias.data = b.tensor.float()
@@ -146,19 +185,35 @@ def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8):
     scale_b = b.scale
     zp_b = b.zero_point
   
-    scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
+    if sym_flag:
+        scale_next, zero_point_next = calc_scale_zero_point_sym(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
+    else:
+        scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'], num_bits = num_bits)
+        passs
 
-    # Perparing input by shifting
-    X = x.float() - zp_x
-    layer.weight.data = (scale_x * scale_w/scale_next)*(layer.weight.data - zp_w)
-    layer.bias.data = (scale_b/scale_next)*(layer.bias.data + zp_b)
+    # Preparing input by saturating range to num_bits range.
+    if sym:
+        X = x.float()
+        layer.weight.data = ((scale_x * scale_w) / scale_next)*(layer.weight.data)
+        layer.bias.data = (scale_b/scale_next)*(layer.bias.data)
+    else:
+        X = x.float() - zp_x
+        layer.weight.data = ((scale_x * scale_w) / scale_next)*(layer.weight.data - zp_w)
+        layer.bias.data = (scale_b/scale_next)*(layer.bias.data + zp_b)
+        pass
 
     # All int
 
-    x = layer(X) + zero_point_next
+    if sym_flag:  
+        x = (layer(X)) 
+    else:
+        x = (layer(X)) + zero_point_next 
     
     # x = F.relu(x)
     # x = torch.sin(x)
+    
+    # cast to int
+    x.round_()
 
     # Reset
     layer.weight.data = W

@@ -98,7 +98,7 @@ class SineLayerCQ(nn.Module):
     
 class SirenCQ(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30., quant = False, num_bits = 8):
+                 first_omega_0=30, hidden_omega_0=30., quant = False, quant_sym = False, num_bits = 8):
         super().__init__()
         
         self.net = []
@@ -107,6 +107,8 @@ class SirenCQ(nn.Module):
         self.stats = {}
         self.first_omega_0 = first_omega_0
         self.hidden_omega_0 = hidden_omega_0
+        self.quant_sym = quant_sym
+        
         a_layer = SineLayerCQ(in_features, hidden_features, \
                                   quant=quant, \
                                   is_first=True, omega_0=first_omega_0)
