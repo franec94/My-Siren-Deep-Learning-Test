@@ -248,6 +248,19 @@ def update_stats(x, stats, key):
         stats[key]['max'] += max_val.sum().item()
         stats[key]['min'] += min_val.sum().item()
         stats[key]['total'] += 1
+
+    if 'ema_min' in stats[key]:
+        stats[key]['ema_min'] = weighting*(min_val.mean().item()) + (1- weighting) * stats[key]['ema_min']
+    else:
+        stats[key]['ema_min'] = weighting*(min_val.mean().item())
+
+    if 'ema_max' in stats[key]:
+        stats[key]['ema_max'] = weighting*(max_val.mean().item()) + (1- weighting) * stats[key]['ema_max']
+    else: 
+        stats[key]['ema_max'] = weighting*(max_val.mean().item())
+
+    stats[key]['min_val'] = stats[key]['min']/ stats[key]['total']
+    stats[key]['max_val'] = stats[key]['max']/ stats[key]['total']
   
     return stats
 
