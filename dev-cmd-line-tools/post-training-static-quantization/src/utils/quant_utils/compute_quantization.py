@@ -86,19 +86,19 @@ import src.utils.dataio as dataio
 
 def check_device_and_weigths_to_laod(model_fp32, device = 'cpu', model_path = None):
     if device == 'cpu':
-        print('Load Model to cpu device!')
+        # print('Load Model to cpu device!')
         model_fp32 = model_fp32.to('cpu')
         if model_path != None:
-            print('Load Model weigths!')
+            # print('Load Model weigths!')
             state_dict = torch.load(model_path, map_location=torch.device('cpu'))
             model_fp32.load_state_dict(state_dict)
             pass
         pass
     else:
         model_fp32 = model_fp32.cuda()
-        print('Load Model to cuda device!')
+        # print('Load Model to cuda device!')
         if model_path != None:
-            print('Load Model weigths!')
+            # print('Load Model weigths!')
             state_dict = torch.load(model_path, map_location=torch.device('cuda'))
             model_fp32.load_state_dict(state_dict)
             pass
