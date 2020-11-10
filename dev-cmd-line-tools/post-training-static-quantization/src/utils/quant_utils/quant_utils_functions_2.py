@@ -194,7 +194,7 @@ def gather_activation_stats(model, x, stats):
     :stats: dictionary with updated values.
     """
     for name_module, module_obj in model.named_modules():
-        if type(module_obj) == SineLayerCQ:
+        if type(module_obj) == SineLayerCQ or type(module_obj) == nn.Linear:
             stats = update_stats(x.clone().view(x.shape[0], -1), stats, f'{name_module}')
             x = module_obj(x)
             pass

@@ -109,13 +109,11 @@ class SirenCQ(nn.Module):
                                   quant=quant, \
                                   is_first=True, omega_0=first_omega_0)
         self.net.append(a_layer)
-
+        
         for i in range(hidden_layers):
-            prev_layer_name = a_layer._get_name()
             curr_layer = SineLayerCQ(hidden_features, hidden_features, \
                                       quant=quant, \
-                                      is_first=False, omega_0=hidden_omega_0, prev_layer_name=prev_layer_name)
-            a_layer.succ_layer_name = curr_layer._get_name()
+                                      is_first=False, omega_0=hidden_omega_0, prev_layer_name=None)
             self.net.append(curr_layer)
 
         if outermost_linear:
@@ -130,7 +128,19 @@ class SirenCQ(nn.Module):
             self.net.append(SineLayerCQ(hidden_features, out_features, 
                                       is_first=False, omega_0=hidden_omega_0))
         
+        prev, curr = None, None
         self.net = nn.Sequential(*self.net)
+        for a_module in self.net:
+            if type(a_module) == SineLayerCQ:
+                if prev == None:
+                    prev = a_module
+                else:
+                    prev.succ_layer_name = a_module._get_name()
+                    a_module.prev_layer_name = prev._get_name()
+                    prev = a_module
+                    pass
+                pass
+            pass
         pass
     
 
