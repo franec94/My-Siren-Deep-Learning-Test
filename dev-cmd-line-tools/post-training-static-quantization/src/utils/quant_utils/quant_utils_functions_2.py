@@ -60,8 +60,9 @@ QTensor = namedtuple('QTensor', ['tensor', 'scale', 'zero_point'])
 # ----------------------------------------------------------------------------------------------- #
 # Functions
 # ----------------------------------------------------------------------------------------------- #
-def calc_scale_zero_point(min_val, max_val,num_bits=8):
-  # Calc Scale and zero point of next 
+def calc_scale_zero_point(min_val, max_val, num_bits=8):
+  """Calc Scale and zero point of next."""
+
   qmin = 0.
   qmax = 2.**num_bits - 1.
 
@@ -83,6 +84,7 @@ def calc_scale_zero_point(min_val, max_val,num_bits=8):
 
 
 def quantize_tensor(x, num_bits=8, min_val=None, max_val=None):
+    """Quantize Tensor."""
     
     if not min_val and not max_val: 
       min_val, max_val = x.min(), x.max()
@@ -99,6 +101,8 @@ def quantize_tensor(x, num_bits=8, min_val=None, max_val=None):
 
 
 def dequantize_tensor(q_x):
+    """Dequantize tensor."""
+
     return q_x.scale * (q_x.tensor.float() - q_x.zero_point)
 
 # --------------------------------------------- #
@@ -106,43 +110,46 @@ def dequantize_tensor(q_x):
 # --------------------------------------------- #
 
 def quantize_layer(x, layer, stat, scale_x, zp_x):
-  # for both conv and linear layers
-  W = layer.weight.data
-  B = layer.bias.data
+    """
+    Quantize Layer.
+    """
+    # for both conv and linear layers
+    W = layer.weight.data
+    B = layer.bias.data
 
-  # scale_x = x.scale
-  # zp_x = x.zero_point
-  w = quantize_tensor(layer.weight.data) 
-  b = quantize_tensor(layer.bias.data)
+    # scale_x = x.scale
+    # zp_x = x.zero_point
+    w = quantize_tensor(layer.weight.data) 
+    b = quantize_tensor(layer.bias.data)
 
-  layer.weight.data = w.tensor.float()
-  layer.bias.data = b.tensor.float()
+    layer.weight.data = w.tensor.float()
+    layer.bias.data = b.tensor.float()
 
-  scale_w = w.scale
-  zp_w = w.zero_point
+    scale_w = w.scale
+    zp_w = w.zero_point
   
-  scale_b = b.scale
-  zp_b = b.zero_point
+    scale_b = b.scale
+    zp_b = b.zero_point
   
-  scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'])
+    scale_next, zero_point_next = calc_scale_zero_point(min_val=stat['min'], max_val=stat['max'])
 
-  # Perparing input by shifting
-  X = x.float() - zp_x
-  layer.weight.data = (scale_x * scale_w/scale_next)*(layer.weight.data - zp_w)
-  layer.bias.data = (scale_b/scale_next)*(layer.bias.data + zp_b)
+    # Perparing input by shifting
+    X = x.float() - zp_x
+    layer.weight.data = (scale_x * scale_w/scale_next)*(layer.weight.data - zp_w)
+    layer.bias.data = (scale_b/scale_next)*(layer.bias.data + zp_b)
 
-  # All int
+    # All int
 
-  x = layer(X) + zero_point_next
+    x = layer(X) + zero_point_next
     
-  # x = F.relu(x)
-  # x = torch.sin(x)
+    # x = F.relu(x)
+    # x = torch.sin(x)
 
-  # Reset
-  layer.weight.data = W
-  layer.bias.data = B
+    # Reset
+    layer.weight.data = W
+    layer.bias.data = B
   
-  return x, scale_next, zero_point_next
+    return x, scale_next, zero_point_next
 
 
 # --------------------------------------------- #

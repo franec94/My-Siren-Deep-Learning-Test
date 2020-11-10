@@ -67,7 +67,7 @@ class SineLayerCQ(nn.Module):
         self.omega_0 = omega_0
         self.quant = quant
         self.prev_layer_name = prev_layer_name
-        self.succ_layer_name = None
+        self.succ_layer_name = succ_layer_name
         self.is_first = is_first
         
         self.in_features = in_features
@@ -98,11 +98,12 @@ class SineLayerCQ(nn.Module):
     
 class SirenCQ(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30., quant = False):
+                 first_omega_0=30, hidden_omega_0=30., quant = False, num_bits = 8):
         super().__init__()
         
         self.net = []
         self.quant = quant
+        self.num_bits = num_bits
         self.stats = {}
         a_layer = SineLayerCQ(in_features, hidden_features, \
                                   quant=quant, \
@@ -144,15 +145,26 @@ class SirenCQ(nn.Module):
     
 
     def _forward_quantized(self, x):
+        stats = self.stats
         for a_module in self.net:
             if type(a_module) == SineLayerCQ:
+                module_name = a_module._get_name()
                 if a_module.is_first:
-                    x = quantize_tensor(x, min_val=self.stats[f'{a_module._get_name()}']['min'], max_val=self.stats[f'{a_module._get_name()}']['max'])
+                    x = quantize_tensor(x,
+                        min_val=stats[f'{module_name}']['min'],
+                        max_val=stats[f'{module_name}']['max'],
+                        num_bits = self.num_bits)
                     pass
-                x, scale_next, zero_point_next = quantize_layer(x.tensor, a_module, self.stats[f'{a_module.succ_layer_name}'], x.scale, x.zero_point)
+                succ_layer_name = a_module.succ_layer_name
+                x, scale_next, zero_point_next = \
+                    quantize_layer(x.tensor,
+                    a_module,
+                    stats[f'{succ_layer_name}'], x.scale, x.zero_point)
+                pass
             if type(a_module) == nn.Linear:
                 x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
                 x = a_module(x)
+                pass
             pass
         return x
 
