@@ -57,12 +57,12 @@ def main():
         im_cropped.save(f, format='PNG')
         cropped_file_size_bits = f.getbuffer().nbytes * 8
         pass
-    def map_to_CR_by_quant_tech(a_row, im_size = im_cropped):
+    def map_to_CR_by_quant_tech(a_row, im_size = cropped_file_size_bits):
         model_size, quant_tech = a_row
         if quant_tech != 'None':
-            return im_cropped / (model_size * 8)
+            return im_size / (model_size * 8)
         else:
-            return im_cropped / (model_size * 32)
+            return im_size / (model_size * 32)
     data_df['CR'] = list(map(map_to_CR_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     result_tuples, _ = \
         calculate_several_jpeg_compression(im_cropped, cropped_file_size_bits, qualities_arr)
