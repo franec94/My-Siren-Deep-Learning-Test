@@ -261,12 +261,12 @@ def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules 
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             outermost_linear=True)
+        model_fp32.to(device='cpu')
         if model_path != None:
             state_dict = torch.load(model_path)
             # model.load_state_dict(state_dict).to('cpu')
             model_fp32.load_state_dict(state_dict)
             pass
-        model_fp32.to(device='cpu')
     else:
         model_fp32 = Siren(
             in_features=2,
@@ -274,12 +274,12 @@ def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules 
             hidden_features=int(metadata_model_dict['hidden_features']),
             hidden_layers=int(metadata_model_dict['hidden_layers']),
             outermost_linear=True)
+        model_fp32.load_state_dict(state_dict).cuda()
         if model_path != None:
             state_dict = torch.load(model_path)
             # model.load_state_dict(state_dict).to('cpu')
             model_fp32.load_state_dict(state_dict)
             pass
-        model_fp32.load_state_dict(state_dict).cuda()
         pass
     if fuse_modules != None:
         pass
@@ -467,7 +467,7 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
                 fuse_modules = None, device = 'cpu', qconfig = f"{qconfig}", model_fp32 = None)
             pass
         elif opt.quantization_enabled =='custom_quant':
-            eval_scores, eta_eval, size_model = compute_quantization_paszke_quant_mode(
+            eval_scores, eta_eval, size_model = compute_quantization_custom_quant_mode(
                 model_path,
                 arch_hyperparams,
                 img_dataset,
