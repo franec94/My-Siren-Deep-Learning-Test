@@ -192,7 +192,7 @@ def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8, sym_flag = False
         pass
 
     # Preparing input by saturating range to num_bits range.
-    if sym:
+    if sym_flag:
         X = x.float()
         layer.weight.data = ((scale_x * scale_w) / scale_next)*(layer.weight.data)
         layer.bias.data = (scale_b/scale_next)*(layer.bias.data)
