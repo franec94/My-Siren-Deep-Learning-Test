@@ -136,6 +136,7 @@ class SirenCQ(nn.Module):
                 if a_module.is_first:
                     prev_name, prev_module = f"{a_name}", a_module
                 else:
+                    print(f'Chanining: {prev_name} ({type(prev_module)})<-> {a_name} ({type(a_module)})')
                     prev_module.succ_layer_name = f"{a_name}"
                     a_module.prev_layer_name = prev_name
                     prev_name, prev_module = f"{a_name}", a_module
