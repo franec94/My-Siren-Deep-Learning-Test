@@ -196,14 +196,14 @@ def gather_activation_stats(model, x, stats):
     n = len(list(model.net.named_modules()))
     for ii, (name_module, module_obj) in enumerate(model.net.named_modules()):
         if type(module_obj) == nn.Module or type(module_obj) == nn.Linear:
-            print('Yes module:', name_module, type(module_obj))
+            # print('Yes module:', name_module, type(module_obj))
             stats = update_stats(x.clone().view(x.shape[0], -1), stats, f'{name_module}')
             x = module_obj(x)
             if ii + 1 != n:
-                x = torch.sin(x)
+                x = torch.sin(x * model.hidden_omega_0)
             pass
         else:
-            print('No module:', name_module, type(module_obj))
+            # print('No module:', name_module, type(module_obj))
         pass
 
     return stats

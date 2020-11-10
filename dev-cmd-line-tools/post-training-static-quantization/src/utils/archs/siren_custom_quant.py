@@ -132,19 +132,21 @@ class SirenCQ(nn.Module):
         
         prev_module, prev_name = None, None
         self.net = nn.Sequential(*self.net)
+        """
         for a_name, a_module in self.net.named_modules():
-            print(a_name)
+            # print(a_name)
             if type(a_module) == SineLayerCQ:
                 if a_module.is_first:
                     prev_name, prev_module = f"{a_name}", a_module
                 else:
-                    print(f'Chanining: {prev_name} ({type(prev_module)})<-> {a_name} ({type(a_module)})')
+                    # print(f'Chanining: {prev_name} ({type(prev_module)})<-> {a_name} ({type(a_module)})')
                     prev_module.succ_layer_name = f"{a_name}"
                     a_module.prev_layer_name = prev_name
                     prev_name, prev_module = f"{a_name}", a_module
                     pass
                 pass
             pass
+        """
         pass
     
 
@@ -165,7 +167,7 @@ class SirenCQ(nn.Module):
         prev_module = None
         for ii, (module_name, a_module) in  enumerate(self.net.named_modules()):
             if module_name in stats.keys():
-                print(ii, module_name, "Hit process.")
+                # print(ii, module_name, "Hit process.")
                 if is_first == True:
                     x = quantize_tensor(x, min_val=stats[f'{module_name}']['min'], max_val=stats[f'{module_name}']['max'])
                     prev_module = a_module
@@ -181,7 +183,7 @@ class SirenCQ(nn.Module):
                     omega_0 = self.hidden_omega_0
                     prev_module = a_module
             else:
-                print(ii, module_name, "Discard.")
+                # print(ii, module_name, "Discard.")
             pass
         x = prev_module(x)
         x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
