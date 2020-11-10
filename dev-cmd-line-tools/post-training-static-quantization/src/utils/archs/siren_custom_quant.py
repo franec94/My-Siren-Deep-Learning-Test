@@ -134,11 +134,11 @@ class SirenCQ(nn.Module):
             print(a_name)
             if type(a_module) == SineLayerCQ:
                 if a_module.is_first:
-                    prev_name, prev_module = a_name, a_module
+                    prev_name, prev_module = f"{a_name}", a_module
                 else:
-                    prev_module.succ_layer_name = a_name
+                    prev_module.succ_layer_name = f"{a_name}"
                     a_module.prev_layer_name = prev_name
-                    prev_name, prev_module = a_name, a_module
+                    prev_name, prev_module = f"{a_name}", a_module
                     pass
                 pass
             pass
