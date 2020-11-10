@@ -104,7 +104,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
         arch_hyperparams = model_conf._asdict()
         if model_conf.quantization_enabled == 'custom_quant':
             quant = True; num_bits = 8
-            arch_hyperparams['quant'] = True
+            arch_hyperparams['quant'] = quant
             arch_hyperparams['num_bits'] = num_bits
             pass
         eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
@@ -326,7 +326,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         quant_tech_list = []
 
     records_list = []
-    for row in cropped_images_df[:].values:
+    for row in cropped_images_df[:1].values:
         vals = Columns._make(row)
 
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
