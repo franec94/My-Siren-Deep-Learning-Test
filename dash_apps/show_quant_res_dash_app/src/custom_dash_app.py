@@ -44,21 +44,10 @@ def get_dash_app(figs_list, n_figs, tab_names_list):
     app = dash.Dash('Siren+Jpeg Results', external_stylesheets=[dbc.themes.DARKLY])
 
     if SHOW_RESULTS_BY_TABS:
-        tab_list = []; card_list = []
-        # tab_names = iter(['scatter-mereged (PSNR,SSIM, CR)', 'box-mereged (PSNR,SSIM, CR)', 'kde-mereged (PSNR,SSIM, CR)', 'mse-siren (SCATTER,BOX,KDE)', 'summary']) # , 'graphics options'])
         tab_names = iter(tab_names_list)
-        for ii, a_fig in enumerate(figs_list):
-            """if ii % n_figs == 0:
-                if card_list != None:
-                    tab_list.append(dbc.Tab(dbc.Card(card_list, body=True), label=f'{next(tab_names)}'))
-                    pass
-                card_list = []
-                pass
-            card_list.append(a_fig)"""
-            card_list.append(a_fig)
-            pass
-        # tab_list.append(dbc.Tab(dbc.Card(card_list, body=True), label=f'{next(tab_names)}'))
-        tab_list.append(dbc.Tab(dbc.Card(card_list, body=True), label=f'{next(tab_names)}'))
+        tab_list = [] # card_list = []
+        
+        tab_list.append(dbc.Tab(dbc.Card(figs_list, body=True), label=f'{next(tab_names)}'))
         app.layout = dbc.Tabs(tab_list, id="tabs-with-classes")
     else:
         app.layout = html.Div(figs_list)
