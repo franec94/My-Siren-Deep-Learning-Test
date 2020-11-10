@@ -195,9 +195,12 @@ def gather_activation_stats(model, x, stats):
     """
     for name_module, module_obj in model.named_modules():
         if type(module_obj) == nn.Module or type(module_obj) == nn.Linear:
+            print('Yes module', name_module)
             stats = update_stats(x.clone().view(x.shape[0], -1), stats, f'{name_module}')
             x = module_obj(x)
             pass
+        else:
+            print('No module', name_module)
         pass
 
     return stats
