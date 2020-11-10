@@ -158,25 +158,23 @@ class SirenCQ(nn.Module):
 
     def _forward_quantized(self, x):
         stats = self.stats
-        for module_name, a_module in self.net.named_modules():
-            if type(a_module) == SineLayerCQ:
-                if a_module.is_first:
-                    x = quantize_tensor(x,
-                        min_val=stats[f'{module_name}']['min'],
-                        max_val=stats[f'{module_name}']['max'],
-                        num_bits = self.num_bits)
-                    pass
-                succ_layer_name = a_module.succ_layer_name
-                x, scale_next, zero_point_next = \
-                    quantize_layer(x.tensor,
-                    a_module,
-                    stats[f'{succ_layer_name}'], x.scale, x.zero_point)
-                pass
-            if type(a_module) == nn.Linear:
-                x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
-                x = a_module(x)
-                pass
+        n = len(self.net.named_modules())
+        is_first = True
+        prev_module = None
+        for ii, (module_name, a_module) in  enumerate(self.net.named_modules()):
+            if module_name in stats.keys():
+                if is_first == True:
+                    x = quantize_tensor(x, min_val=stats[f'{module_name}']['min'], max_val=stats[f'{module_name}']['max'])
+                    prev_module = a_module
+                    is_first = False
+                else:
+                    x, scale_next, zero_point_next = quantize_layer(x.tensor, prev_module, stats[f'{module_name}'], x.scale, x.zero_point)
+                    if ii + 1 != n:
+                        x = torch.sin(x)
+                    prev_module = a_module
             pass
+        x = prev_module(x)
+        x = dequantize_tensor(QTensor(tensor=x, scale=scale_next, zero_point=zero_point_next))
         return x
 
 
@@ -188,6 +186,7 @@ class SirenCQ(nn.Module):
         activation_count = 0
         x = coords.clone().detach().requires_grad_(True)
         activations['input'] = x
+        
         for i, layer in enumerate(self.net):
             if isinstance(layer, SirenCQ):
                 x, intermed = layer.forward_with_intermediate(x)
