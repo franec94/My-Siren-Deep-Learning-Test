@@ -157,9 +157,8 @@ class SirenCQ(nn.Module):
 
     def _forward_quantized(self, x):
         stats = self.stats
-        for a_module in self.net:
+        for module_name, a_module in self.net.named_modules():
             if type(a_module) == SineLayerCQ:
-                module_name = a_module._get_name()
                 if a_module.is_first:
                     x = quantize_tensor(x,
                         min_val=stats[f'{module_name}']['min'],
