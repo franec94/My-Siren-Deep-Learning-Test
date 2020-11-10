@@ -161,10 +161,10 @@ class SirenCQ(nn.Module):
     
 
     def _forward_quantized(self, x):
-        stats = self.stats
+        stats = self.stats; is_first = True
+        prev_module, scale_next, zero_point_next = None, None, None
+
         n = len(list(self.net.named_modules()))
-        is_first = True
-        prev_module = None
         for ii, (module_name, a_module) in  enumerate(self.net.named_modules()):
             if module_name in stats.keys():
                 # print(ii, module_name, "Hit process.")
