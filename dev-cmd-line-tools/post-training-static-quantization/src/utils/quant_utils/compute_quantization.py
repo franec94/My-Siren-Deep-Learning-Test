@@ -143,11 +143,16 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
         pass
     model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
 
+    if 'dtype' in metadata_model_dict.keys():
+        dtype = torch.qint8
+    else:
+        dtype = metadata_model_dict['dtype']
+        pass
     # print('Quantize model...')
     model_int8 = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
-        dtype=torch.qint8)  # the target dtype for quantized weights
+        dtype=dtype)  # the target dtype for quantized weights
     if model_int8 == None: Exception(f"model_int8 is None, when quantization is Dynamic!")
     return model_int8
 
