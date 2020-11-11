@@ -143,7 +143,7 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
         pass
     model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
 
-    if 'dtype' in metadata_model_dict.keys():
+    if 'dtype' not in metadata_model_dict.keys():
         print('Default qint8 adopted')
         dtype = torch.qint8
     else:
