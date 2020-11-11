@@ -1,7 +1,7 @@
 import configargparse
 
 QUANT_TECHS = "dynamic,paszke_quant,static,post_train,quantization_aware_training,custom_quant".split(",")
-DYNAMIC_QUAT_SIZES = "qint8,qint32".split(",")
+DYNAMIC_QUAT_SIZES = "qint8,qint32,quint8".split(",")
 
 def get_cmd_line_opts():
     p = configargparse.ArgumentParser()

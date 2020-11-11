@@ -289,6 +289,9 @@ def check_quant_size_for_dynamic_quant(opt):
             opt.dynamic_quant = torch.qint8
         elif dynamic_quant_size == 'qint32':
             opt.dynamic_quant = torch.qint32
+        elif dynamic_quant_size == 'quint8':
+            opt.dynamic_quant = torch.quint8
+            pass
     else:
         raise Exception(f"Dynamic quant size '{dynamic_quant_size}' provided is not allowed.")
     return opt
