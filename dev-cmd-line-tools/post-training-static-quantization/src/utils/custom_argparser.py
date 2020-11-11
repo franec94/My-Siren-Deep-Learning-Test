@@ -62,7 +62,7 @@ def get_cmd_line_opts():
     )
 
     dyanmic_quant_list = ','.join([str(xx) for xx in DYNAMIC_QUAT_SIZES])
-    p.add_argument('--dynamic_quant', required=False, type=str, default='qint8', dest="dynamic_quant",
+    p.add_argument('--dynamic_quant', required=False, type=str, nargs='+', default='qint8', dest="dynamic_quant",
         help=f'Type of quantization for dynamic quant mode. (Default: qint8), available kinds: [{dyanmic_quant_list}]'
     )
     

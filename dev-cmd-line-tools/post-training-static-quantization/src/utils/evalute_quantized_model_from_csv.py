@@ -409,23 +409,34 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 model_filename=vals.path, sidelength=int(vals.cropped_width))
             model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
             # -- Evaluate quatized mode model.
-            eval_scores, eta_eval, size_model = _evaluate_model_local(
-                image_dataset = img_dataset,
-                model_conf = model_conf,
-                quant_tech = a_tech,
-                device = 'cpu',
-                dtype=args.dynamic_quant,
-                num_bits=args.quant_bits,
-                quant_sym=args.quant_sym)
-            # pprint(eval_scores)
-            # -- Gather and store into a list results obtained from quantized mode.
             if a_tech == 'dynamic':
-                vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, f"{a_tech}-{str(args.dynamic_quant)}"] + list(eval_scores) + [eta_eval, size_model]
+                for dtype in args.dynamic_quant:
+                    eval_scores, eta_eval, size_model = _evaluate_model_local(
+                        image_dataset = img_dataset,
+                        model_conf = model_conf,
+                        quant_tech = a_tech,
+                        device = 'cpu',
+                        dtype=dtype,
+                        num_bits=args.quant_bits,
+                        quant_sym=args.quant_sym)
+                    # pprint(eval_scores)
+                    # -- Gather and store into a list results obtained from quantized mode.
+                    vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, f"{a_tech}-{str(args.dynamic_quant)}"] + list(eval_scores) + [eta_eval, size_model]
+                    a_record = InfoResults._make(vals_r)
+                    records_list.append(a_record)
             else:
+                eval_scores, eta_eval, size_model = _evaluate_model_local(
+                    image_dataset = img_dataset,
+                    model_conf = model_conf,
+                    quant_tech = a_tech,
+                    device = 'cpu',
+                    dtype=args.dynamic_quant,
+                    num_bits=args.quant_bits,
+                    quant_sym=args.quant_sym)
                 vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores) + [eta_eval, size_model]
+                a_record = InfoResults._make(vals_r)
+                records_list.append(a_record)
                 pass
-            a_record = InfoResults._make(vals_r)
-            records_list.append(a_record)
             pass
         pass
 
