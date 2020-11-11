@@ -414,7 +414,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 model_conf = model_conf,
                 quant_tech = a_tech,
                 device = 'cpu',
-                dtype=opt.dynamic_quant,
+                dtype=args.dynamic_quant,
                 num_bits=args.quant_bits,
                 quant_sym=args.quant_sym)
             # pprint(eval_scores)
