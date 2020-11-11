@@ -284,25 +284,25 @@ def check_quant_size_for_dynamic_quant(opt):
     """Check whether dynamic quant size provided by user from cmd line option is allowed."""
 
     if isinstance(opt.dynamic_quant, str):
-        dynamic_quant_size = opt.dynamic_quant.lower()
-        if dynamic_quant_size in DYNAMIC_QUAT_SIZES:
-            if dynamic_quant_size == 'qint8':
+        a_dynamic_size = opt.dynamic_quant.lower()
+        if a_dynamic_size in DYNAMIC_QUAT_SIZES:
+            if a_dynamic_size == 'qint8':
                 opt.dynamic_quant = torch.qint8
-            elif dynamic_quant_size == 'float16':
+            elif a_dynamic_size == 'float16':
                 opt.dynamic_quant = torch.float16
         else:
-            raise Exception(f"Dynamic quant size '{dynamic_quant_size}' provided is not allowed.")
+            raise Exception(f"Dynamic quant size '{a_dynamic_size}' provided is not allowed.")
         opt.dynamic_quant = [opt.dynamic_quant]
     else:
         dynamic_size_list = []
         for a_dynamic_size in opt.dynamic_quant:
             a_dynamic_size = a_dynamic_size.lower()
-            if dynamic_quant_size in DYNAMIC_QUAT_SIZES:
-                if dynamic_quant_size == 'qint8':
+            if a_dynamic_size in DYNAMIC_QUAT_SIZES:
+                if a_dynamic_size == 'qint8':
                     dynamic_size_list.append(torch.qint8)
-                elif dynamic_quant_size == 'float16':
+                elif a_dynamic_size == 'float16':
                     dynamic_size_list.append(torch.float16)
             else:
-                raise Exception(f"Dynamic quant size '{dynamic_quant_size}' provided is not allowed.")
+                raise Exception(f"Dynamic quant size '{a_dynamic_size}' provided is not allowed.")
             opt.dynamic_quant = dynamic_size_list
     return opt
