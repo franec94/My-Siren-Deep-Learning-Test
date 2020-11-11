@@ -153,6 +153,10 @@ def main():
     logging.info(f'check_frequencies: OK')
     # pprint(opt)
 
+    logging.info(f'Check dynamic quant kind of transform...')
+    opt = check_quant_size_for_dynamic_quant(opt)
+    logging.info(f'Check dynamic quant kind of transform: OK')
+
     # --- Filter unwanted resources.
     logging.info(f'filter_model_files_opt_args ...')
     opt = filter_model_files_opt_args(opt)

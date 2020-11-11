@@ -92,7 +92,7 @@ except:
 # --------------------------------------------- #
 from src.utils.custom_argparser import get_cmd_line_opts
 
-from src.utils.functions import check_quantization_tech_provided, check_frequencies, check_sidelength
+from src.utils.functions import check_quantization_tech_provided, check_frequencies, check_sidelength, check_quant_size_for_dynamic_quant
 from src.utils.functions import get_input_image, get_root_level_logger, log_parser
 from src.utils.functions import filter_model_files_opt_args, filter_model_files_csv_opt_args
 from src.utils.functions import map_filter_model_dirs_opt_args, create_train_logging_dir
