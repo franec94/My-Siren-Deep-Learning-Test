@@ -1,6 +1,7 @@
 import configargparse
 
 QUANT_TECHS = "dynamic,paszke_quant,static,post_train,quantization_aware_training,custom_quant".split(",")
+DYNAMIC_QUAT_SIZES = "qint8,qint32".split(",")
 
 def get_cmd_line_opts():
     p = configargparse.ArgumentParser()
@@ -59,6 +60,12 @@ def get_cmd_line_opts():
     p.add_argument('--quant_sym', required=False, action='store_true', default=False, 
         help='Sym quat chose. (Default: False)'
     )
+
+    dyanmic_quant_list = ','.join([str(xx) for xx in DYNAMIC_QUAT_SIZES])
+    p.add_argument('--dynamic_quant', required=False, type=str, default='qint8', dest="dynamic_quant",
+        help=f'Type of quantization for dynamic quant mode. (Default: qint8), available kinds: [{dyanmic_quant_list}]'
+    )
+    
 
     # p.add_argument('--checkpoint_path', default=None, help='Checkpoint to trained model.')
     opt = p.parse_args()

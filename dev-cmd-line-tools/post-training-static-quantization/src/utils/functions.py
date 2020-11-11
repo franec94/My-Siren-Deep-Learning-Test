@@ -12,6 +12,8 @@ from PIL import Image
 from tqdm import tqdm
 from typing import Union, Tuple
 
+import torch
+
 import configargparse
 from functools import partial
 
@@ -41,6 +43,7 @@ from skimage.metrics import mean_squared_error
 # --------------------------------------------- #
 import src.utils.dataio as dataio
 from src.utils.custom_argparser import QUANT_TECHS
+from src.utils.custom_argparser import DYNAMIC_QUAT_SIZES
 
 def check_cmd_line_options(opt, parser):
     
@@ -274,4 +277,18 @@ def check_sidelength(opt):
         return a_sl
 
     opt.sidelength = list(map(check_and_map_sl, opt.sidelength))
+    return opt
+
+
+def check_quant_size_for_dynamic_quant(opt):
+    """Check whether dynamic quant size provided by user from cmd line option is allowed."""
+
+    dynamic_quant_size = opt.lower()
+    if dynamic_quant_size in DYNAMIC_QUAT_SIZES:
+        if dynamic_quant_size == 'qint8':
+            opt.dynamic_quant = torch.qint8
+        elif dynamic_quant_size == 'qint32':
+            opt.dynamic_quant = torch.qint32
+    else:
+        raise Exception(f"Dynamic quant size '{dynamic_quant_size}' provided is not allowed.")
     return opt

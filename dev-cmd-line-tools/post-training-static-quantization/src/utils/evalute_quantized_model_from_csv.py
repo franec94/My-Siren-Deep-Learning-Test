@@ -82,7 +82,7 @@ import src.utils.quant_utils.quant_utils_functions as quf
 from src.utils.quant_utils.compute_quantization import get_size_of_model
 
 
-def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8, quant_sym = False, dtype = torch.int8):
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8, quant_sym = False, dtype = torch.qint8):
     """Evalaute model.
     Params:
     -------
@@ -125,6 +125,9 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             arch_hyperparams['quant'] = quant
             arch_hyperparams['num_bits'] = num_bits
             arch_hyperparams['quant_sym'] = quant_sym
+            pass
+        if model_conf.quantization_enabled == 'dynamic':
+            arch_hyperparams['dtype'] = dtype
             pass
         eval_scores, eta_eval, size_model = compute_quantization(img_dataset = image_dataset, opt = model_conf, model_path = model_conf.model_filename, arch_hyperparams = arch_hyperparams, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm')
         pass
@@ -411,6 +414,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 model_conf = model_conf,
                 quant_tech = a_tech,
                 device = 'cpu',
+                dtype=opt.dynamic_quant,
                 num_bits=args.quant_bits,
                 quant_sym=args.quant_sym)
             # pprint(eval_scores)
