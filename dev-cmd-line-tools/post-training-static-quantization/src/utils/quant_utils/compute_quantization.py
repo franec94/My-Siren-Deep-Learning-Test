@@ -420,6 +420,15 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
 
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Compute quantized results.
+    Params:
+    -------
+    image_dataset - PyTorch Dataset object.\n
+    opt - Namespace python object.\n
+    model_path - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    arch_hyperparams - dict python object, metadata or hyper-params abot model's to be built.\n
+    fuse_modules - collection of modules to fuse if input model support fuse method.\n
+    device - str object, kind of device upon which model's weigths and computation will be done.\n
+    qconfig - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
     Return:
     -------
     eval_scores - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
