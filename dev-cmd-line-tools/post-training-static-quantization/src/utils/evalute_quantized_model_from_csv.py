@@ -421,7 +421,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                         quant_sym=args.quant_sym)
                     # pprint(eval_scores)
                     # -- Gather and store into a list results obtained from quantized mode.
-                    vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, f"{a_tech}-{str(args.dynamic_quant)}"] + list(eval_scores) + [eta_eval, size_model]
+                    vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, f"{a_tech}-{str(dtype)}"] + list(eval_scores) + [eta_eval, size_model]
                     a_record = InfoResults._make(vals_r)
                     records_list.append(a_record)
             else:
