@@ -25,7 +25,7 @@ def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data
                 n_skipped += 1
                 pass
             pass
-        print(f"SKIPPED {n_skipped} | READ {len(dir_data_csv_list) - n_skipped} | TOT {len(dir_data_csv_list)}")
+        print(f"[FILES PROCESSED] SKIPPED {n_skipped} | READ {len(dir_data_csv_list) - n_skipped} | TOT {len(dir_data_csv_list)}")
         data_df = pd.concat(data_frames_list)
         pass
     return data_df
@@ -33,22 +33,23 @@ def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data
 
 def main():
     
+    print('Geta data from local list...')
     data_df = get_data_from_local_list(dir_data_csv_list = src.libs.DIR_DATA_CSV_LIST, dir_data_csv = None, data_csv_name = 'result_quant.csv')
 
-    def map_to_bpp_by_quant_tech(a_row):
+    def map_to_bpp_by_quant_tech(a_row, w = 256, h = 256):
         model_size, quant_tech = a_row
         if quant_tech != 'None':
-            return model_size * 8 / 256 / 256
+            return (model_size * 8) / (w * h)
         else:
-            return model_size * 32 / 256 / 256
-
+            return (model_size * 32) / (w * h)
+    data_df['bpp'] = list(map(map_to_bpp_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     def map_to_quant_tech_hf(a_row):
         hf, quant_tech = a_row
         return f"{quant_tech}-{hf}"
-    data_df['bpp'] = list(map(map_to_bpp_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     data_df['quant_tech_2'] = list(map(map_to_quant_tech_hf, data_df[['hidden_features', 'quant_tech']].values))
 
     # --- Run several trials for JPEG compression.
+    print('Read target image and compute JPEG quants...')
     im = load_target_image(image_file_path = None)
     im_cropped = get_cropped_by_center_image(im, target = 256)
     qualities_arr = np.arange(20, 95+1, dtype = np.int)
@@ -72,6 +73,7 @@ def main():
     jpeg_df['quant_tech_2'] = ["jpeg"] *  jpeg_df.shape[0]
 
 
+    print('Merge Siren and JPEG dataframes...')
     siren_columns_for_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",")  # Here, list siren_df columns for merge purpose.
     jpeg_columns_for_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",") 
     columns_names_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",") 
@@ -84,6 +86,7 @@ def main():
     merged_df = pd.concat(data_frames_list, names = columns_names_merge)
 
 
+    print('Calculate graphics...')
     complex_figs_list = []
     y_list = "mse,psnr,ssim,CR".split(",")
     # x = 'bpp'; y = "psnr"; 
@@ -103,6 +106,7 @@ def main():
         pass
     complex_figs_dash_list = list(map(lambda fig: dcc.Graph(figure=fig), complex_figs_list))
     
+    print('Prepare Dash App...')
     tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM)'.split(";")
     app = get_dash_app(
         figs_list = complex_figs_dash_list,
@@ -119,6 +123,7 @@ def main():
         import webbrowser
         webbrowser.open("http://localhost:8050")
         pass
+    print('Dash app start running...')
     app.run_server(debug=True, use_reloader=False, host='localhost') 
 
 

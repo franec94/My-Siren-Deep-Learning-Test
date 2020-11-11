@@ -293,30 +293,44 @@ def evaluate_plain_model(model_path, model_params, img_dataset, opt, loss_fn = n
 
 
 def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cpu', verbose = 0):
+    """Evaluate post train quantized models by csv files, version no.2
+    Params:
+    -------
+    a_file_csv - str python object, name of input csv file to be used for evaluations.\n
+    args - Namespace python object, containing informations and values given from cmd line.\n
+    device - str object, where to evaluate quantized models, available options: [cpu, gpu, cuda].\n
+    verbose - int object, way of displaying informations, available values:[0, 1, 2].\n
 
+    Return:
+    -------
+    records_list, files_not_found - list of records containing data of model's details and score computed, and list of
+    skipped model's files when not found. If the input dataframe is empty two empty list will be provided as output.
+    """
+
+    # --- Try reading input file csv,
+    # if empty return empty list.
     cropped_images_df = _read_csv_data(a_file_csv)
-
     if cropped_images_df.shape[0] == 0:
-        return []
+        return [], []
 
-    # - Sort data
+    # --- Sort data within input dataframe.
     attrs_for_sorting = "timestamp,hf,hl".split(",")
     cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
 
+    # --- Named tuples for collecing data.
     Columns = collections.namedtuple('Columns', cropped_images_df.columns)
     Options = collections.namedtuple('Options', "image_filepath,sidelength".split(","))
-    EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
+    # EvalScores = collections.namedtuple('EvalScores', "mse,psnr,ssim".split(","))
 
-    field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
-    RecordTuple = collections.namedtuple('RecordTuple', field_names)
+    # field_names = list(cropped_images_df.columns) + "mse,psnr,ssim".split(",")
+    # RecordTuple = collections.namedtuple('RecordTuple', field_names)
 
     # fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
     fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
 
-    records_list = []
-    files_not_found = []
-
+    # --- Adjust quat techs adopted, if any,
+    # to be exploited later during evaluations.
     if args.quantization_enabled != None:
         # print('opt.quantization_enabled != None')
         if isinstance(args.quantization_enabled, str):
@@ -327,42 +341,54 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
         # print('opt.quantization_enabled = None')
         quant_tech_list = []
 
+
+    # --- Lists for collecting results and saving skipped files.
     records_list = []
+    files_not_found = []
+    # --- Do work
     for row in cropped_images_df[:].values:
         vals = Columns._make(row)
 
+        # -- Skip not found filename.
         if os.path.exists(vals.path) is False or os.path.isfile(vals.path) is False:
             files_not_found.append(vals.path)
             continue
 
+        # -- Prepare model-params, model-conf and options for running 
+        # eval mode on plain model.
         model_params = dict(hidden_features=int(vals.hf),
             hidden_layers=int(vals.hl),
             quantization_enabled=None,
             model_filename=vals.path, sidelength=int(vals.cropped_width))
         opt = Options._make([args.image_filepath, int(vals.cropped_width)])
-
         model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
         # pprint(model_conf)
 
-        # --- Get input image to be evaluated.
+        # -- Get input image to be evaluated.
         # img_dataset, img, image_resolution = \
         img_dataset, _, _ = \
             get_input_image(opt)
         
+        # -- Evaluate plain mode model.
         eval_scores, eta_eval, size_model = _evaluate_model_local(image_dataset = img_dataset, model_conf = model_conf, quant_tech = None, device = 'cuda')
         # pprint(eval_scores)
 
+        # -- Gather and store into a list results obtained from plain mode.
         vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, 'None'] + list(eval_scores) + [eta_eval, size_model]
         a_record = InfoResults._make(vals_r)
         records_list.append(a_record)
 
+        # -- Compute quant evals, if any.
         for a_tech in quant_tech_list:
             # print('Eval quant tech:', a_tech)
+            # - Prepare model-params, model-conf and options for running 
+            # eval mode on plain model.
             model_params = dict(hidden_features=int(vals.hf),
                 hidden_layers=int(vals.hl),
                 quantization_enabled=a_tech,
                 model_filename=vals.path, sidelength=int(vals.cropped_width))
             model_conf = collections.namedtuple('ModelConf', list(model_params.keys()))._make(list(model_params.values()))
+            # -- Evaluate quatized mode model.
             eval_scores, eta_eval, size_model = _evaluate_model_local(
                 image_dataset = img_dataset,
                 model_conf = model_conf,
@@ -371,6 +397,7 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
                 num_bits=args.quant_bits,
                 quant_sym=args.quant_sym)
             # pprint(eval_scores)
+            # -- Gather and store into a list results obtained from quantized mode.
             vals_r = [os.path.basename(vals.path), int(vals.hl), int(vals.hf), opt.sidelength, a_tech] + list(eval_scores) + [eta_eval, size_model]
             a_record = InfoResults._make(vals_r)
             records_list.append(a_record)
@@ -569,9 +596,20 @@ def evaluate_post_train_models_by_csv_list(file_csv_list, args, device = 'cpu'):
     return records_list, files_not_found
 
 
-def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, args, device = 'cpu'):
+def evaluate_post_train_posterion_quantized_models_by_csv_list(file_csv_list, args, device = 'cpu', verbose = 0):
     """
     Evaluate posterior quantization models fetching data and weigths from information gotten reading .csv files.
+    Params:
+    -------
+    file_csv_list - list python object, contaiing name of input csv files to be used for evaluations.\n
+    args - Namespace python object, containing informations and values given from cmd line.\n
+    device - str object, where to evaluate quantized models, available options: [cpu, gpu, cuda].\n
+    verbose - int object, way of displaying informations, available values:[0, 1, 2].\n
+
+    Return:
+    -------
+    records_list, files_not_found - list of records containing data of model's details and score computed, and list of
+    skipped model's files when not found. If the input dataframe is empty two empty list will be provided as output.
     """
 
     if file_csv_list is None or len(file_csv_list) == 0:
