@@ -400,7 +400,19 @@ def _prepare_data_loaders(img_dataset, opt):
 
 
 def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device = 'cpu'):
-    """ Evalaute model."""
+    """ Evalaute model.
+    Params:
+    -------
+    model - PyTorch model object.\n
+    evaluate_dataloader - PyTorch Dataset object.\n
+    loss_fn -  PyTorch object for loss function.\n
+    device - str object, kind of device upon which model's weigths and computation will be done.\n
+
+    Return:
+    -------
+    eval_scores - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
+    eta_eval - elapsed time for evaluating input data.\n
+    """
 
     # --- Evaluate model's on validation data.
     eval_scores = None

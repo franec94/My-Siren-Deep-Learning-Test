@@ -419,7 +419,13 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
 
 
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
-    """Compute quantized results."""
+    """Compute quantized results.
+    Return:
+    -------
+    eval_scores - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
+    eta_eval - elapsed time for evaluating input data.\n
+    size_model - model's size in byte.\n
+    """
 
     eval_scores = None
     if opt.quantization_enabled != None:

@@ -77,12 +77,29 @@ from src.utils.quant_utils.quant_utils_functions import prepare_model
 from src.utils.functions import get_input_image
 from src.utils.quant_utils.compute_quantization import compute_quantization
 
-from src.utils.quant_utils.quant_utils_functions import _evaluate_model as _evaluate_model_2
+import src.utils.quant_utils.quant_utils_functions as quf
+# from src.utils.quant_utils.quant_utils_functions import _evaluate_model as _evaluate_model_2
 from src.utils.quant_utils.compute_quantization import get_size_of_model
 
 
-def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8, quant_sym = False):
-    """Evalaute model. """
+def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device = 'cpu', num_bits = 8, quant_sym = False, dtype = torch.int8):
+    """Evalaute model.
+    Params:
+    -------
+    image_dataset - PyTorch Dataset object.\n
+    model_conf - collections.namedtuple object.\n
+    quant_tech - str object, name of quant tech to evaluate, if None plain model will be evaluate instead.\n
+    device - str object, kind of device upon which model's weigths and computation will be done.\n
+    num_bits - int, number of bits to quantize model when custom mode is referred to as quant tech to evaluate.\n
+    quant_sym  - bool object, flag that specifies whether symmetric quantization is adopted when custom mode tech is referred to as quant tech to evaluate.\n
+    dtype - kind data type to exploit when dynamic quant tech is referred to as quant tech to evaluate.\n
+
+    Return:
+    -------
+    eval_scores - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
+    eta_eval - elapsed time for evaluating input data.\n
+    size_model - model's size in byte.\n
+    """
 
     eval_scores = []
     if quant_tech == None:
@@ -91,14 +108,14 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cuda', model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
-            eval_scores, eta_eval = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cuda')
+            eval_scores, eta_eval = quf._evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cuda')
         else:
             # print("No cuda device available, switching to cpu.")
             # print("Try eval plain model on cpu device...")
             eval_dataloader = _prepare_data_loaders(image_dataset, model_conf)
             model = prepare_model(opt = model_conf, arch_hyperparams=model_conf._asdict(), device='cpu',  model_weights_file = model_conf.model_filename)
             size_model = get_size_of_model(model)
-            eval_scores, eta_eval = _evaluate_model_2(model, evaluate_dataloader=eval_dataloader, device='cpu')
+            eval_scores, eta_eval = quf._evaluate_model(model, evaluate_dataloader=eval_dataloader, device='cpu')
         pass
     else:
         # print('Eval:', quant_tech.upper())
