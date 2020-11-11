@@ -92,7 +92,7 @@ def _evaluate_model_local(image_dataset, model_conf, quant_tech = None, device =
     device - str object, kind of device upon which model's weigths and computation will be done.\n
     num_bits - int, number of bits to quantize model when custom mode is referred to as quant tech to evaluate.\n
     quant_sym  - bool object, flag that specifies whether symmetric quantization is adopted when custom mode tech is referred to as quant tech to evaluate.\n
-    dtype - kind data type to exploit when dynamic quant tech is referred to as quant tech to evaluate.\n
+    dtype - kind data type to exploit when dynamic quant tech is referred to as quant tech to evaluate. Allowed: [qint8, qint32]\n
 
     Return:
     -------
