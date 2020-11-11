@@ -150,6 +150,7 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
         dtype = metadata_model_dict['dtype']
         print(f'Adopted {dtype}')
         pass
+    raise Exception("Debugging kind of quat for Dynamic Technique...")
     # print('Quantize model...')
     model_int8 = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
