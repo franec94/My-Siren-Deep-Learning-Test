@@ -283,7 +283,7 @@ def check_sidelength(opt):
 def check_quant_size_for_dynamic_quant(opt):
     """Check whether dynamic quant size provided by user from cmd line option is allowed."""
 
-    dynamic_quant_size = opt.lower()
+    dynamic_quant_size = opt.dynamic_quant.lower()
     if dynamic_quant_size in DYNAMIC_QUAT_SIZES:
         if dynamic_quant_size == 'qint8':
             opt.dynamic_quant = torch.qint8
