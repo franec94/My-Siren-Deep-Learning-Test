@@ -86,7 +86,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
                     model_weight_path = model_weight_path,
                     device = 'cpu',
                     qconfig = 'fbgemm')
-            eval_info = EvalInfos._make([f'Quant-{a_dynamic_type}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weights_model * 4])
+            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weights_model * 4])
             eval_info_list.append(eval_info)
             pass
         pass
