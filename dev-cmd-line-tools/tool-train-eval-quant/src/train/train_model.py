@@ -392,7 +392,7 @@ def train_model(opt, image_dataset, save_results_flag = False):
         pbar.update(1)
         pass # end tqdm
     
-    if save_results_flag and n > 1:
+    if save_results_flag and n == 1:
         return model_trained, model_weight_path, train_scores_path
     
     return None, None, None
