@@ -14,10 +14,10 @@ CUDA_VISIBLE_DEVICES=0 python main_extended_compare.py \
   --experiment_name 'train' \
   --sidelength 256 \
   --num_epochs 500000 \
-  --hidden_features 32 \
+  --hidden_features 16 \
   --num_attempts 1 \
   --seeds 0 \
-  --hidden_layers 5 6 7 8 9 10 11 12 \
+  --hidden_layers 5 6 7 8 9 10 11 12 13 14\
   --resume_from 0 \
   --steps_til_summary 4 \
   --end_to  1 \
