@@ -42,21 +42,29 @@ def sort_by_path_piece(df, files_list, df_key = 'archs_names'):
 
 def main(args):
 
+    # Fetch files into a list.
+    print("Loading all files required for building output csv file...")
     single_run_timestamp = args.timestamp
     date_obj = datetime.datetime.utcfromtimestamp(float(single_run_timestamp.replace("-", ".")))
     date_run = str(date_obj.strftime("%d-%m-%Y"))
     single_run_path= os.path.join(args.dir_path, date_run, single_run_timestamp, "train")
-
-    # Fetch files into a list.
     if args.flag_fetch_all_res == False:
         regex_filter = re.compile(r'result_comb_train\.txt$')
     else:
         regex_filter = re.compile(r'result_comb_train(_)?(\d+)?\.txt$')
         pass
     files_list = get_all_files_by_ext(dir_path = single_run_path, ext = 'txt', recursive_search = False, regex_filter = regex_filter)
+    print("Fetch all files required for building output csv file: DONE.")
+    pprint(files_list)
+
+    print("Loading all data from gotten files required for building output csv file...")
     res_arr = laod_data_from_files_list(files_list)
-    columns = "#params;seed;hl;hf;mse;psnr;ssim;eta".split(";")
+    if res_arr.shape[1] == 8:
+        columns = "#params;seed;hl;hf;mse;psnr;ssim;eta".split(";")
+    elif res_arr.shape[1] == 11:
+        columns = "arch_no;trial_no;hf;hl;seed;#params;mse;psnr;ssim;eta_train;eta_eval".split(";")
     df_res = pd.DataFrame(res_arr, columns = columns).sort_values(by = ['hf', 'hl', 'seed'])
+    print("Loading all data from gotten files required for building output csv file: DONE.")
 
     option_pickle_filename = 'options.pickle'
     pickel_full_path = os.path.join(f'{single_run_path}', f'{option_pickle_filename}')

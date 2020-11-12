@@ -2,6 +2,18 @@ from src.libs import *
 import src.libs
 
 
+def compute_footprint_by_model(df):
+    df_gropus_by_name = df.groupby(["model_filename", "hidden_features", "hidden_layers"]).max()
+    df = df.set_index(["model_filename", "hidden_features", "hidden_layers"])
+
+    for pos, a_index in enumerate(df_gropus_by_name.index):
+        df.loc[a_index, ['footprint']] = df.loc[a_index, "model_size"] / df_gropus_by_name["model_size"].values[pos] * 100
+        pass
+
+    df = df.reset_index()
+    return df
+
+
 def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data_csv_name = 'result_quant.csv'):
     def get_df(a_path_csv):
         data_df = pd.read_csv(path_data_csv)
@@ -17,11 +29,13 @@ def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data
         data_frames_list = []
         n_skipped = 0
         for dir_data_csv in dir_data_csv_list:
+            path_data_csv = os.path.join(dir_data_csv, data_csv_name)
             try:
-                path_data_csv = os.path.join(dir_data_csv, data_csv_name)
                 data_df_t = get_df(a_path_csv = path_data_csv)
                 data_frames_list.append(data_df_t)
+                print(f'Processed: {path_data_csv}')
             except Exception as _:
+                print(f'Skipped: {path_data_csv}')
                 n_skipped += 1
                 pass
             pass
@@ -33,7 +47,7 @@ def get_data_from_local_list(dir_data_csv_list = None, dir_data_csv = None, data
 
 def main():
     
-    print('Geta data from local list...')
+    print('Get data from local list...')
     data_df = get_data_from_local_list(dir_data_csv_list = src.libs.DIR_DATA_CSV_LIST, dir_data_csv = None, data_csv_name = 'result_quant.csv')
 
     def map_to_bpp_by_quant_tech(a_row, w = 256, h = 256):
@@ -72,6 +86,8 @@ def main():
     jpeg_df['quant_tech'] = ["jpeg"] *  jpeg_df.shape[0]
     jpeg_df['quant_tech_2'] = ["jpeg"] *  jpeg_df.shape[0]
 
+    siren_df = compute_footprint_by_model(df = data_df)
+
 
     print('Merge Siren and JPEG dataframes...')
     siren_columns_for_merge = "mse,psnr,ssim,CR,bpp,quant_tech,quant_tech_2".split(",")  # Here, list siren_df columns for merge purpose.
@@ -106,12 +122,13 @@ def main():
         pass
     complex_figs_dash_list = list(map(lambda fig: dcc.Graph(figure=fig), complex_figs_list))
     
+    
     print('Prepare Dash App...')
-    tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM)'.split(";")
+    tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM);Table w/ Data'.split(";")
     app = get_dash_app(
         figs_list = complex_figs_dash_list,
         n_figs = len(y_list),
-        tab_names_list = tab_names)
+        tab_names_list = tab_names, df = siren_df)
     
     if NOTIFICATIONS_ENABLED_VIA_TOAST:
         from win10toast import ToastNotifier
