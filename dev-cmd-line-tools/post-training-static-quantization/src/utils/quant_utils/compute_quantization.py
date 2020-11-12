@@ -127,6 +127,7 @@ def get_custom_quant_model(metadata_model_dict = None, model_path = None, set_la
     model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
     return model_fp32
 
+
 def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Get dynamic quantization Siren model."""
 
@@ -354,7 +355,15 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
         model_path = model_path,
         metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
 
-    size_model = get_size_of_model(model_int8)
+    # size_model = get_size_of_model(model_int8)
+    tot_weights_model = sum(p.numel() for p in model_int8.parameters())
+    if 'dtype' in arch_hyperparams.keys():
+        if arch_hyperparams['dtype'] == torch.qint8
+            size_model = tot_weights_model
+        else:
+            size_model = tot_weights_model * 8
+    else:
+        size_model = tot_weights_model
 
     eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores, eta_eval, size_model 
