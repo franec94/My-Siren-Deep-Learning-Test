@@ -17,6 +17,8 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
   --n_hf 16 \
   --n_hl 5 6 7 8 9 10 11 12 13 14 \
   --seed 0 \
+  --evaluate \
+  --dynamic_quant qint8 float16 \
   --verbose 1 \
 
 exit 0
