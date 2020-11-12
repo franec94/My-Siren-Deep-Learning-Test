@@ -322,9 +322,13 @@ def train_model(opt, image_dataset, save_results_flag = False):
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
 
             train_h = "-" * 25 + " Train " + "-" * 25
-            info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Arch no: {arch_no} running..."]
-            _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
-
+            if opt.evaluate and n > 1:
+                info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Arch no: {arch_no} running..."]
+                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
+            else:
+                info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Train running..."]
+                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
+                pass
             # --- Get hyperparams as Namedtuple
             hyper_param_opt = HyperParams._make(hyper_param_dict.values())
             
