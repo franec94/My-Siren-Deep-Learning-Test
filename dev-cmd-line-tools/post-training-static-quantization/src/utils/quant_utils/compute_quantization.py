@@ -153,12 +153,12 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
         pass
     # raise Exception("Debugging kind of quat for Dynamic Technique...")
     # print('Quantize model...')
-    model_int8 = torch.quantization.quantize_dynamic(
+    model_quantized = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
         dtype=dtype)  # the target dtype for quantized weights
-    if model_int8 == None: Exception(f"model_int8 is None, when quantization is Dynamic!")
-    return model_int8
+    if model_quantized == None: Exception(f"model_quantized is None, when quantization is Dynamic!")
+    return model_quantized
 
 
 def get_static_quantization_model(metadata_model_dict = None, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
@@ -329,7 +329,7 @@ def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dat
     eval_scores = None
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
 
-    model_int8 = get_paszke_quant_model(
+    model_quantized = get_paszke_quant_model(
         metadata_model_dict = arch_hyperparams,
         model_path = model_path,
         fuse_modules = fuse_modules,
@@ -337,9 +337,9 @@ def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dat
         qconfig = f'{qconfig}',
         model_fp32 = model_fp32)
 
-    size_model = get_size_of_model(model_int8)
+    size_model = get_size_of_model(model_quantized)
     
-    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
+    eval_scores, eta_eval = _evaluate_model(model = model_quantized, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
     return eval_scores, eta_eval, size_model 
 
 def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
@@ -351,21 +351,13 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
 
-    model_int8 = get_dynamic_quantization_model(
+    model_quantized = get_dynamic_quantization_model(
         model_path = model_path,
         metadata_model_dict = arch_hyperparams, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = model_fp32)
 
-    # size_model = get_size_of_model(model_int8)
-    tot_weights_model = sum(p.numel() for p in model_int8.parameters())
-    if 'dtype' in arch_hyperparams.keys():
-        if arch_hyperparams['dtype'] == torch.qint8
-            size_model = tot_weights_model
-        else:
-            size_model = tot_weights_model * 8
-    else:
-        size_model = tot_weights_model
+    size_model = get_size_of_model(model_quantized)
 
-    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    eval_scores, eta_eval = _evaluate_model(model = model_quantized, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores, eta_eval, size_model 
 
 
@@ -383,11 +375,11 @@ def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, 
     _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
     # Evaluate quantized int8 model
-    model_int8 = torch.quantization.convert(model_fp32_prepared)
-    size_model = get_size_of_model(model_int8)
+    model_quantized = torch.quantization.convert(model_fp32_prepared)
+    size_model = get_size_of_model(model_quantized)
 
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    eval_scores, eta_eval = _evaluate_model(model = model_quantized, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores, eta_eval, size_model 
 
 
@@ -407,11 +399,11 @@ def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_datas
     _ = _evaluate_model(model = model_fp32_prepared, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
     # Evaluate quantized int8 model
-    model_int8 = torch.quantization.convert(model_fp32_prepared)
-    size_model = get_size_of_model(model_int8)
+    model_quantized = torch.quantization.convert(model_fp32_prepared)
+    size_model = get_size_of_model(model_quantized)
 
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
-    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    eval_scores, eta_eval = _evaluate_model(model = model_quantized, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores, eta_eval, size_model 
 
 
@@ -426,12 +418,12 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
     model = get_quantization_aware_training(model_path = model_path, metadata_model_dict = arch_hyperparams, fuse_modules = fuse_modules, device = device, qconfig = qconfig, model_fp32 = model)
     eval_scores, eta_eval = _evaluate_model(model = model, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
 
-    model_int8 = torch.quantization.convert(model)
-    size_model = get_size_of_model(model_int8)
+    model_quantized = torch.quantization.convert(model)
+    size_model = get_size_of_model(model_quantized)
 
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
     
-    eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
+    eval_scores, eta_eval = _evaluate_model(model = model_quantized, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = 'cpu')
     return eval_scores, eta_eval, size_model 
 
 

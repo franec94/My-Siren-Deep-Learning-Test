@@ -51,11 +51,20 @@ def main():
     data_df = get_data_from_local_list(dir_data_csv_list = src.libs.DIR_DATA_CSV_LIST, dir_data_csv = None, data_csv_name = 'result_quant.csv')
 
     def map_to_bpp_by_quant_tech(a_row, w = 256, h = 256):
-        model_size, quant_tech = a_row
+        # model_size, quant_tech = a_row
+        model_size, _ = a_row
+        """
         if quant_tech != 'None':
-            return (model_size * 8) / (w * h)
+            if quant_tech == 'dynamic-torch.qint8':
+                return (model_size * 8) / (w * h)
+            elif quant_tech == 'dynamic-torch.float16':
+                return (model_size * 16) / (w * h)
+            else:
+                return (model_size * 16) / (w * h)
         else:
             return (model_size * 32) / (w * h)
+        """
+        return model_size / (w * h)
     data_df['bpp'] = list(map(map_to_bpp_by_quant_tech, data_df[['model_size', 'quant_tech']].values))
     def map_to_quant_tech_hf(a_row):
         hf, quant_tech = a_row
