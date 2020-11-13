@@ -19,6 +19,6 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
   --seed 0 \
   --evaluate \
   --dynamic_quant qint8 float16 \
-  --verbose 1 \
+  --verbose 1
 
 exit 0
