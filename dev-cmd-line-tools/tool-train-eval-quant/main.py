@@ -225,6 +225,13 @@ def main(opt):
         table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_results_list)))
         table = tabulate.tabulate(table_vals, headers=list(eval_results_list[0]._asdict().keys()))
         _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=1)
+
+        data = list(map(operator.methodcaller("_asdict"), eval_results_list))
+        columns = list(eval_results_list[0]._asdict().keys())
+        table_df = pd.DataFrame(data = data, columns = columns)
+
+        table_path = os.path.join(root_path, "results.csv")
+        table_df.to_csv(f"{table_path}")
         pass
     
     # --- Evaluate model, if just one model has been requested to be
@@ -236,8 +243,6 @@ def main(opt):
                 opt=opt,
                 img_dataset=image_dataset,
                 model_weight_path=model_weight_path)
-            table_vals = list(MainInfos._make(field_vals)._asdict().items())
-            table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
         pass
     pass
 
