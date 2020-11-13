@@ -86,6 +86,7 @@ from src.generic.utils import get_data_ready_for_model, compute_desired_metrices
 from src.eval.eval_model import evaluate_model
 from src.generic.dataio import Implicit2DWrapper
 from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mode
+from src.archs.siren import Siren
 
 # --------------------------------------------- #
 # Global variables
