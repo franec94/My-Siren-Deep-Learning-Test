@@ -13,12 +13,14 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
   --logging_root '../../../../results/cameramen' \
   --experiment_name 'train' \
   --sidelength 256 \
-  --num_epochs 500000 \
+  --num_epochs 100 \
   --n_hf 16 \
-  --n_hl 5 6 7 8 9 10 11 12 13 14 \
-  --seed 0 \
+  --n_hl 5 6 \
+  --seed 0 1 \
+  --cuda \
+  --train \
   --evaluate \
-  --dynamic_quant qint8 float16 \
-  --verbose 1
+  --dynamic_quant qint8 qfloat16 \
+  --verbose 0
 
 exit 0
