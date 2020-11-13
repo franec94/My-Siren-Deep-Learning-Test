@@ -112,7 +112,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength[0], batch_size=opt.batch_size[0])
 
-    eval_field_names = "model_type,mse,psnr,ssim,eta,footprint_byte,footprint_percent".split(",")
+    eval_field_names = "model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
     EvalInfos = collections.namedtuple("EvalInfos", eval_field_names)
     eval_info_list = []
 
