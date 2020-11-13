@@ -480,7 +480,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval devices: CUDA(Basic) | CPU(Quantized)"]
                 _log_infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 
-                model_name = f"{arch_no}.{hyper_param_opt.n_hf}.{hyper_param_opt.n_hl}.{hyper_param_opt.seed}.{hyper_param_opt.sidelength}"
+                model_name = f"arch-{arch_no}.{hyper_param_opt.n_hf}.{hyper_param_opt.n_hl}.{hyper_param_opt.seed}.{hyper_param_opt.sidelength}"
                 eval_info_list = \
                     _evaluate_model(model=model, model_name = f'{model_name}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 eval_results_list.extend(eval_info_list)
