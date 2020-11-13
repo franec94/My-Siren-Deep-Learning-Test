@@ -123,7 +123,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     return eval_scores, eta_eval, size_model
 
 
-def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None):
+def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None, verbose=verbose):
 
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength, batch_size=opt.batch_size)
@@ -159,7 +159,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
 
     table_vals = list(map(operator.methodcaller("items"), map(operator.methodcaller("_asdict"), eval_info_list)))
     table = tabulate.tabulate(table_vals, headers=eval_field_names)
-    _log_infos(info_msg = f"{table}", header_msg = None, logging=logging, tqdm=tqdm)
+    _log_infos(info_msg = f"{table}", header_msg = None, logging=logging, tqdm=tqdm, verbose=verbose)
     pass
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
@@ -460,23 +460,10 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
 
             # --- Evaluate model's on validation data.
             if opt.evaluate and n > 1:
-                """
-                eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval device: cuda"]
-                _log_infos(info_msg = info_msg, header_msg = eval_h, logging=logging, tqdm=tqdm, verbose = 1)
-                eval_scores, eta_eval = evaluate_model(
-                    model = model_trained,
-                    eval_dataloader=val_dataloader,
-                    device='cuda',
-                    loss_fn=nn.MSELoss(),
-                    quantization_enabled=None)
-                stop_times.append(eta_eval)
-                info_eval_quant_stats = ["- Evaluate total time (seconds): {0:.5f}".format(eta_eval),
-                                         "- Model Size (Bite): {0:.1f}".format(tot_weights_model * 4),
-                                         "- arch_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
-                                                % (arch_no, eval_scores[0], eval_scores[1], eval_scores[2])]
-                _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
-                """
-                _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm)
+                eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval devices: CUDA(Basic) | CPU(Quantized)"]
+                infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = 1)
+                
+                _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = verbose)
                 pass
 
             pass # end opt_hyperparam_list loop
