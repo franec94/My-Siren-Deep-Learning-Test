@@ -58,7 +58,7 @@ def get_cmd_line_opts():
 
 
     # Options for evaluating model, after training.
-    parser.add_argument("--evaluate", required=False, action="store_true", type=str, default=False,
+    parser.add_argument("--evaluate", required=False, action="store_true", default=False,
         help="Flag for evaluating model after training"
     )
     parser.add_argument('--dynamic_quant', required=False, nargs='+', type=str, default=[], 
@@ -66,6 +66,9 @@ def get_cmd_line_opts():
     )
     parser.add_argument('--frequences',  nargs='+', type=int, required=False, default=[],
         help='List of frequences to be employed when quantization_enabled flag is set to paszke_quant (default: None).'
+    )
+    parser.add_argument('--cuda',  required=False, action="store_true", default=False,
+        help='Set this flag to enable training on CUDA device, otherwise training will be performed on CPU device (default: False).'
     )
 
     opt = parser.parse_args()
