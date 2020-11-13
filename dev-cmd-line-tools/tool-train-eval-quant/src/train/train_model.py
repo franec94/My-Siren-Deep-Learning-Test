@@ -30,6 +30,8 @@ import shutil
 import tabulate
 import time
 
+import pytorch_model_summary as pms
+
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
@@ -123,7 +125,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     return eval_scores, eta_eval, size_model
 
 
-def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None, verbose=verbose):
+def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None, verbose=0):
 
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength, batch_size=opt.batch_size)
@@ -463,7 +465,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval devices: CUDA(Basic) | CPU(Quantized)"]
                 infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
-                _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = verbose)
+                _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 pass
 
             pass # end opt_hyperparam_list loop
