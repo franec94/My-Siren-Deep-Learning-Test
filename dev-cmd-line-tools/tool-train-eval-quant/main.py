@@ -193,7 +193,8 @@ def main(opt):
 
     device, no_cuda_device, quant_engine = \
         set_device_and_backend_for_torch(opt)
-    field_vals.extend([no_cuda_device, device, quant_engine, -1])
+    n = _get_number_archs(opt)
+    field_vals.extend([no_cuda_device, device, quant_engine, n])
 
     # --- Check dynamic quant if any.
     # opt = check_quantization_tech_provided(opt)
