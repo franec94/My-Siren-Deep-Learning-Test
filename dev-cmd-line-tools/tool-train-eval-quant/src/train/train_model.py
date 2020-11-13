@@ -434,7 +434,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
 
             # --- Train model, recording eta.
             # tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
-            tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}")
+            tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no}")
             start_time_to = time.time()
             model_trained, model_weight_path, train_scores_path = \
                 _train_loop(
