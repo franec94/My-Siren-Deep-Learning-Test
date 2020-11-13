@@ -25,6 +25,9 @@ def set_device_and_backend_for_torch(opt):
             device = (torch.device('cuda:0') if torch.cuda.is_available()
             else torch.device('gpu'))
             torch.backends.quantized.engine = opt.quant_engine
+        else:
+            device = torch.device('cpu')
+            torch.backends.quantized.engine = opt.quant_engine
     except:
         device = torch.device('cpu')
         torch.backends.quantized.engine = opt.quant_engine
