@@ -15,6 +15,13 @@ warnings.filterwarnings(
     module=r'torch.quantization'
 )
 
+def _get_size_of_model(model):
+    torch.save(model.state_dict(), "temp.p")
+    # print('Size (MB):', os.path.getsize("temp.p")/1e6)
+    model_size = os.path.getsize("temp.p")
+    os.remove('temp.p')
+    return model_size
+
 
 def set_device_and_backend_for_torch(opt):
     """Set device which can be either CPU or GPU, or CUDA, tested in reverse order, from CUDA up to CPU.
@@ -91,13 +98,14 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
     EvalInfos = collections.namedtuple("EvalInfos", eval_field_names)
     eval_info_list = []
 
-    tot_weights_model = sum(p.numel() for p in model.parameters())
+    # tot_weights_model = sum(p.numel() for p in model.parameters())
     eval_scores, eta_eval = \
         evaluate_model(
             model=model,
             eval_dataloader=eval_dataloader,
             device='cuda')
-    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, tot_weights_model * 4, 100.0])
+    basic_size_model = _get_size_of_model(model)
+    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, basic_size_model, 100.0])
     eval_info_list.append(eval_info)
 
     if opt.dynamic_quant != []:
@@ -111,7 +119,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
                     model_weight_path = model_weight_path,
                     device = 'cpu',
                     qconfig = 'fbgemm')
-            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weights_model * 4])
+            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / basic_size_model * 100])
             eval_info_list.append(eval_info)
             pass
         pass

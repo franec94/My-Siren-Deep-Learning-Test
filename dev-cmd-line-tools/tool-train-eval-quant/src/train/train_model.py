@@ -141,7 +141,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
     EvalInfos = collections.namedtuple("EvalInfos", eval_field_names)
     eval_info_list = []
 
-    tot_weights_model = sum(p.numel() for p in model.parameters())
+    # tot_weights_model = sum(p.numel() for p in model.parameters())
     eval_scores, eta_eval = \
         evaluate_model(
             model=model,
