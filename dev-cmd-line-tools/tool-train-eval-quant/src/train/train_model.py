@@ -433,6 +433,8 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     batch_size = hyper_param_opt.batch_size)
 
             # --- Train model, recording eta.
+            # tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
+            tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}")
             start_time_to = time.time()
             model_trained, model_weight_path, train_scores_path = \
                 _train_loop(
@@ -445,7 +447,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     device='cuda',
                     data_range=1.0,
                     calc_metrices=True,
-                    model_dir=None,
+                    model_dir=tmp_model_dir,
                     steps_til_summary=None,
                     epochs_til_checkpoint=None,
                     log_tensorboard_flag=True,
