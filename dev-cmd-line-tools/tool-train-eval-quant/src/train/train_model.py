@@ -468,7 +468,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     save_results_flag=save_results_flag)
             stop_time = time.time() - start_time_to
             stop_times.append(stop_time)
-            _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose = verbose=opt.verbose)
+            _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose=opt.verbose)
 
 
             # --- Evaluate model's on validation data.
