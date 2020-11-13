@@ -104,6 +104,13 @@ HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dy
 # Local Utils
 # --------------------------------------------- #
 
+def _get_size_of_model(model):
+    torch.save(model.state_dict(), "temp.p")
+    # print('Size (MB):', os.path.getsize("temp.p")/1e6)
+    model_size = os.path.getsize("temp.p")
+    os.remove('temp.p')
+    return model_size
+
 def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
     arch_hyperparams = dict(
         hidden_layers=opt.n_hl,
@@ -140,7 +147,10 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
             model=model,
             eval_dataloader=eval_dataloader,
             device='cuda')
-    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, tot_weights_model * 4, 100.0])
+    
+    basic_model_size = _get_size_of_model(model)
+    # eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, tot_weights_model * 4, 100.0])
+    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, basic_model_size, 100.0])
     eval_info_list.append(eval_info)
 
     if opt.dynamic_quant != []:
@@ -154,7 +164,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
                     model_weight_path = model_weight_path,
                     device = 'cpu',
                     qconfig = 'fbgemm')
-            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weights_model * 4])
+            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weigbasic_model_sizehts_model * 100])
             eval_info_list.append(eval_info)
             pass
         pass
@@ -163,6 +173,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
     table = tabulate.tabulate(table_vals, headers=eval_field_names)
     _log_infos(info_msg = f"{table}", header_msg = None, logging=logging, tqdm=tqdm, verbose=verbose)
     pass
+
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
     coord_dataset = Implicit2DWrapper(
