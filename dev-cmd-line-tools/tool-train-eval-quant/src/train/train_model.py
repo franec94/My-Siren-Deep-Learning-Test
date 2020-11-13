@@ -394,7 +394,10 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 pass
 
             # --- Get hyperparams as Namedtuple
-            hyper_param_opt = HyperParams._make(hyper_param_dict.values())
+            hyper_param_list = []
+            for a_key in opt_dict.keys():
+                hyper_param_list.append(hyper_param_dict[f'{a_key}'])
+            hyper_param_opt = HyperParams._make(hyper_param_list)
 
             # --- Show some infos from main function.
             table_vals = list(hyper_param_opt._asdict().items())
