@@ -206,7 +206,7 @@ def main(opt):
     _log_main(msg = "Show some program infos.", header_msg = None, logging=logging)
     table_vals = list(MainInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
-    _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=opt.verbose)
+    _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=1)
 
     # --- Train model(s)
     n = _get_number_archs(opt)
