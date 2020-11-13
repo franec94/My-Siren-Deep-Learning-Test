@@ -93,7 +93,7 @@ except:
 
 from src.generic.custom_argparser import get_cmd_line_opts
 
-from src.generic.functions import create_train_logging_dir, get_input_image, log_parser, get_root_level_logger, check_quantization_tech_provided
+from src.generic.functions import create_train_logging_dir, get_input_image, log_parser, get_root_level_logger, check_quantization_tech_provided, check_quant_size_for_dynamic_quant
 
 from src.train.train_model import train_model
 

@@ -161,6 +161,10 @@ def main(opt):
     # --- Check dynamic quant if any.
     # opt = check_quantization_tech_provided(opt)
 
+    _log_main(msg = "Check dyanmic quant tech.", header_msg = None, logging=logging)
+    opt = check_quant_size_for_dynamic_quant(opt)
+    _log_main(msg = "Done.", header_msg = None, logging=logging)
+
     # --- Show some infos from main function.
     _log_main(msg = "Show some program infos.", header_msg = None, logging=logging)
     table_vals = list(MainInfos._make(field_vals)._asdict().items())
