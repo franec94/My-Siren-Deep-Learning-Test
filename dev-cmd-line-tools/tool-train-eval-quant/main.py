@@ -223,7 +223,7 @@ def main(opt):
                 model_dir = root_path,
                 save_results_flag = True)
         table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_results_list)))
-        table = tabulate.tabulate(table_vals, headers=list(eval_results_list[0].keys()))
+        table = tabulate.tabulate(table_vals, headers=list(eval_results_list[0]._asdict().keys()))
         _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=0)
         pass
     
