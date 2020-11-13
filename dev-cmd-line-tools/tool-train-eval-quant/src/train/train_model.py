@@ -89,6 +89,7 @@ from src.eval.eval_model import evaluate_model
 from src.generic.dataio import Implicit2DWrapper
 from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mode
 from src.archs.siren import Siren
+from src.generic.functions import log_data_via_pickle
 
 # --------------------------------------------- #
 # Global variables
@@ -450,6 +451,8 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             # --- Train model, recording eta.
             # tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no_tmp}", f"trial_no_{trial_no}")
             tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no}")
+            log_data_via_pickle(hyper_param_opt, tmp_model_dir, 'hyper-params-model')
+
             start_time_to = time.time()
             model_trained, model_weight_path, train_scores_path = \
                 _train_loop(
@@ -477,8 +480,9 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval devices: CUDA(Basic) | CPU(Quantized)"]
                 _log_infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 
+                model_name = f"{arch_no}.{hyper_param_opt.n_hf}.{hyper_param_opt.n_hl}.{hyper_param_opt.seed}.{hyper_param_opt.sidelength}"
                 eval_info_list = \
-                    _evaluate_model(model=model, model_name = f'arch_no_{arch_no}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
+                    _evaluate_model(model=model, model_name = f'{model_name}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 eval_results_list.extend(eval_info_list)
                 pass
 

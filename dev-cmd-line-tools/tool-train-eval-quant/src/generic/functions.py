@@ -192,6 +192,21 @@ def log_parser(root_path, parser, opt, debug_mode = False):
         pass
     pass
 
+def log_data_via_pickle(data, root_path, file_name, debug_mode = False):
+    if debug_mode is False:
+        data_logged_path = os.path.join(root_path, f'{file_name}.txt')
+        with open(data_logged_path, "w") as f:
+            f.write(f'{str(data)}')
+            pass
+    
+        data_logged_pickle = os.path.join(root_path, f'{file_name}.pickle')
+        with open(data_logged_pickle, "wb") as f:
+            # pickleopt = pickle.dumps(opt)
+            pickle.dump(data, f)
+            pass
+        pass
+    pass
+
 
 def set_hyperparams_to_be_tested(opt, grid_arch_hyperparams):
     """Set Hyper-parameters to be tested."""
