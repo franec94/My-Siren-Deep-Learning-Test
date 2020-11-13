@@ -376,7 +376,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
         epochs=opt.num_epochs,
         seed=opt.seed,
         batch_size=opt.batch_size,
-        verbose=opt.verbose
+        verbose=[opt.verbose]
     )
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
 
