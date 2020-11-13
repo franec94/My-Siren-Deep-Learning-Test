@@ -62,18 +62,20 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
     return train_dataloader, val_dataloader
 
 
-def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
+def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm', verbose = 0):
     arch_hyperparams = collections.OrderedDict(
         hidden_layers=opt.n_hl[0],
         hidden_features=opt.n_hf[0],
         sidelength=opt.sidelength[0],
         dtype=dtype
     )
-    pprint(arch_hyperparams)
+    if verbose > 0:
+        pprint(arch_hyperparams)
 
     OptModel = collections.namedtuple('OptModel', list(arch_hyperparams.keys()))
     opt_model = OptModel._make(arch_hyperparams.values())
-    pprint(opt_model)
+    if verbose > 0:
+        pprint(opt_model)
 
     eval_scores, eta_eval, size_model = \
         compute_quantization_dyanmic_mode(
@@ -89,7 +91,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     return eval_scores, eta_eval, size_model
 
 
-def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None):
+def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, verbose = 1):
 
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength[0], batch_size=opt.batch_size[0])
@@ -126,16 +128,18 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
 
     table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_info_list)))
     table = tabulate.tabulate(table_vals, headers=eval_field_names)
-    _log_main(msg = f"{table}", header_msg = None, logging=logging)
+    _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=verbose)
     pass
 
 
-def _log_main(msg, header_msg = None, logging=None):
+def _log_main(msg, header_msg = None, logging=None, verbose = 0):
     if header_msg != None:
-        print(header_msg)
+        if verbose > 0:
+            print(header_msg)
         if logging != None:
             logging.info(header_msg)
-    print(msg)
+    if verbose > 0:
+        print(msg)
     if logging != None:
         logging.info(msg)
     pass
@@ -160,16 +164,16 @@ def main(opt):
     get_root_level_logger(root_path)
     
     # --- Save parser.
-    _log_main(msg = "Saving parser...", header_msg = None, logging=logging)
+    _log_main(msg = "Saving parser...", header_msg = None, logging=logging, verbose=opt.verbose)
     log_parser(root_path, parser, opt, debug_mode = False)
     logging.info(parser.format_values())
-    _log_main(msg = "Done.", header_msg = None, logging=logging)
+    _log_main(msg = "Done.", header_msg = None, logging=logging, verbose=opt.verbose)
 
     # --- Load image.
-    _log_main(msg = "Loading image as PyTorch Dataset...", header_msg = None, logging=logging)
+    _log_main(msg = "Loading image as PyTorch Dataset...", header_msg = None, logging=logging, verbose=opt.verbose)
     image_dataset, _, _ = \
         get_input_image(opt)
-    _log_main(msg = "Done.", header_msg = None, logging=logging)
+    _log_main(msg = "Done.", header_msg = None, logging=logging, verbose=opt.verbose)
 
     device, no_cuda_device, quant_engine = \
         set_device_and_backend_for_torch(opt)
@@ -178,15 +182,15 @@ def main(opt):
     # --- Check dynamic quant if any.
     # opt = check_quantization_tech_provided(opt)
 
-    _log_main(msg = "Check dyanmic quant tech.", header_msg = None, logging=logging)
+    _log_main(msg = "Check dyanmic quant tech.", header_msg = None, logging=logging, verbose=opt.verbose)
     opt = check_quant_size_for_dynamic_quant(opt)
-    _log_main(msg = "Done.", header_msg = None, logging=logging)
+    _log_main(msg = "Done.", header_msg = None, logging=logging, verbose=opt.verbose)
 
     # --- Show some infos from main function.
     _log_main(msg = "Show some program infos.", header_msg = None, logging=logging)
     table_vals = list(MainInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
-    _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging)
+    _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=opt.verbose)
 
     # --- Train model(s)
     model_trained, model_weight_path, train_scores_path = \
