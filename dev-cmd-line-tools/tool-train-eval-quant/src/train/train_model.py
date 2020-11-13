@@ -159,7 +159,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
             pass
         pass
 
-    table_vals = list(map(operator.methodcaller("items"), map(operator.methodcaller("_asdict"), eval_info_list)))
+    table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_info_list)))
     table = tabulate.tabulate(table_vals, headers=eval_field_names)
     _log_infos(info_msg = f"{table}", header_msg = None, logging=logging, tqdm=tqdm, verbose=verbose)
     pass

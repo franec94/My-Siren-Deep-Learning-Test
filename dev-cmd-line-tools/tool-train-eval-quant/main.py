@@ -67,7 +67,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     OptModel = collections.namedtuple('OptModel', list(arch_hyperparams.keys()))
     opt_model = OptModel._make(arch_hyperparams.values())
     pprint(opt_model)
-    
+
     eval_scores, eta_eval, size_model = \
         compute_quantization_dyanmic_mode(
                 model_path = model_weight_path,
@@ -116,7 +116,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
             pass
         pass
 
-    table_vals = list(map(operator.methodcaller("items"), map(operator.methodcaller("_asdict"), eval_info_list)))
+    table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_info_list)))
     table = tabulate.tabulate(table_vals, headers=eval_field_names)
     _log_main(msg = f"{table}", header_msg = None, logging=logging)
     pass
