@@ -491,6 +491,6 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
         pass # end tqdm
     
     if save_results_flag and n == 1:
-        return model_trained, model_weight_path, train_scores_path
+        return model, model_weight_path, train_scores_path
     
     return eval_results_list
