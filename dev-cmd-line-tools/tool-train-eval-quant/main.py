@@ -211,7 +211,7 @@ def main(opt):
     # --- Train model(s)
     n = _get_number_archs(opt)
     if n == 1:
-        model_trained, model_weight_path, train_scores_path = \
+        model_trained, model_weight_path, _ = \
             train_model(opt = opt,
                 image_dataset=image_dataset,
                 model_dir = root_path,
@@ -222,6 +222,9 @@ def main(opt):
                 image_dataset=image_dataset,
                 model_dir = root_path,
                 save_results_flag = True)
+        table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_results_list)))
+        table = tabulate.tabulate(table_vals, headers=list(eval_results_list[0].keys()))
+        _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=0)
         pass
     
     # --- Evaluate model, if just one model has been requested to be
@@ -233,6 +236,8 @@ def main(opt):
                 opt=opt,
                 img_dataset=image_dataset,
                 model_weight_path=model_weight_path)
+            table_vals = list(MainInfos._make(field_vals)._asdict().items())
+            table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
         pass
     pass
 
