@@ -16,6 +16,22 @@ warnings.filterwarnings(
 )
 
 
+def set_device_and_backend_for_torch(opt):
+    """Set device which can be either CPU or GPU, or CUDA, tested in reverse order, from CUDA up to CPU.
+    Set torch.backends.quantized.engine which can be either FBGEMM (for server machines) or QNNPACK (for modbile devices).
+    """
+    try:
+        if opt.cuda:
+            device = (torch.device('cuda:0') if torch.cuda.is_available()
+            else torch.device('gpu'))
+            torch.backends.quantized.engine = opt.engine
+    except:
+        device = torch.device('cpu')
+        torch.backends.quantized.engine = opt.engine
+        pass
+    return device, torch.cuda.device_count(), opt.engine
+
+
 def _get_data_for_train(img_dataset, sidelength, batch_size):
     coord_dataset = Implicit2DWrapper(
         img_dataset, sidelength=sidelength, compute_diff=None)
@@ -137,6 +153,10 @@ def main(opt):
     image_dataset, _, _ = \
         get_input_image(opt)
     _log_main(msg = "Done.", header_msg = None, logging=logging)
+
+    device, no_cuda_device, quant_engine = \
+        set_device_and_backend_for_torch(opt)
+    field_vals.extend([device, no_cuda_device, quant_engine, -1])
 
     # --- Check dynamic quant if any.
     # opt = check_quantization_tech_provided(opt)

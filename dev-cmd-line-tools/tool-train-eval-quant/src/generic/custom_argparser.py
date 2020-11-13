@@ -70,6 +70,9 @@ def get_cmd_line_opts():
     parser.add_argument('--cuda',  required=False, action="store_true", default=False,
         help='Set this flag to enable training on CUDA device, otherwise training will be performed on CPU device (default: False).'
     )
+    parser.add_argument('--quant_engine',  required=False, type=str, default='fbgemm',
+        help='Kind of quant engine (default: fbgemm).'
+    )
 
     opt = parser.parse_args()
     return opt, parser
