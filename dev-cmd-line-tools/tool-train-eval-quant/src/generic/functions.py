@@ -63,7 +63,7 @@ import torch
 # Import: custom, from this project
 # --------------------------------------------- #
 
-import src.generic_src.dataio as dataio
+import src.generic.dataio as dataio
 
 from src.generic.custom_argparser import DYNAMIC_QUAT_SIZES
 

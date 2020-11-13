@@ -19,9 +19,11 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.autonotebook import tqdm
 
+import copy
 import collections
 import logging
 import os
+import operator
 import random
 import math
 import shutil
@@ -83,6 +85,7 @@ from sklearn.model_selection import ParameterGrid
 from src.generic.utils import get_data_ready_for_model, compute_desired_metrices, save_data_to_file, cond_mkdir
 from src.eval.eval_model import evaluate_model
 from src.generic.dataio import Implicit2DWrapper
+from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mode
 
 # --------------------------------------------- #
 # Global variables
@@ -97,6 +100,66 @@ HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,seed,batch_siz
 # --------------------------------------------- #
 # Local Utils
 # --------------------------------------------- #
+
+def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
+    arch_hyperparams = dict(
+        hidden_layers=opt.n_hl[0],
+        hidden_features=opt.n_hf[0],
+        sidelength=opt.sidelength[0],
+        dtype=dtype
+    )
+    eval_scores, eta_eval, size_model = \
+        compute_quantization_dyanmic_mode(
+                model_path = model_weight_path,
+                arch_hyperparams = arch_hyperparams,
+                img_dataset = img_dataset,
+                opt = opt,
+                fuse_modules = None,
+                device = f'{device}',
+                qconfig = f'{qconfig}',
+                model_fp32 = model)
+
+    return eval_scores, eta_eval, size_model
+
+
+def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None):
+
+    eval_dataloader, _ = \
+        _get_data_for_train(img_dataset, sidelength=opt.sidelength, batch_size=opt.batch_size)
+
+    eval_field_names = "model_type,mse,psnr,ssim,eta,footprint_byte,footprint_percent".split(",")
+    EvalInfos = collections.namedtuple("EvalInfos", eval_field_names)
+    eval_info_list = []
+
+    tot_weights_model = sum(p.numel() for p in model.parameters())
+    eval_scores, eta_eval = \
+        evaluate_model(
+            model=model,
+            eval_dataloader=eval_dataloader,
+            device='cuda')
+    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, tot_weights_model * 4, 100.0])
+    eval_info_list.append(eval_info)
+
+    if opt.dynamic_quant != []:
+        for a_dynamic_type in opt.dynamic_quant:
+            eval_scores, eta_eval, model_size = \
+                _evaluate_dynamic_quant(
+                    opt,
+                    dtype=a_dynamic_type,
+                    img_dataset=img_dataset,
+                    model = copy.deepcopy(model),
+                    model_weight_path = model_weight_path,
+                    device = 'cpu',
+                    qconfig = 'fbgemm')
+            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / tot_weights_model * 4])
+            eval_info_list.append(eval_info)
+            pass
+        pass
+
+    table_vals = list(map(operator.methodcaller("items"), map(operator.methodcaller("_asdict"), eval_info_list)))
+    table = tabulate.tabulate(table_vals, headers=eval_field_names)
+    _log_infos(info_msg = f"{table}", header_msg = None, logging=logging, tqdm=tqdm)
+    pass
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
     coord_dataset = Implicit2DWrapper(
@@ -192,9 +255,6 @@ def _log_infos(info_msg, header_msg = None, logging = None, tqdm = None, verbose
         pass
     pass
 
-
-def _evaluate_quant_model():
-    pass
 
 # --------------------------------------------- #
 # Train functions
@@ -321,6 +381,14 @@ def train_model(opt, image_dataset, save_results_flag = False):
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
 
+            # --- Get hyperparams as Namedtuple
+            hyper_param_opt = HyperParams._make(hyper_param_dict.values())
+
+            # --- Show some infos from main function.
+            table_vals = list(hyper_param_opt._asdict().items())
+            table = tabulate.tabulate(table_vals, headers="Hyper-param,Value".split(","))
+            _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Model Details {"-" * 25}', logging=logging)
+
             train_h = "-" * 25 + " Train " + "-" * 25
             if opt.evaluate and n > 1:
                 info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Arch no: {arch_no} running..."]
@@ -329,8 +397,6 @@ def train_model(opt, image_dataset, save_results_flag = False):
                 info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Train running..."]
                 _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
                 pass
-            # --- Get hyperparams as Namedtuple
-            hyper_param_opt = HyperParams._make(hyper_param_dict.values())
             
             # --- Set seed.
             _set_seeds(hyper_param_opt.seed)
@@ -340,12 +406,12 @@ def train_model(opt, image_dataset, save_results_flag = False):
                 arch_hyperparams = hyper_param_opt._asdict(),
                 device = 'cuda',
                 empty_cache_flag = True)
-            tot_weights_model = sum(p.numel() for p in model.parameters())
+            # tot_weights_model = sum(p.numel() for p in model.parameters())
 
             _show_summary_model(model, logging=logging, tqdm=tqdm, verbose=1)
 
             # --- Get data for training.
-            train_dataloader, val_dataloader = \
+            train_dataloader, _ = \
                 _get_data_for_train(
                     img_dataset = image_dataset,
                     sidelength = hyper_param_opt.sidelength,
@@ -376,6 +442,7 @@ def train_model(opt, image_dataset, save_results_flag = False):
 
             # --- Evaluate model's on validation data.
             if opt.evaluate and n > 1:
+                """
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval device: cuda"]
                 _log_infos(info_msg = info_msg, header_msg = eval_h, logging=logging, tqdm=tqdm, verbose = 1)
                 eval_scores, eta_eval = evaluate_model(
@@ -390,6 +457,8 @@ def train_model(opt, image_dataset, save_results_flag = False):
                                          "- arch_no=%d, loss=%0.6f, PSNR(db)=%0.6f, SSIM=%0.6f" \
                                                 % (arch_no, eval_scores[0], eval_scores[1], eval_scores[2])]
                 _log_infos(info_msg = info_eval_quant_stats, header_msg=None, logging=logging, tqdm=tqdm, verbose = 1)
+                """
+                _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm)
                 pass
 
             pass # end opt_hyperparam_list loop
