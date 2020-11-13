@@ -387,6 +387,12 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
 
+            if opt.evaluate and n > 1:
+                sep_str_arch_no = "=" * 50 + f" ARCH {arch_no} " + "=" * 50
+                header_arch = '_' * len(sep_str_arch_no)
+                _log_infos(info_msg=sep_str_arch_no, header_msg=header_arch, logging=logging, tqdm=tqdm, verbose=1)
+                pass
+
             # --- Get hyperparams as Namedtuple
             hyper_param_opt = HyperParams._make(hyper_param_dict.values())
 
