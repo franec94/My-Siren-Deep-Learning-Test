@@ -156,7 +156,7 @@ def main(opt):
 
     device, no_cuda_device, quant_engine = \
         set_device_and_backend_for_torch(opt)
-    field_vals.extend([device, no_cuda_device, quant_engine, -1])
+    field_vals.extend([no_cuda_device, device, quant_engine, -1])
 
     # --- Check dynamic quant if any.
     # opt = check_quantization_tech_provided(opt)
@@ -190,5 +190,17 @@ def main(opt):
 if __name__ == "__main__":
 
     opt, parser = get_cmd_line_opts()
+
+    # Set seeds for experiment re-running.
+    if hasattr(opt, 'seed'): seed = opt.seed[0]
+    else: seed = 0
+    
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
     main(opt)
     pass

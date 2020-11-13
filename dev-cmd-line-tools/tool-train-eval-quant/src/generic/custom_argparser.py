@@ -50,7 +50,7 @@ def get_cmd_line_opts():
     # Options for running training phase.
     parser.add_argument('--batch_size', nargs='+', type=int, default=[1])
     parser.add_argument('--lr', nargs='+', type=float, default=[1e-4], help='learning rate. default=1e-4')
-    parser.add_argument('--num_epochs', nargs='+', type=int, default=[10000], dest='num_epcohs',
+    parser.add_argument('--num_epochs', nargs='+', type=int, default=[10000], dest='num_epochs',
                help='Number of epochs to train for.')
     parser.add_argument('--seed',  nargs='+', type=int, required=False, default=[0],
         help='List of seeds (default: [0]).'
