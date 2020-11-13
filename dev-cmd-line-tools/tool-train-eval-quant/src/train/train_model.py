@@ -106,9 +106,9 @@ HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dy
 
 def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
     arch_hyperparams = dict(
-        hidden_layers=opt.n_hl[0],
-        hidden_features=opt.n_hf[0],
-        sidelength=opt.sidelength[0],
+        hidden_layers=opt.n_hl,
+        hidden_features=opt.n_hf,
+        sidelength=opt.sidelength,
         dtype=dtype
     )
     eval_scores, eta_eval, size_model = \
