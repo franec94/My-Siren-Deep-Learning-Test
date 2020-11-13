@@ -376,7 +376,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
         lr=opt.lr,
         epochs=opt.num_epochs,
         seed=opt.seed,
-        sidelength=[opt.sidelength],
+        sidelength=opt.sidelength,
         batch_size=opt.batch_size,
         verbose=[opt.verbose]
     )
