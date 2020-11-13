@@ -92,7 +92,7 @@ from src.archs.siren import Siren
 # Global variables
 # --------------------------------------------- #
 
-HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,batch_size,verbose".split(","))
+HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,sidelength,batch_size,verbose".split(","))
 
 # ----------------------------------------------------------------------------------------------- #
 # Functions
@@ -376,6 +376,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
         lr=opt.lr,
         epochs=opt.num_epochs,
         seed=opt.seed,
+        sidelength=[opt.sidelength],
         batch_size=opt.batch_size,
         verbose=[opt.verbose]
     )
