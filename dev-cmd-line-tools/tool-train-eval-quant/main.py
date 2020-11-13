@@ -62,6 +62,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
         sidelength=opt.sidelength[0],
         dtype=dtype
     )
+    pprint(arch_hyperparams)
     eval_scores, eta_eval, size_model = \
         compute_quantization_dyanmic_mode(
                 model_path = model_weight_path,

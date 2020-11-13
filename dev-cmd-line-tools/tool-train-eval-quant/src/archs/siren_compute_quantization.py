@@ -341,6 +341,7 @@ def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dat
     eval_scores, eta_eval = _evaluate_model(model = model_int8, evaluate_dataloader = input_fp32, loss_fn = nn.MSELoss(), device = f'{device}')
     return eval_scores, eta_eval, size_model 
 
+
 def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of dynamic quantization.
     Return:
