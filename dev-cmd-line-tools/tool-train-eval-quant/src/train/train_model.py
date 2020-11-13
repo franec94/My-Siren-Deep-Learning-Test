@@ -393,7 +393,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             # --- Show some infos from main function.
             table_vals = list(hyper_param_opt._asdict().items())
             table = tabulate.tabulate(table_vals, headers="Hyper-param,Value".split(","))
-            _log_infos(info_msg = f"{table}", header_msg = f'{"-" * 25} Model Details {"-" * 25}', logging=logging, tqdm=tqdm)
+            _log_infos(info_msg = f"{table}", header_msg = f'{"-" * 25} Model Details {"-" * 25}', logging=logging, tqdm=tqdm, verbose=verbose)
 
             train_h = "-" * 25 + " Train " + "-" * 25
             if opt.evaluate and n > 1:
