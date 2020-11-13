@@ -404,7 +404,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             if opt.evaluate and n > 1:
                 sep_str_arch_no = "=" * 50 + f" ARCH {arch_no} " + "=" * 50
                 header_arch = '_' * len(sep_str_arch_no)
-                _log_infos(info_msg=sep_str_arch_no, header_msg=header_arch, logging=logging, tqdm=tqdm, verbose=1)
+                _log_infos(info_msg=sep_str_arch_no, header_msg=header_arch, logging=logging, tqdm=tqdm, verbose=opt.verbose)
                 pass
 
             # --- Get hyperparams as Namedtuple
@@ -421,10 +421,10 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             train_h = "-" * 25 + " Train " + "-" * 25
             if opt.evaluate and n > 1:
                 info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Arch no: {arch_no} running..."]
-                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
+                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose=opt.verbose)
             else:
                 info_msg = [f"[*] Train Mode: On", f"[*] Train Device: cuda", f"- Train running..."]
-                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose = 1)
+                _log_infos(info_msg = info_msg, header_msg = train_h, logging=logging, tqdm=tqdm, verbose=opt.verbose)
                 pass
             
             # --- Set seed.
@@ -437,7 +437,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 empty_cache_flag = True)
             # tot_weights_model = sum(p.numel() for p in model.parameters())
 
-            _show_summary_model(model, logging=logging, tqdm=tqdm, verbose=1)
+            _show_summary_model(model, logging=logging, tqdm=tqdm, verbose=opt.verbose)
 
             # --- Get data for training.
             train_dataloader, _ = \
@@ -468,7 +468,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     save_results_flag=save_results_flag)
             stop_time = time.time() - start_time_to
             stop_times.append(stop_time)
-            _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose = 1)
+            _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose = verbose=opt.verbose)
 
 
             # --- Evaluate model's on validation data.
