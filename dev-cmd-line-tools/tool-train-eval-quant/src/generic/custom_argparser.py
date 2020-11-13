@@ -32,25 +32,25 @@ def get_cmd_line_opts():
 
 
     # Options for loading data to be processed.
-    parser.add_argument('--image_filepath', type=str, default=None, required=False,
+    parser.add_argument('--image_filepath', type=str, default=None, required=False, dest='image_filepath',
                help='Path to input image to be compressed (default: None). If not specified, It is used cameramen image as target image to be compressed.',
     )
 
     # Options for building Model, via hyper-params.
-    parser.add_argument('--sidelength', nargs='+', type=int, required=False, default=[],
+    parser.add_argument('--sidelength', nargs='+', type=int, required=False, default=[], dest='sidelength',
                help='Sidelength to which resize input image to be compressed (default: empty list, which means no cropping input image)'
     )
-    parser.add_argument('--n_hf', nargs='+', type=int, required=False, default=[64],
+    parser.add_argument('--n_hf', nargs='+', type=int, required=False, default=[64], dest='n_hf',
         help='A number of hidden features or a list of hidden features to be evaluated (default: [64])).'
     )
-    parser.add_argument('--n_hl',  nargs='+', type=int, required=False, default=[3],
+    parser.add_argument('--n_hl',  nargs='+', type=int, required=False, default=[3], dest='n_hl',
         help='A number of hidden layers or a list of hidden layers to be evaluated  (default: [3]).'
     )
     
     # Options for running training phase.
     parser.add_argument('--batch_size', nargs='+', type=int, default=[1])
     parser.add_argument('--lr', nargs='+', type=float, default=[1e-4], help='learning rate. default=1e-4')
-    parser.add_argument('--num_epochs', nargs='+', type=int, default=[10000],
+    parser.add_argument('--num_epochs', nargs='+', type=int, default=[10000], dest='num_epcohs',
                help='Number of epochs to train for.')
     parser.add_argument('--seed',  nargs='+', type=int, required=False, default=[0],
         help='List of seeds (default: [0]).'
@@ -58,19 +58,19 @@ def get_cmd_line_opts():
 
 
     # Options for evaluating model, after training.
-    parser.add_argument("--evaluate", required=False, action="store_true", default=False,
+    parser.add_argument("--evaluate", required=False, action="store_true", default=False, dest='evaluate',
         help="Flag for evaluating model after training"
     )
-    parser.add_argument('--dynamic_quant', required=False, nargs='+', type=str, default=[], 
+    parser.add_argument('--dynamic_quant', required=False, nargs='+', type=str, default=[], dest='dynamic_quant',
         help='Set it to enable dynamic quantization training. (Default: empty list, Allowed: [qint8, float16])'
     )
     parser.add_argument('--frequences',  nargs='+', type=int, required=False, default=[],
         help='List of frequences to be employed when quantization_enabled flag is set to paszke_quant (default: None).'
     )
-    parser.add_argument('--cuda',  required=False, action="store_true", default=False,
+    parser.add_argument('--cuda',  required=False, action="store_true", default=False, dest='cuda',
         help='Set this flag to enable training on CUDA device, otherwise training will be performed on CPU device (default: False).'
     )
-    parser.add_argument('--quant_engine',  required=False, type=str, default='fbgemm',
+    parser.add_argument('--quant_engine',  required=False, type=str, default='fbgemm',  dest='quant_engine',
         help='Kind of quant engine (default: fbgemm).'
     )
 

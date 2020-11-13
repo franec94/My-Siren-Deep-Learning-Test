@@ -24,12 +24,12 @@ def set_device_and_backend_for_torch(opt):
         if opt.cuda:
             device = (torch.device('cuda:0') if torch.cuda.is_available()
             else torch.device('gpu'))
-            torch.backends.quantized.engine = opt.engine
+            torch.backends.quantized.engine = opt.quant_engine
     except:
         device = torch.device('cpu')
-        torch.backends.quantized.engine = opt.engine
+        torch.backends.quantized.engine = opt.quant_engine
         pass
-    return device, torch.cuda.device_count(), opt.engine
+    return device, torch.cuda.device_count(), opt.quant_engine
 
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
