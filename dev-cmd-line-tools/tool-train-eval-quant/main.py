@@ -15,6 +15,22 @@ warnings.filterwarnings(
     module=r'torch.quantization'
 )
 
+
+def _get_number_archs(opt):
+    opt_dict = collections.OrderedDict(
+        n_hf=opt.n_hf,
+        n_hl=opt.n_hl,
+        lr=opt.lr,
+        epochs=opt.num_epochs,
+        seed=opt.seed,
+        dynamic_quant=[opt.dynamic_quant],
+        sidelength=opt.sidelength,
+        batch_size=opt.batch_size,
+        verbose=[opt.verbose]
+    )
+    opt_hyperparm_list = list(ParameterGrid(opt_dict))
+    return len(opt_hyperparm_list)
+
 def _get_size_of_model(model):
     torch.save(model.state_dict(), "temp.p")
     # print('Size (MB):', os.path.getsize("temp.p")/1e6)
@@ -193,15 +209,24 @@ def main(opt):
     _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=opt.verbose)
 
     # --- Train model(s)
-    model_trained, model_weight_path, train_scores_path = \
-        train_model(opt = opt,
-            image_dataset=image_dataset,
-            model_dir = root_path,
-            save_results_flag = True)
+    n = _get_number_archs(opt)
+    if n == 1:
+        model_trained, model_weight_path, train_scores_path = \
+            train_model(opt = opt,
+                image_dataset=image_dataset,
+                model_dir = root_path,
+                save_results_flag = True)
+    else:
+        eval_results_list = \
+            train_model(opt = opt,
+                image_dataset=image_dataset,
+                model_dir = root_path,
+                save_results_flag = True)
+        pass
     
     # --- Evaluate model, if just one model has been requested to be
     # trained, and evalute flag was suggested from command line.
-    if model_trained != None and model_weight_path != None and train_scores_path != None:
+    if n == 1:
         if opt.evaluate:
             _evaluate_model(
                 model=model_trained,
