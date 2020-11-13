@@ -56,19 +56,24 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
 
 
 def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
-    arch_hyperparams = dict(
+    arch_hyperparams = collections.OrderedDict(
         hidden_layers=opt.n_hl[0],
         hidden_features=opt.n_hf[0],
         sidelength=opt.sidelength[0],
         dtype=dtype
     )
     pprint(arch_hyperparams)
+
+    OptModel = collections.namedtuple('OptModel', list(arch_hyperparams.keys()))
+    opt_model = OptModel._make(arch_hyperparams.values())
+    pprint(opt_model)
+    
     eval_scores, eta_eval, size_model = \
         compute_quantization_dyanmic_mode(
                 model_path = model_weight_path,
                 arch_hyperparams = arch_hyperparams,
                 img_dataset = img_dataset,
-                opt = opt,
+                opt = opt_model,
                 fuse_modules = None,
                 device = f'{device}',
                 qconfig = f'{qconfig}',
