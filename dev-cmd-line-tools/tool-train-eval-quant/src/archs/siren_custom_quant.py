@@ -48,8 +48,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils.quant_utils.quant_utils_functions_2 import gather_stats as gather_stats_inner
-from src.utils.quant_utils.quant_utils_functions_2 import quantize_tensor, quantize_layer, QTensor, dequantize_tensor
+from src.generic.quant_utils_functions_2 import gather_stats as gather_stats_inner
+from src.generic.quant_utils_functions_2 import quantize_tensor, quantize_layer, QTensor, dequantize_tensor
 
 class SineLayerCQ(nn.Module):
     # See paper sec. 3.2, final paragraph, and supplement Sec. 1.5 for discussion of omega_0.
