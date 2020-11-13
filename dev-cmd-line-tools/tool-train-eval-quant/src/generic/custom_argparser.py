@@ -1,6 +1,6 @@
 import configargparse
 
-DYNAMIC_QUAT_SIZES = "qint8,float16".split(",")
+DYNAMIC_QUAT_SIZES = "qint8,qfloat16".split(",")
 
 
 def get_cmd_line_opts():

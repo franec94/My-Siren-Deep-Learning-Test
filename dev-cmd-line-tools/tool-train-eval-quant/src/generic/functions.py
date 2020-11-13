@@ -261,7 +261,7 @@ def check_quant_size_for_dynamic_quant(opt):
         if a_dynamic_size in DYNAMIC_QUAT_SIZES:
             if a_dynamic_size == 'qint8':
                 opt.dynamic_quant = torch.qint8
-            elif a_dynamic_size == 'float16':
+            elif a_dynamic_size == 'qfloat16':
                 opt.dynamic_quant = torch.float16
         else:
             raise Exception(f"Dynamic quant size '{a_dynamic_size}' provided is not allowed.")
@@ -273,7 +273,7 @@ def check_quant_size_for_dynamic_quant(opt):
             if a_dynamic_size in DYNAMIC_QUAT_SIZES:
                 if a_dynamic_size == 'qint8':
                     dynamic_size_list.append(torch.qint8)
-                elif a_dynamic_size == 'float16':
+                elif a_dynamic_size == 'qfloat16':
                     dynamic_size_list.append(torch.float16)
             else:
                 raise Exception(f"Dynamic quant size '{a_dynamic_size}' provided is not allowed.")
