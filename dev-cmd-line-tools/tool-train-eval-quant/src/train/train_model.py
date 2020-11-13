@@ -463,7 +463,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             # --- Evaluate model's on validation data.
             if opt.evaluate and n > 1:
                 eval_h = "-" * 25 + " Eval " + "-" * 25; info_msg = [f"[*] Eval Mode: On", f"[*] Eval devices: CUDA(Basic) | CPU(Quantized)"]
-                infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = 1)
+                _log_infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = 1)
                 
                 _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 pass
