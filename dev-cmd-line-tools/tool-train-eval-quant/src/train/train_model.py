@@ -91,7 +91,7 @@ from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mo
 # Global variables
 # --------------------------------------------- #
 
-HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,seed,batch_size,verbose".split(","))
+HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,batch_size,verbose".split(","))
 
 # ----------------------------------------------------------------------------------------------- #
 # Functions
@@ -391,7 +391,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             # --- Show some infos from main function.
             table_vals = list(hyper_param_opt._asdict().items())
             table = tabulate.tabulate(table_vals, headers="Hyper-param,Value".split(","))
-            _log_infos(msg = f"{table}", header_msg = f'{"-" * 25} Model Details {"-" * 25}', logging=logging)
+            _log_infos(info_msg = f"{table}", header_msg = f'{"-" * 25} Model Details {"-" * 25}', logging=logging)
 
             train_h = "-" * 25 + " Train " + "-" * 25
             if opt.evaluate and n > 1:
