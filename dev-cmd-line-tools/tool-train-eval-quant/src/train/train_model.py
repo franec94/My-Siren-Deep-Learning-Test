@@ -453,7 +453,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
             tmp_model_dir = os.path.join(model_dir, f"arch_no_{arch_no}")
 
             start_time_to = time.time()
-            model, model_dir, model_weight_path, train_scores_path = \
+            model, model_dir_train, model_weight_path, train_scores_path = \
                 _train_loop(
                     model=model,
                     train_dataloader=train_dataloader,
@@ -471,7 +471,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     save_results_flag=save_results_flag)
             stop_time = time.time() - start_time_to
             stop_times.append(stop_time)
-            log_data_via_pickle(hyper_param_opt, model_dir, 'hyper-params-model')
+            log_data_via_pickle(hyper_param_opt, model_dir_train, 'hyper-params-model')
             _log_infos(info_msg = "- Train total time (seconds): {0:.1f}".format(stop_time), header_msg = None, logging=logging, tqdm=tqdm, verbose=opt.verbose)
 
 
