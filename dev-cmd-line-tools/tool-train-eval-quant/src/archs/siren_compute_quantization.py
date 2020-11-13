@@ -76,7 +76,7 @@ from src.archs.siren import Siren
 from src.archs.siren_quantized import SirenQuantized
 from src.archs.siren_quantized_post_training import SirenQPT
 from src.archs.siren_quantizatin_aware_train import SirenQAT
-from src.archs.siren_custom_quant import SirenCQ
+# from src.archs.siren_custom_quant import SirenCQ
 
 import src.generic.dataio as dataio
 
