@@ -361,7 +361,11 @@ def _train_loop(
     return model
 
 
-def train_model(opt, image_dataset, save_results_flag = False):
+def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
+
+    # ---  Setup logger.
+    log_filename = os.path.join(model_dir, 'train.log')
+    logging.basicConfig(filename=f'{log_filename}', level=logging.INFO)
 
     stop_times = []
 

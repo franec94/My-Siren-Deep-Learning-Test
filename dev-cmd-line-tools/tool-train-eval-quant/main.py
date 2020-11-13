@@ -148,7 +148,10 @@ def main(opt):
 
     # --- Train model(s)
     model_trained, model_weight_path, train_scores_path = \
-        train_model(opt = opt, image_dataset=image_dataset, save_results_flag = True)
+        train_model(opt = opt,
+            image_dataset=image_dataset,
+            model_dir = root_path,
+            save_results_flag = True)
     
     # --- Evaluate model, if just one model has been requested to be
     # trained, and evalute flag was suggested from command line.
