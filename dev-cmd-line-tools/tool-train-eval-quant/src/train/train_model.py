@@ -132,12 +132,12 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     return eval_scores, eta_eval, size_model
 
 
-def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, tqdm=None, verbose=0):
+def _evaluate_model(model, opt, img_dataset, model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0):
 
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength, batch_size=opt.batch_size)
 
-    eval_field_names = "model_type,mse,psnr,ssim,eta,footprint_byte,footprint_percent".split(",")
+    eval_field_names = "model_name,model_type,mse,psnr,ssim,eta,footprint_byte,footprint_percent".split(",")
     EvalInfos = collections.namedtuple("EvalInfos", eval_field_names)
     eval_info_list = []
 
@@ -150,7 +150,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
     
     basic_model_size = _get_size_of_model(model)
     # eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, tot_weights_model * 4, 100.0])
-    eval_info = EvalInfos._make(['Basic'] + list(eval_scores) + [eta_eval, basic_model_size, 100.0])
+    eval_info = EvalInfos._make([model_name, 'Basic'] + list(eval_scores) + [eta_eval, basic_model_size, 100.0])
     eval_info_list.append(eval_info)
 
     if opt.dynamic_quant != []:
@@ -164,7 +164,7 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
                     model_weight_path = model_weight_path,
                     device = 'cpu',
                     qconfig = 'fbgemm')
-            eval_info = EvalInfos._make([f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / basic_model_size * 100])
+            eval_info = EvalInfos._make([model_name, f'Quant-{str(a_dynamic_type)}'] + list(eval_scores) + [eta_eval, model_size, model_size / basic_model_size * 100])
             eval_info_list.append(eval_info)
             pass
         pass
@@ -478,7 +478,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 _log_infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 
                 eval_info_list = \
-                    _evaluate_model(model=model, opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
+                    _evaluate_model(model=model, model_name = f'{arch_no}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 eval_results_list.extend(eval_info_list)
                 pass
 
