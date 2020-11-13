@@ -130,18 +130,19 @@ def main(opt):
     _log_main(msg = "Saving parser...", header_msg = None, logging=logging)
     log_parser(root_path, parser, opt, debug_mode = False)
     logging.info(parser.format_values())
-    _log_main(msg = "Saving parser: Done.", header_msg = None, logging=logging)
+    _log_main(msg = "Done.", header_msg = None, logging=logging)
 
     # --- Load image.
     _log_main(msg = "Loading image as PyTorch Dataset...", header_msg = None, logging=logging)
     image_dataset, _, _ = \
         get_input_image(opt)
-    _log_main(msg = "Loading image as PyTorch Dataset: Done.", header_msg = None, logging=logging)
+    _log_main(msg = "Done.", header_msg = None, logging=logging)
 
     # --- Check dynamic quant if any.
-    opt = check_quantization_tech_provided(opt)
+    # opt = check_quantization_tech_provided(opt)
 
     # --- Show some infos from main function.
+    _log_main(msg = "Show some program infos.", header_msg = None, logging=logging)
     table_vals = list(MainInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
     _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging)
