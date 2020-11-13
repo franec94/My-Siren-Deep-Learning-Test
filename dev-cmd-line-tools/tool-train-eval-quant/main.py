@@ -224,7 +224,7 @@ def main(opt):
                 save_results_flag = True)
         table_vals = list(map(operator.methodcaller("values"), map(operator.methodcaller("_asdict"), eval_results_list)))
         table = tabulate.tabulate(table_vals, headers=list(eval_results_list[0]._asdict().keys()))
-        _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=0)
+        _log_main(msg = f"{table}", header_msg = None, logging=logging, verbose=1)
         pass
     
     # --- Evaluate model, if just one model has been requested to be
