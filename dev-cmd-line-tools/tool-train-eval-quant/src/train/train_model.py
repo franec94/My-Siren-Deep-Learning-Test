@@ -478,7 +478,7 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                 _log_infos(info_msg = info_msg, header_msg=eval_h, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 
                 eval_info_list = \
-                    _evaluate_model(model=model, model_name = f'{arch_no}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
+                    _evaluate_model(model=model, model_name = f'arch_no_{arch_no}', opt=hyper_param_opt, img_dataset=image_dataset, model_weight_path = model_weight_path, logging=logging, tqdm=tqdm, verbose = opt.verbose)
                 eval_results_list.extend(eval_info_list)
                 pass
 
