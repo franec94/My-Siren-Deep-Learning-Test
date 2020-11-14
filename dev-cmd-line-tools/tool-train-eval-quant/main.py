@@ -17,6 +17,14 @@ warnings.filterwarnings(
 
 
 def _get_number_archs(opt):
+    """Get number of architectures to be evaluated when script is running.
+    Params
+    ------
+    `opt` - python Namespace object from which deriving number of architectures to be tested.\n
+    Return
+    ------
+    `int` - representing number of architectures to be tested.
+    """
     opt_dict = collections.OrderedDict(
         n_hf=opt.n_hf,
         n_hl=opt.n_hl,
@@ -31,7 +39,17 @@ def _get_number_archs(opt):
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
     return len(opt_hyperparm_list)
 
+
 def _get_size_of_model(model):
+    """Return model size as file size corresponding to model's state dictionary when saved temporarily to 
+    disk.
+    Params
+    ------
+    `model` - PyTorch like model.\n
+    Return
+    ------
+    `model_size` - int python object, size of state dictionary expressed in byte.\n
+    """
     torch.save(model.state_dict(), "temp.p")
     # print('Size (MB):', os.path.getsize("temp.p")/1e6)
     model_size = os.path.getsize("temp.p")
@@ -42,6 +60,14 @@ def _get_size_of_model(model):
 def set_device_and_backend_for_torch(opt):
     """Set device which can be either CPU or GPU, or CUDA, tested in reverse order, from CUDA up to CPU.
     Set torch.backends.quantized.engine which can be either FBGEMM (for server machines) or QNNPACK (for modbile devices).
+    Params
+    ------
+    `opt` - python Namespace object from which deriving number of architectures to be tested.\n
+    Return
+    ------
+    `device` - torch.device onto which some computations will be performed.\n
+    `torch.cuda.device_count()` - int python object representing number of cuda devices available.\n
+    `opt.quant_engine` - str obejct representing engine for quant backend\n
     """
     try:
         if opt.cuda:
@@ -59,6 +85,17 @@ def set_device_and_backend_for_torch(opt):
 
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
+    """Get data ready to be feed into a DNN model as input data for training and evaluating phase, respectively.
+    Params
+    ------
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `sidelength` - eithr int object or lsit,tuple, representing width and height for center cropping input image.\n
+    `batch_size` - int object for dividing input data into several batches.\n
+    Return
+    ------
+    `train_dataloader` - PyTorch DataLoader instance.\n
+    `val_dataloader` - PyTorch DataLoader instance.\n
+    """
     coord_dataset = Implicit2DWrapper(
         img_dataset, sidelength=sidelength, compute_diff=None)
 
@@ -79,6 +116,25 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
 
 
 def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm', verbose = 0):
+    """
+    Evaluate model exploiting PyTorch built-it dynamic quant mode, a.k.a. Post training dynamic quantization mode.
+    
+    Params
+    ------
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    `dtype` - either torch.qint8 or torch.qfloat16 instances, for quantizing model's weigths.\n
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `model` - PyTorch like object representing a Neural Network model.\n
+    `model_weight_path` - str like object representing local file path for model's weights to be exploited when evaluating quantized models.\n
+    `device` - str object, kind of device upon which model will be loaded, allowed only CPU, since PyTorch framework supports just that setup, by now.\n
+    `qconfig` - str object, quantization backed type, allowed fbgemm for x86 server architectures, or QNNAM for mobile architectures.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to stdout, 1 = info displayed to stdout object.\n
+    Return
+    ------
+    `eval_scores, eta_eval, size_model` - np.ndarray object with values related to the following scores: MSE, PSNR, MSSi.\n
+    `eta_eval` - python float object, representig time elapsed when evaluation was carried out, expressed in seconds.\n
+    `size_model` - python int object representing model' size expressed in Bytes.\n
+    """
     arch_hyperparams = collections.OrderedDict(
         hidden_layers=opt.n_hl[0],
         hidden_features=opt.n_hf[0],
@@ -108,7 +164,20 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
 
 
 def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=None, verbose = 1):
-
+    """Evaluate model after training.
+    Params
+    ------
+    `model` - PyTorch like object representing a Neural Network model.\n
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `model_name` - str like object, representing a identifier with which referring to the current trial to be evaluated.\n
+    `model_weight_path` - str like object representing local file path for model's weights to be exploited when evaluating quantized models.\n
+    `logging` - logging python's std library object for logging reasons to a log file.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to stdout, 1 = info displayed to stdout object.\n
+    Return
+    ------
+    `eval_info_list` - python list object containing collections.namedtuple instances with results from different evaluations.\n
+    """
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength[0], batch_size=opt.batch_size[0])
 
@@ -149,6 +218,17 @@ def _evaluate_model(model, opt, img_dataset, model_weight_path = None, logging=N
 
 
 def _log_main(msg, header_msg = None, logging=None, verbose = 0):
+    """Log information messages to logging and tqdm objects.
+    Params:
+    -------
+    `msg` either a str object or list of objects to be logged.\n
+    `header_msg` str object used as header or separator, default None means no header will be shown.\n
+    `logging` logging python's std lib object, if None no information will be logged via logging.\n
+    `tqdm` tqdm python object, if None no information will be logged via tqdm.\n
+    Return:
+    -------
+    None
+    """
     if header_msg != None:
         if verbose > 0:
             print(header_msg)
