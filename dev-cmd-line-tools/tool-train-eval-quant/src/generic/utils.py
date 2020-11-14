@@ -96,14 +96,14 @@ def get_data_ready_for_model(model_input, gt, quantization_enabled = None, devic
     """Setup data to be feeded into the model, as the latter will expect.
     Params:
     -------
-    :model_input: - input to be processed by PyTorch model\n
-    :gt: - reference data\n
-    :quantization_enabled: - str object, quantization technique name, allowed values: [dynamic,static,post_train,quantization_aware_training]\n
-    :device: - str object, allowed values: 'cpu', 'gpu', 'cuda'\n
+    `model_input` - input to be processed by PyTorch model\n
+    `gt` - reference data\n
+    `quantization_enabled` - str object, quantization technique name, allowed values: [dynamic,static,post_train,quantization_aware_training]\n
+    `device` - str object, allowed values: 'cpu', 'gpu', 'cuda'\n
 
     Return:
     -------
-    :model_input, gt: - data ready to be feeded into PyTorch model
+    `model_input, gt` - data ready to be feeded into PyTorch model
     """
     if device == 'cpu':
         model_input = model_input['coords'].to('cpu')
@@ -123,13 +123,13 @@ def compute_desired_metrices(model_output, gt, data_range=1.):
     """Compute PSNR and SSIM scores.
     Params:
     -------
-    :model_output: - output produced by a Pytorch model\n
-    :gt: - reference data\n
-    :data_range: - int, range of input data\n
+    `model_output` - output produced by a Pytorch model\n
+    `gt` - reference data\n
+    `data_range` - int, range of input data\n
 
     Return:
     -------
-    :val_psnr, val_mssim: - scores from metrices PSNR, and SSIM
+    `val_psnr, val_mssim` - scores from metrices PSNR, and SSIM
     """
 
     sidelenght = model_output.size()[1]
@@ -150,14 +150,14 @@ def save_data_to_file(root_dir, model, train_scores):
     """Save recorded data, i.e. weights and train scores, during training into a file location.
     Params:
     -------
-    :root_dir: - str, dir within save model's weights and training scores\n
-    :model: - PyThorch like object representing a model\n
-    :train_scores: - np.array like object representing training scores accumulated at training time\n
+    `root_dir` - str, dir within save model's weights and training scores\n
+    `model` - PyThorch like object representing a model\n
+    `train_scores` - np.array like object representing training scores accumulated at training time\n
 
     Return:
     -------
-    mode_weight_path - str object, file path to model's weights.\n
-    train_scores_path - str object, file path to model's train scores.\n
+    `mode_weight_path` - str object, file path to model's weights.\n
+    `train_scores_path` - str object, file path to model's train scores.\n
     """
     mode_weight_path, train_scores_path = None, None
     try:

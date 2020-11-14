@@ -141,19 +141,19 @@ def evaluate_model(model, eval_dataloader, device = 'cpu', loss_fn = nn.MSELoss(
     """Evaluate model, computing: loss score, PSNR and MSSI metrices, when model swithced in eval mode..
     Params
     ------
-    :model: - PyTorch based model\n
-    :eval_dataloader: - PyTorch DataLoader like object\n
-    :device: - str object, allowed values: 'cpu', 'gpu', 'cuda'\n
-    :loss_fn: - Pytorch like Loss Function object\n
-    :quantization_enabled: - str object, quantization technique name, allowed values: [dynamic,static,posterior,quantization_aware_training]\n
-    :verbose: - int, verobose mode allowed values: 0,1,2.\n
-    :logging_flag: - bool, if True enabling logging info for elapsed time in evaluating input data, result logged in info level.\n
-    :tqdm: - tqdm object, if not None write to it.\n
+    `model` - PyTorch based model\n
+    `eval_dataloader` - PyTorch DataLoader like object\n
+    `device` - str object, allowed values: 'cpu', 'gpu', 'cuda'\n
+    `loss_fn` - Pytorch like Loss Function object\n
+    `quantization_enabled` - str object, quantization technique name, allowed values: [dynamic,static,posterior,quantization_aware_training]\n
+    `verbose` - int, verobose mode allowed values: 0,1,2.\n
+    `logging_flag` - bool, if True enabling logging info for elapsed time in evaluating input data, result logged in info level.\n
+    `tqdm` - tqdm object, if not None write to it.\n
 
     Return
     ------
-    :eval_scores: - np.array object, containing loss, psnr, mssi scores compute when model swithced in eval mode.\n
-    :eta_eval: - float representing time necessary for evaluating the model against the provided input.\n
+    `eval_scores` - np.array object, containing loss, psnr, mssi scores compute when model swithced in eval mode.\n
+    `eta_eval` - float representing time necessary for evaluating the model against the provided input.\n
     """
     eval_scores = None # Define a priori to use later.
     model.eval()

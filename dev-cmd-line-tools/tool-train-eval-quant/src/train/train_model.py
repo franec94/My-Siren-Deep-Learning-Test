@@ -106,13 +106,42 @@ HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dy
 # --------------------------------------------- #
 
 def _get_size_of_model(model):
+    """Return model size as file size corresponding to model's state dictionary when saved temporarily to 
+    disk.
+    Params
+    ------
+    `model` - PyTorch like model.\n
+    Return
+    ------
+    `model_size` - int python object, size of state dictionary expressed in byte.\n
+    """
     torch.save(model.state_dict(), "temp.p")
     # print('Size (MB):', os.path.getsize("temp.p")/1e6)
     model_size = os.path.getsize("temp.p")
     os.remove('temp.p')
     return model_size
 
+
 def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_path = None, device = 'cpu', qconfig = 'fbgemm'):
+    """
+    Evaluate model exploiting PyTorch built-it dynamic quant mode, a.k.a. Post training dynamic quantization mode.
+    
+    Params
+    ------
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    `dtype` - either torch.qint8 or torch.qfloat16 instances, for quantizing model's weigths.\n
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `model` - PyTorch like object representing a Neural Network model.\n
+    `model_weight_path` - str like object representing local file path for model's weights to be exploited when evaluating quantized models.\n
+    `device` - str object, kind of device upon which model will be loaded, allowed only CPU, since PyTorch framework supports just that setup, by now.\n
+    `qconfig` - str object, quantization backed type, allowed fbgemm for x86 server architectures, or QNNAM for mobile architectures.\n
+    Return
+    ------
+    `eval_scores, eta_eval, size_model` - np.ndarray object with values related to the following scores: MSE, PSNR, MSSi.\n
+    `eta_eval` - python float object, representig time elapsed when evaluation was carried out, expressed in seconds.\n
+    `size_model` - python int object representing model' size expressed in Bytes.\n
+    """
+
     arch_hyperparams = dict(
         hidden_layers=opt.n_hl,
         hidden_features=opt.n_hf,
@@ -134,6 +163,21 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
 
 
 def _evaluate_model(model, opt, img_dataset, model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0):
+    """Evaluate model after training.
+    Params
+    ------
+    `model` - PyTorch like object representing a Neural Network model.\n
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `model_name` - str like object, representing a identifier with which referring to the current trial to be evaluated.\n
+    `model_weight_path` - str like object representing local file path for model's weights to be exploited when evaluating quantized models.\n
+    `logging` - logging python's std library object for logging reasons to a log file.\n
+    `tqdm` - tqdm instance for logging data to stdout keeping order with which informations are displayed.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
+    Return
+    ------
+    `eval_info_list` - python list object containing collections.namedtuple instances with results from different evaluations.\n
+    """
 
     eval_dataloader, _ = \
         _get_data_for_train(img_dataset, sidelength=opt.sidelength, batch_size=opt.batch_size)
@@ -177,6 +221,17 @@ def _evaluate_model(model, opt, img_dataset, model_name, model_weight_path = Non
 
 
 def _get_data_for_train(img_dataset, sidelength, batch_size):
+    """Get data ready to be feed into a DNN model as input data for training and evaluating phase, respectively.
+    Params
+    ------
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `sidelength` - eithr int object or lsit,tuple, representing width and height for center cropping input image.\n
+    `batch_size` - int object for dividing input data into several batches.\n
+    Return
+    ------
+    `train_dataloader` - PyTorch DataLoader instance.\n
+    `val_dataloader` - PyTorch DataLoader instance.\n
+    """
     coord_dataset = Implicit2DWrapper(
         img_dataset, sidelength=sidelength, compute_diff=None)
 
@@ -197,6 +252,13 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
 
 
 def _show_summary_model(model, logging=None, tqdm=None, verbose = 0):
+    """Log model's architecture detail.
+    Params
+    ------
+    `logging` - logging python's std library object for logging reasons to a log file.\n
+    `tqdm` - tqdm instance for logging data to stdout keeping order with which informations are displayed.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
+    """
     try:
         model_summary_str = pms.summary(model, torch.Tensor((1, 2)).cuda(), show_input=False, show_hierarchical=True)
         # logging.info(f"{model_summary_str}"); tqdm.write(f"{model_summary_str}")    
@@ -206,6 +268,17 @@ def _show_summary_model(model, logging=None, tqdm=None, verbose = 0):
 
 
 def _prepare_model(arch_hyperparams, device = 'cpu', empty_cache_flag = False, verbose = 0):
+    """Prepare plain siren model.
+    Params
+    ------
+    `arch_hyperparams` - python dictionary object, containing model's hyper-params with which build the final architecture.\n
+    `device` - str object, kind of device upon which model will be loaded, allowed CPU, GPU, CUDA.\n
+    `empty_cache_flag` - bool python object, if true function attempts to free cache from previous runs.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
+    Return
+    ------
+    `model` - PyTorch like object representing DNN architecture.\n
+    """
 
     if device != 'cpu' and device != 'gpu':
         if empty_cache_flag:
@@ -220,14 +293,26 @@ def _prepare_model(arch_hyperparams, device = 'cpu', empty_cache_flag = False, v
     if device == 'cpu':
         model = model.to('cpu')
     elif device == 'cuda':
-        model = model.cuda()
+        try:
+            model = model.cuda()
+        except:
+            model = model.to('cpu')
     elif device == 'gpu':
-        model = model.to('gpu')
-    
+        try:
+            model = model.to('gpu')
+        except:
+            model = model.to('cpu')
+            pass
+        pass
     return model
 
 
 def _set_seeds(seed):
+    """Set seeds for torch, np.random and random std python library.
+    Params
+    ------
+    `seed` - int object, seed for starting pseudo-random series.\n
+    """
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
@@ -238,10 +323,10 @@ def _log_infos(info_msg, header_msg = None, logging = None, tqdm = None, verbose
     """Log information messages to logging and tqdm objects.
     Params:
     -------
-    :info_msg: either a str object or list of objects to be logged.\n
-    :header_msg: str object used as header or separator, default None means no header will be shown.\n
-    :logging: logging python's std lib object, if None no information will be logged via logging.\n
-    :tqdm: tqdm python object, if None no information will be logged via tqdm.\n
+    `info_msg` either a str object or list of objects to be logged.\n
+    `header_msg` str object used as header or separator, default None means no header will be shown.\n
+    `logging` logging python's std lib object, if None no information will be logged via logging.\n
+    `tqdm` tqdm python object, if None no information will be logged via tqdm.\n
     Return:
     -------
     None

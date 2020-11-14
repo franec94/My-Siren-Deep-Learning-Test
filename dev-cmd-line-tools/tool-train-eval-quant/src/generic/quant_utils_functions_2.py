@@ -148,19 +148,18 @@ def quantize_layer(x, layer, stat, scale_x, zp_x, num_bits = 8, sym_flag = False
     Quantize Layer.
     Params:
     -------
-    :x: input PyTorch tensor.\n
-    :layer: model's PyTorch layer, a.k.a module.\n
-    :stat: layer's stats related to the layer to be quatized.\n
-    :scale_x: scaler for amplitude scaling.\n
-    :zp_x: shift for scaling input tensor.\n
-    :num_bits: number of bits for defining the quantization.\n
+    `x` input PyTorch tensor.\n
+    `layer` model's PyTorch layer, a.k.a module.\n
+    `stat` layer's stats related to the layer to be quatized.\n
+    `scale_x` scaler for amplitude scaling.\n
+    `zp_x` shift for scaling input tensor.\n
+    `num_bits` number of bits for defining the quantization.\n
 
-    Return:
+    Return`
     -------
-    :x, scale_next, zero_point_next: where:
-    - x: scaled tensor.\n
-    - scale_next: how to scale the next layer.\n
-    - zero_point_next: how to shift the next layer.\n
+    `x` scaled tensor.\n
+    `scale_next` how to scale the next layer.\n
+    `zero_point_next` how to shift the next layer.\n
     """
     # for both conv and linear layers
     W = layer.weight.data
@@ -230,13 +229,13 @@ def update_stats(x, stats, key):
     """Update Statistics for a given layer with Neural Network model, providing input data to be processed.
     Params:
     -------
-    :x: input data fetched from a Pytorch dataloader.\n
-    :stats: python dictionary object, containing pairs (layer name,stats values).\n
-    :key: python string object, name for getting and updating pait (layer name,stats values).\n
+    `x` input data fetched from a Pytorch dataloader.\n
+    `stats` python dictionary object, containing pairs (layer name,stats values).\n
+    `key` python string object, name for getting and updating pait (layer name,stats values).\n
 
     Return:
     -------
-    :stats: dictionary with updated values.
+    `stats` dictionary with updated values.
     """
     max_val, _ = torch.max(x, dim=1)
     min_val, _ = torch.min(x, dim=1)
@@ -268,13 +267,13 @@ def gather_activation_stats(model, x, stats):
     """Gather Statistics for a given layer with Neural Network model, providing input data to be processed.
     Params:
     -------
-    :model: PyTorch like neural network model.\n
-    :x: input data fetched from a Pytorch dataloader.\n
-    :stats: python dictionary object, that will contain pairs (layer name,stats values).\n
+    `model` PyTorch like neural network model.\n
+    `x` input data fetched from a Pytorch dataloader.\n
+    `stats` python dictionary object, that will contain pairs (layer name,stats values).\n
     
     Return:
     -------
-    :stats: dictionary with updated values.
+    `stats` dictionary with updated values.
     """
     n = len(list(model.net.named_modules()))
     is_first = True
@@ -301,13 +300,13 @@ def gather_stats(model, test_loader, device = 'cpu'):
     """Gather Statistics for a given layer with Neural Network model, providing input data to be processed.
     Params:
     -------
-    :model: PyTorch like neural network model.\n
-    :test_loader: input data fetched from a Pytorch dataloader.\n
-    :device: options allowed [cpu,gpu, or cuda].\n
+    `model` PyTorch like neural network model.\n
+    `test_loader` input data fetched from a Pytorch dataloader.\n
+    `device` options allowed [cpu,gpu, or cuda].\n
     
     Return:
     -------
-    :stats: dictionary with updated values.
+    `stats` dictionary with updated values.
     """
     
     model.eval()

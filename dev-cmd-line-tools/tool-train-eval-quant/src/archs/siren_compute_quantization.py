@@ -84,32 +84,24 @@ import src.generic.dataio as dataio
 # Functions
 # ----------------------------------------------------------------------------------------------- #
 
-def check_device_and_weigths_to_laod(model_fp32, device = 'cpu', model_path = None):
-    if device == 'cpu':
-        # print('Load Model to cpu device!')
-        model_fp32 = model_fp32.to('cpu')
-        if model_path != None:
-            # print('Load Model weigths!')
-            state_dict = torch.load(model_path, map_location=torch.device('cpu'))
-            model_fp32.load_state_dict(state_dict)
-            pass
-        pass
-    else:
-        model_fp32 = model_fp32.cuda()
-        # print('Load Model to cuda device!')
-        if model_path != None:
-            # print('Load Model weigths!')
-            state_dict = torch.load(model_path, map_location=torch.device('cuda'))
-            model_fp32.load_state_dict(state_dict)
-            pass
-        pass
-    return model_fp32
-
 # --------------------------------------------- #
-# Getter functions
+# Getter functions: MODELS
 # --------------------------------------------- #
 
 def get_custom_quant_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
+    """Get custom quant model
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `set_layers` - collection of modules to quantize.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_fp32` - PyTroch liek object representing DNN model to be quantized by means of Custom quantizing technique.\n
+    """
     if model_fp32 == None:
         # print('Creating model...')
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
@@ -127,8 +119,21 @@ def get_custom_quant_model(metadata_model_dict = None, model_path = None, set_la
     model_fp32 = check_device_and_weigths_to_laod(model_fp32 = model_fp32, device = f'{device}', model_path = model_path)
     return model_fp32
 
+
 def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None, set_layers = {torch.nn.Linear}, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get dynamic quantization Siren model."""
+    """Get dynamic quantization Siren model.
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `set_layers` - collection of modules to quantize.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_quantized` - PyTroch liek object representing DNN model quantized by means of Post Train dynamic quantizing technique.\n
+    """
 
     if model_fp32 == None:
         # print('Creating model...')
@@ -152,16 +157,28 @@ def get_dynamic_quantization_model(metadata_model_dict = None, model_path = None
         pass
     # raise Exception("Debugging kind of quat for Dynamic Technique...")
     # print('Quantize model...')
-    model_int8 = torch.quantization.quantize_dynamic(
+    model_quantized = torch.quantization.quantize_dynamic(
         model_fp32,         # the original model
         set_layers,         # a set of layers to dynamically quantize
         dtype=dtype)  # the target dtype for quantized weights
-    if model_int8 == None: Exception(f"model_int8 is None, when quantization is Dynamic!")
-    return model_int8
+    if model_quantized == None: Exception(f"model_quantized is None, when quantization is Dynamic!")
+    return model_quantized
 
 
 def get_static_quantization_model(metadata_model_dict = None, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get static quantization Siren model."""
+    """Get static quantization Siren model.
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_fp32_prepared` - PyTroch liek object representing DNN model quantized by means of Post Train Static quantizing technique.\n
+    """
 
     if model_fp32 == None:
         if metadata_model_dict == None: raise Exception(f"metadata_model_dict is None!")
@@ -189,7 +206,19 @@ def get_static_quantization_model(metadata_model_dict = None, model_path = None,
 
 
 def get_post_training_quantization_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get post-train quantization Siren model."""
+    """Get post-train quantization Siren model.
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_fp32_prepared` - PyTroch liek object representing DNN model quantized by means of Post Train quantizing technique.\n
+    """
 
     # Create model if not exist.
     if model_fp32 == None:
@@ -226,7 +255,20 @@ def get_post_training_quantization_model(metadata_model_dict, model_path = None,
 
 
 def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Get quantization aware Siren model. """
+    """Get quantization aware Siren model.
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_fp32_prepared` - PyTroch liek object representing DNN model quantized by means of Post Train quantizing technique.\n
+    """
+
     if device == 'cpu':
         model_fp32 = SirenQuantized(
             in_features=2,
@@ -264,7 +306,19 @@ def get_quantization_aware_training(metadata_model_dict, model_path = None, fuse
 
 
 def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Build model for Paszek quant evaluation."""
+    """Build model for Paszek quant evaluation.
+    Params:
+    -------
+    `metadata_model_dict` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `model_fp32_prepared` - PyTroch liek object representing DNN model quantized by means of Post Train quantizing technique.\n
+    """
     
     if device == 'cpu':
         model_fp32 = Siren(
@@ -300,11 +354,25 @@ def get_paszke_quant_model(metadata_model_dict, model_path = None, fuse_modules 
 
 
 # --------------------------------------------- #
-# Compute Quantization
+# Compute Quantization: CHOICES
 # --------------------------------------------- #
 
 def compute_quantization_custom_quant_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Compute post train scores by means of Custom Quant Mode."""
+    """Compute post train scores by means of Custom Quant Mode.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `eval_scores` np.ndarray object containing mse, psnr, and ssim scores
+    """
     eval_scores = None
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
 
@@ -324,7 +392,21 @@ def compute_quantization_custom_quant_mode(model_path, arch_hyperparams, img_dat
 
 
 def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
-    """Compute post train scores by means of Paszek Quant Mode."""
+    """Compute post train scores by means of Paszek Quant Mode.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
+    Return:
+    ------
+    `eval_scores` np.ndarray object containing mse, psnr, and ssim scores
+    """
     eval_scores = None
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
 
@@ -344,9 +426,19 @@ def compute_quantization_paszke_quant_mode(model_path, arch_hyperparams, img_dat
 
 def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of dynamic quantization.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
     Return:
     ------
-    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    `eval_scores` np.ndarray object containing mse, psnr, and ssim scores
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
@@ -363,9 +455,19 @@ def compute_quantization_dyanmic_mode(model_path, arch_hyperparams, img_dataset,
 
 def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of static quantization.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
     Return:
     ------
-    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    `eval_scores` -  np.ndarray object containing mse, psnr, and ssim scores
     """
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
     model_fp32_prepared = get_static_quantization_model(
@@ -385,9 +487,19 @@ def compute_quantization_static_mode(model_path, arch_hyperparams, img_dataset, 
 
 def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of post train quantization.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
     Return:
     ------
-    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    `eval_scores` -  np.ndarray object containing mse, psnr, and ssim scores
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
@@ -409,9 +521,19 @@ def compute_quantization_post_train_mode(model_path, arch_hyperparams, img_datas
 
 def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_dataset, opt, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm', model_fp32 = None):
     """Evaluate PyTorch model already trained by means of quantization aware train.
+    Params:
+    -------
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `model_fp32` - PyTorch model to be quantized if diverse from None, otherwise a new model will be created from scratch and then assigning to it weigths gotten from train phase.\n
     Return:
     ------
-    :eval_scores: np.ndarray object containing mse, psnr, and ssim scores
+    `eval_scores` -  np.ndarray object containing mse, psnr, and ssim scores
     """
     
     input_fp32 = _prepare_data_loaders(img_dataset, opt)
@@ -427,22 +549,25 @@ def compute_quantization_aware_train_mode(model_path, arch_hyperparams, img_data
     return eval_scores, eta_eval, size_model 
 
 
+# --------------------------------------------- #
+# Compute Quantization: SWITCH
+# --------------------------------------------- #
 def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams = None, fuse_modules = None, device = 'cpu', qconfig = 'fbgemm'):
     """Compute quantized results.
     Params:
     -------
-    image_dataset - PyTorch Dataset object.\n
-    opt - Namespace python object.\n
-    model_path - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
-    arch_hyperparams - dict python object, metadata or hyper-params abot model's to be built.\n
-    fuse_modules - collection of modules to fuse if input model support fuse method.\n
-    device - str object, kind of device upon which model's weigths and computation will be done.\n
-    qconfig - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
+    `image_dataset` - PyTorch Dataset object.\n
+    `opt` - Namespace python object.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    `arch_hyperparams` - dict python object, metadata or hyper-params abot model's to be built.\n
+    `fuse_modules` - collection of modules to fuse if input model support fuse method.\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done.\n
+    `qconfig` - str object, kind of device backedn for QuantizedCPU either FBGEMM for x86 server, or QNNAM for mobile devices.\n
     Return:
     -------
-    eval_scores - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
-    eta_eval - elapsed time for evaluating input data.\n
-    size_model - model's size in byte.\n
+    `eval_scores` - scores or metrices retrived, that are: MSE, PSNR and SSIM.\n
+    `eta_eval` - elapsed time for evaluating input data.\n
+    `size_model` - model's size in byte.\n
     """
 
     eval_scores = None
@@ -510,6 +635,47 @@ def compute_quantization(img_dataset, opt, model_path = None, arch_hyperparams =
 # --------------------------------------------- #
 # Utils Functions
 # --------------------------------------------- #
+def check_device_and_weigths_to_laod(model_fp32, device = 'cpu', model_path = None):
+    """Check to which device load a PyTorch model and fi it is necessary to also laod weights for that model.
+    Params
+    ------
+    `model_fp32` - PyTorch model to be fetched to a proper device .\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done. Allowed CPU,GPU,CUDA.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    Return
+    ------
+    `model_fp32` - PyTorch model loaded to a proper device .\n
+    """
+    if device == 'cpu':
+        # print('Load Model to cpu device!')
+        model_fp32 = model_fp32.to('cpu')
+        if model_path != None:
+            # print('Load Model weigths!')
+            state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+            model_fp32.load_state_dict(state_dict)
+            pass
+        pass
+    else:
+        try:
+            model_fp32 = model_fp32.cuda()
+            # print('Load Model to cuda device!')
+            if model_path != None:
+                # print('Load Model weigths!')
+                state_dict = torch.load(model_path, map_location=torch.device('cuda'))
+                model_fp32.load_state_dict(state_dict)
+                pass
+            pass
+        except:
+            model_fp32 = model_fp32.to('cpu')
+            if model_path != None:
+                # print('Load Model weigths!')
+                state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+                model_fp32.load_state_dict(state_dict)
+                pass
+            pass
+        pass
+    return model_fp32
+
 
 def quantize_model(model, frequency):
     """Quantize pytorch model, after training, that is made from sine functions as activations.
@@ -522,12 +688,12 @@ def quantize_model(model, frequency):
        https://www.researchgate.net/publication/329207332_On_Periodic_Functions_as_Regularizers_for_Quantization_of_Neural_Networks
     Params:
     -------
-    :model: Pytorch model with sine or trigonometric functions used as activation functions.\n
-    :frequency: number that is used for tuning quantization.\n
+    `model` Pytorch model with sine or trigonometric functions used as activation functions.\n
+    `frequency` number that is used for tuning quantization.\n
 
     Return:
     -------
-    :model: updated for quantization.
+    `model` updated for quantization.
     """
     def quantize_weights(m):
         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
@@ -540,7 +706,16 @@ def quantize_model(model, frequency):
 
 
 def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
-    """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model."""
+    """Prepare Siren model, either non-quantized or dynamic/static/posteriorn quantized model.
+    Params
+    ------
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    `arch_hyperparams` - dictionary python object.\n
+    `device` - str object, kind of device upon which model will be loaded, allowed only CPU, since PyTorch framework supports just that setup, by now.\n
+    Return
+    ------
+    `model` - PyTorch like model instance.\n
+    """
     model = None
     if opt.quantization_enabled != None:
         if opt.quantization_enabled in 'dynamic,paszke_quant'.split(","):
@@ -590,7 +765,15 @@ def prepare_model(opt, arch_hyperparams = None, device = 'cpu'):
 
 
 def _prepare_data_loaders(img_dataset, opt):
-    """Prepare data loader from which fetching data in order to feed models."""
+    """Prepare data loader from which fetching data in order to feed models.
+    Params
+    ------
+    `img_dataset` - PyTorch's DataSet like object representing the data against which evaluate models(base model and quantized models, if any).\n
+    `opt` - Namespace python like object with attributes necessary to run the evaluation tasks required.\n
+    Return
+    ------
+    `a_dataloader` - PyTorch DataLoader instance.\n
+    """
 
     coord_dataset = dataio.Implicit2DWrapper(
                 img_dataset, sidelength=opt.sidelength, compute_diff=None)
@@ -651,6 +834,12 @@ def _evaluate_model(model, evaluate_dataloader, loss_fn = nn.MSELoss(), device =
 
 
 def print_size_of_model(model):
+    """Display model size as file size corresponding to model's state dictionary when saved temporarily to 
+    disk.
+    Params
+    ------
+    `model` - PyTorch like model.\n
+    """
     torch.save(model.state_dict(), "temp.p")
     print('Size (MB):', os.path.getsize("temp.p")/1e6)
     os.remove('temp.p')
@@ -658,6 +847,15 @@ def print_size_of_model(model):
 
 
 def get_size_of_model(model):
+    """Return model size as file size corresponding to model's state dictionary when saved temporarily to 
+    disk.
+    Params
+    ------
+    `model` - PyTorch like model.\n
+    Return
+    ------
+    `model_size` - int python object, size of state dictionary expressed in byte.\n
+    """
     torch.save(model.state_dict(), "temp.p")
     # print('Size (MB):', os.path.getsize("temp.p")/1e6)
     model_size = os.path.getsize("temp.p")
