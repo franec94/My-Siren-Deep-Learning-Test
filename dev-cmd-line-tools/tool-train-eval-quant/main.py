@@ -62,7 +62,7 @@ def set_device_and_backend_for_torch(opt):
     Set torch.backends.quantized.engine which can be either FBGEMM (for server machines) or QNNPACK (for modbile devices).
     Params
     ------
-    `opt` - python Namespace object from which deriving number of architectures to be tested.\n
+    `opt` - python Namespace object from which deriving device and quantzed backend setup.\n
     Return
     ------
     `device` - torch.device onto which some computations will be performed.\n
