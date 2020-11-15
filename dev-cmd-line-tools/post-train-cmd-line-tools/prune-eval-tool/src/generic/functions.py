@@ -303,7 +303,7 @@ def check_unstructured_prune_tech(opt):
 
     if isinstance(opt.global_pruning_techs, str):
         global_pruning_tech = opt.global_pruning_techs.lower()
-        if global_pruning_tech in UNSTR_PRUNE_TECHS:
+        if global_pruning_tech in list(map(operator.methodcaller("lower"), UNSTR_PRUNE_TECHS)):
             if global_pruning_tech == 'L1Unstructured'.lower():
                 opt.global_pruning_techs = prune.L1Unstructured
             elif global_pruning_tech == 'RandomUnstructured'.lower():
@@ -315,7 +315,7 @@ def check_unstructured_prune_tech(opt):
         global_pruning_tech_list = []
         for global_pruning_tech in list(set(opt.global_pruning_techs)):
             global_pruning_tech = global_pruning_tech.lower()
-            if global_pruning_tech in UNSTR_PRUNE_TECHS:
+            if global_pruning_tech in list(map(operator.methodcaller("lower"), UNSTR_PRUNE_TECHS)):
                 if global_pruning_tech == 'L1Unstructured'.lower():
                     global_pruning_tech_list.append(prune.L1Unstructured)
                 elif global_pruning_tech == 'RandomUnstructured'.lower():
