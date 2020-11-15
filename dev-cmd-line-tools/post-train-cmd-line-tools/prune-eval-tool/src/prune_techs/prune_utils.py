@@ -353,7 +353,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
     n = len(opt_hyperparm_list)
     
-    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,dynamic_quant,sidelength,batch_size,verbose".split(","))
+    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
     with tqdm(total=n) as pbar:
