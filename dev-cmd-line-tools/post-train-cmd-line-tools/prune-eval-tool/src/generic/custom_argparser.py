@@ -64,10 +64,10 @@ def get_cmd_line_opts():
     parser.add_argument('--global_pruning_rates', nargs='+', type=float, required=False, default=[], dest='global_pruning_rates',
                help='Rates for pruning model globally (default: empty list, which means no global rate pruning approach will be done)'
     )
-    parser.add_argument('--global_pruning_abs', nargs='+', type=int, required=False, default=[], dest='global_pruning_rates',
+    parser.add_argument('--global_pruning_abs', nargs='+', type=int, required=False, default=[], dest='global_pruning_abs',
                help='Absolute number of weigths to be pruned from model globally (default: empty list, which means no global abs pruning will be done)'
     )
-    parser.add_argument('--global_pruning_techs', nargs='+', type=str, required=False, default=[], dest='global_pruning_rates',
+    parser.add_argument('--global_pruning_techs', nargs='+', type=str, required=False, default=[], dest='global_pruning_techs',
                help=f'Pruing techs to prune model globally (default: empty list, which means no global pruning will be done) Allowed: [{str(UNSTR_PRUNE_TECHS)}]'
     )
 
