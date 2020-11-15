@@ -131,7 +131,7 @@ def _evaluate_dynamic_quant(opt, dtype, img_dataset, model = None, model_weight_
     `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to stdout, 1 = info displayed to stdout object.\n
     Return
     ------
-    `eval_scores, eta_eval, size_model` - np.ndarray object with values related to the following scores: MSE, PSNR, MSSi.\n
+    `eval_scores` - np.ndarray object with values related to the following scores: MSE, PSNR, MSSi.\n
     `eta_eval` - python float object, representig time elapsed when evaluation was carried out, expressed in seconds.\n
     `size_model` - python int object representing model' size expressed in Bytes.\n
     """
