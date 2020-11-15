@@ -305,12 +305,12 @@ def check_unstructured_prune_tech(opt):
         global_pruning_tech = opt.global_pruning_techs.lower()
         if global_pruning_tech in UNSTR_PRUNE_TECHS:
             if global_pruning_tech == 'L1Unstructured':
-                opt.dynamic_quant = prune.L1Unstructured
+                opt.global_pruning_techs = prune.L1Unstructured
             elif global_pruning_tech == 'RandomUnstructured':
-                opt.dynamic_quant = prune.RandomUnstructured
+                opt.global_pruning_techs = prune.RandomUnstructured
         else:
             raise Exception(f"unstructured tech '{global_pruning_tech}' provided is not allowed.")
-        opt.global_pruning_tech = [opt.global_pruning_tech]
+        opt.global_pruning_techs = [opt.global_pruning_tech]
     else:
         global_pruning_tech_list = []
         for global_pruning_tech in list(set(opt.global_pruning_tech)):
@@ -322,5 +322,5 @@ def check_unstructured_prune_tech(opt):
                     global_pruning_tech_list.append(prune.RandomUnstructured)
             else:
                 raise Exception(f"unstructured tech '{global_pruning_tech}' provided is not allowed.")
-            opt.global_pruning_tech = global_pruning_tech_list
+            opt.global_pruning_techs = global_pruning_tech_list
     return opt

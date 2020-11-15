@@ -110,7 +110,7 @@ except:
 
 from src.generic.utils import prepare_model, get_size_of_model, get_data_for_train, set_seeds, set_device_and_backend_for_torch
 from src.generic.custom_argparser import get_cmd_line_opts
-from src.generic.functions import create_train_logging_dir, get_input_image, log_parser, get_root_level_logger, check_quantization_tech_provided, check_quant_size_for_dynamic_quant
+from src.generic.functions import create_train_logging_dir, get_input_image, log_parser, get_root_level_logger, check_quantization_tech_provided, check_quant_size_for_dynamic_quant, check_unstructured_prune_tech
 from src.eval.eval_model import evaluate_model
 from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mode
 from src.generic.dataio import Implicit2DWrapper

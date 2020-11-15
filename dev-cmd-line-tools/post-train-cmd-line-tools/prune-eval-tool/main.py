@@ -83,11 +83,17 @@ def main(opt):
     opt = check_quant_size_for_dynamic_quant(opt)
     _log_main(msg = "Done.", header_msg = None, logging=logging, verbose=opt.verbose)
 
+    _log_main(msg = "Check unstructured prune tech.", header_msg = None, logging=logging, verbose=opt.verbose)
+    check_unstructured_prune_tech(opt)
+    _log_main(msg = "Done.", header_msg = None, logging=logging, verbose=opt.verbose)
+
     # --- Show some infos from main function.
     _log_main(msg = "Show some program infos.", header_msg = None, logging=logging)
     table_vals = list(MainInfos._make(field_vals)._asdict().items())
     table = tabulate.tabulate(table_vals, headers="Info,Val".split(","))
     _log_main(msg = f"{table}", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=1)
+
+    
 
     eval_info_list, df = \
         compute_prune_unstructured_results(opt, image_dataset, verbose = 0)
