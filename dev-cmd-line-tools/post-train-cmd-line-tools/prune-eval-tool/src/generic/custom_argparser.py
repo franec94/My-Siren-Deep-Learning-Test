@@ -70,6 +70,9 @@ def get_cmd_line_opts():
     parser.add_argument('--global_pruning_techs', nargs='+', type=str, required=False, default=[], dest='global_pruning_techs',
                help=f'Pruing techs to prune model globally (default: empty list, which means no global pruning will be done) Allowed: [{str(UNSTR_PRUNE_TECHS)}]'
     )
+    parser.add_argument('--global_pruning_number_trials', type=int, required=False, default=10, dest='global_pruning_number_trials',
+               help=f'Pruning attempts.'
+    )
 
     parser.add_argument('--run_dash',  required=False, action="store_true", default=False, dest='run_dash',
         help='Set this flag to enable run dash app with results (default: False).'

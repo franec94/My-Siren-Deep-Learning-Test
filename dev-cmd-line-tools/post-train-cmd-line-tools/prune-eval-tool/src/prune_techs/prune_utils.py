@@ -356,6 +356,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
+    n = n * (len(opt.global_pruning_techs) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
@@ -370,29 +371,35 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
             log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_rates:
                 for a_prune_tech in opt.global_pruning_techs:
-                    log_infos(info_msg = 'global_pruning_techs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
+                    # log_infos(info_msg = 'global_pruning_techs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
+                        number_trials = opt.global_pruning_number_trials,
                         pruning_method=copy.deepcopy(a_prune_tech),
                         arch_hyperparams=hyper_param_dict,
                         image_dataset=image_dataset,
 
                     )
                     eval_info_list.extend(tmp_res)
+                    pbar.update(len(opt.global_pruning_techs))
+                    pass
             log_infos(info_msg = 'global_pruning_abs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_abs:
                 for a_prune_tech in opt.global_pruning_techs:
-                    log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
+                    # log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
+                        number_trials = opt.global_pruning_number_trials,
                         pruning_method=copy.deepcopy(a_prune_tech),
                         arch_hyperparams=hyper_param_dict,
                         image_dataset=image_dataset,
 
                     )
                     eval_info_list.extend(tmp_res)
+                    pbar.update(len(opt.global_pruning_techs))
+                    pass
             pass
         pass
 
