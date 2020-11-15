@@ -177,11 +177,12 @@ def save_data_to_file(root_dir, model, train_scores):
     return mode_weight_path, train_scores_path
 
 
-def prepare_model(arch_hyperparams, device = 'cpu', empty_cache_flag = False, verbose = 0):
+def prepare_model(arch_hyperparams, model_path = None, device = 'cpu', empty_cache_flag = False, verbose = 0):
     """Prepare plain siren model.
     Params
     ------
     `arch_hyperparams` - python dictionary object, containing model's hyper-params with which build the final architecture.\n
+    `model_path` - str object, path to model's state dict. If None, no state dict will be fetched.\n
     `device` - str object, kind of device upon which model will be loaded, allowed CPU, GPU, CUDA.\n
     `empty_cache_flag` - bool python object, if true function attempts to free cache from previous runs.\n
     `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
@@ -302,3 +303,81 @@ def set_device_and_backend_for_torch(opt):
         torch.backends.quantized.engine = opt.quant_engine
         pass
     return device, torch.cuda.device_count(), opt.quant_engine
+
+
+def check_device_and_weigths_to_laod(model_fp32, device = 'cpu', model_path = None):
+    """Check to which device load a PyTorch model and fi it is necessary to also laod weights for that model.
+    Params
+    ------
+    `model_fp32` - PyTorch model to be fetched to a proper device .\n
+    `device` - str object, kind of device upon which model's weigths and computation will be done. Allowed CPU,GPU,CUDA.\n
+    `model_path` - str python object, either None when we do not desire to load weights, or a file path to model's weights.\n
+    Return
+    ------
+    `model_fp32` - PyTorch model loaded to a proper device .\n
+    """
+    if device == 'cpu':
+        # print('Load Model to cpu device!')
+        model_fp32 = model_fp32.to('cpu')
+        if model_path != None:
+            # print('Load Model weigths!')
+            state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+            model_fp32.load_state_dict(state_dict)
+            pass
+        pass
+    else:
+        try:
+            model_fp32 = model_fp32.cuda()
+            # print('Load Model to cuda device!')
+            if model_path != None:
+                # print('Load Model weigths!')
+                state_dict = torch.load(model_path, map_location=torch.device('cuda'))
+                model_fp32.load_state_dict(state_dict)
+                pass
+            pass
+        except:
+            model_fp32 = model_fp32.to('cpu')
+            if model_path != None:
+                # print('Load Model weigths!')
+                state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+                model_fp32.load_state_dict(state_dict)
+                pass
+            pass
+        pass
+    return model_fp32
+
+def log_infos(info_msg, header_msg = None, logging = None, tqdm = None, verbose = 0):
+    """Log information messages to logging and tqdm objects.
+    Params:
+    -------
+    `info_msg` either a str object or list of objects to be logged.\n
+    `header_msg` str object used as header or separator, default None means no header will be shown.\n
+    `logging` logging python's std lib object, if None no information will be logged via logging.\n
+    `tqdm` tqdm python object, if None no information will be logged via tqdm.\n
+    Return:
+    -------
+    None
+    """
+
+    if not isinstance(info_msg , list) :
+        info_msg = [info_msg]
+        pass
+    
+    if logging != None:
+        if header_msg != None:
+            logging.info(f"{header_msg}")
+            pass
+        for a_msg in info_msg:
+            logging.info(f"{a_msg}")
+            pass
+        pass
+    if tqdm != None:
+        if verbose == 0: return
+        if header_msg != None:
+            tqdm.write(f"{header_msg}")
+            pass
+        for a_msg in info_msg:
+            tqdm.write(f"{a_msg}")
+            pass
+        pass
+    pass

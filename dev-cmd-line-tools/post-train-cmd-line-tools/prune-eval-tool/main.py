@@ -98,18 +98,40 @@ def main(opt):
         print(df.tail(5))
         pass
 
-    if opt.run_dash:
-        """
-        _log_main(msg = f"Prepare Dash App...", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=1)
-        tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM)'.split(";")
-        app = get_dash_app(
-            figs_list = complex_figs_dash_list,
-            n_figs = len(y_list),
-            tab_names_list = tab_names)
+    if eval_info_list != []:
+        if opt.run_dash:
+            _log_main(msg = f'Calculate graphics...', header_msg = None, logging=logging, verbose=1)
+            complex_figs_list = []
+            y_list = "mse,psnr,ssim".split(",")
+            # x = 'bpp'; y = "psnr"; 
+            x = 'bpp'; hue='quant_tech'
+            for y in y_list:
+                fig = px.scatter(df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
+                    marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
+                fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren+jpeg dataframes')
+                complex_figs_list.append(fig)
+                pass
+            x = 'bpp'; hue='quant_tech_2'
+            for y in y_list:
+                fig = px.scatter(df, x=f"{x}", y=f"{y}", color=f"{hue}", marginal_y="violin",
+                    marginal_x="box", trendline="ols", template=DASH_TEMPLATES_LIST[2])
+                fig.update_layout(template = DASH_TEMPLATES_LIST[2], title_text=f'{y.upper()} | Groupped by {hue} | siren+jpeg dataframes')
+                complex_figs_list.append(fig)
+                pass
+            complex_figs_dash_list = list(map(lambda fig: dcc.Graph(figure=fig), complex_figs_list))
+            
+            _log_main(msg = f"Prepare Dash App...", header_msg = None, logging=logging, verbose=1)
+            tab_names = 'Results Siren(MSE,PSNR,SSIM);Results Merged(MSE,PSNR,SSIM)'.split(";")
+            app = get_dash_app(
+                figs_list = complex_figs_dash_list,
+                n_figs = len(y_list),
+                tab_names_list = tab_names)
 
-        _log_main(msg = f"'Dash app start running...'", header_msg = f'{"-" * 25} Program Details {"-" * 25}', logging=logging, verbose=1)
-        app.run_server(debug=True, use_reloader=False, host='localhost') 
-        """
+            _log_main(msg = f"'Dash app start running...'", header_msg = None, logging=logging, verbose=1)
+            app.run_server(debug=True, use_reloader=False, host='localhost') 
+            
+            pass
+        pass
     pass
 
 

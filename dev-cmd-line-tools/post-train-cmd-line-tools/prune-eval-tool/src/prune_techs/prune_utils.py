@@ -74,7 +74,8 @@ import src.generic.dataio as dataio
 from src.eval.eval_model import evaluate_model
 
 from src.generic.dataio import Implicit2DWrapper
-from src.generic.utils import prepare_model, get_data_ready_for_model, get_data_for_train, get_size_of_model
+from src.generic.utils import prepare_model, get_data_ready_for_model, get_data_for_train
+from src.generic.utils import get_size_of_model, check_device_and_weigths_to_laod, log_infos
 from src.generic.custom_argparser import DYNAMIC_QUAT_SIZES
 
 
@@ -346,14 +347,16 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
         batch_size=opt.batch_size,
         verbose=[opt.verbose]
     )
-
+    
     eval_info_list = []
+    
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
     n = len(opt_hyperparm_list)
+    
+    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dynamic_quant,sidelength,batch_size,verbose".split(","))
+    eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
+
     with tqdm(total=n) as pbar:
-        HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dynamic_quant,sidelength,batch_size,verbose".split(","))
-        eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
-        eval_info_list = []
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
             hyper_param_list = []
@@ -362,8 +365,12 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
             hyper_param_opt = HyperParams._make(hyper_param_list)
             
             model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
+            model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
+
+            log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_rates:
                 for a_prune_tech in opt.global_pruning_techs:
+                    log_infos(info_msg = 'global_pruning_techs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
@@ -373,8 +380,10 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
 
                     )
                     eval_info_list.extend(tmp_res)
+            log_infos(info_msg = 'global_pruning_abs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_abs:
                 for a_prune_tech in opt.global_pruning_techs:
+                    log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
@@ -392,10 +401,14 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     data = list(map(operator.methodcaller("_asdict"), eval_info_list))
     df = pd.DataFrame(data = data)
 
+    def model_size_to_bpp(model_footprint, w = 256, h = 256):
+        return model_footprint * 4 / (w * h)
+    df['bpp'] = list(map(model_size_to_bpp, df['footprint_byte'].values))
+
     def model_type_to_quant_tech(model_type):
         return model_type.split("_")[0]
     df['quant_tech'] = list(map(model_type_to_quant_tech, df['model_type'].values))
-    
+
     def model_type_to_quant_tech_2(model_type):
         if model_type == 'Basic': return model_type
         quant_tech_2 = model_type.split("_")[0]
