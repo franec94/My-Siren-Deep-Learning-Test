@@ -386,6 +386,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
         # lr=opt.lr,
         # epochs=opt.num_epochs,
         # seed=opt.seed,
+        model_path=opt.models_filepath,
         dynamic_quant=[opt.dynamic_quant],
         sidelength=opt.sidelength,
         batch_size=opt.batch_size,
@@ -410,7 +411,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
                 hyper_param_list.append(hyper_param_dict[f'{a_key}'])
             hyper_param_opt = HyperParams._make(hyper_param_list)
             
-            model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
+            model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu', model_path=)
             model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
 
             log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
@@ -504,6 +505,7 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
             a_row_rcrd = Columns._make(a_row)
             opt_copy.n_hf = [int(a_row_rcrd.hf)]
             opt_copy.n_hl = [int(a_row_rcrd.hl)]
+            opt_copy.models_filepath = [a_row_rcrd.path]
             eval_info_list_tmp, _ = compute_prune_unstructured_results(opt = opt_copy, image_dataset = image_dataset, verbose = 0)
             eval_info_list.extend(eval_info_list_tmp)
             pass
