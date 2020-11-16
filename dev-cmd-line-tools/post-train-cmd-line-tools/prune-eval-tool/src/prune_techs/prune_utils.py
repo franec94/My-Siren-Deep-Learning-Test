@@ -402,7 +402,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     print(opt_hyperparm_list)
     n = len(opt_hyperparm_list)
     
-    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
+    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,model_path,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
     print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
