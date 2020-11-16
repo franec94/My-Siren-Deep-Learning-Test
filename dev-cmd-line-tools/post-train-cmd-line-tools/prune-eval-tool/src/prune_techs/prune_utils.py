@@ -411,7 +411,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
                 hyper_param_list.append(hyper_param_dict[f'{a_key}'])
             hyper_param_opt = HyperParams._make(hyper_param_list)
             
-            model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu', model_path=)
+            model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
             model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
 
             log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
