@@ -392,6 +392,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
         # lr=opt.lr,
         # epochs=opt.num_epochs,
         # seed=opt.seed,
+        model_type=["Basic"],
         model_path=opt.models_filepath,
         dynamic_quant=[opt.dynamic_quant],
         sidelength=opt.sidelength,
@@ -408,8 +409,8 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
     # print(opt_hyperparm_list)
     n = len(opt_hyperparm_list)
     
-    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,model_path,dynamic_quant,sidelength,batch_size,verbose".split(","))
-    eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
+    HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,model_type,model_path,dynamic_quant,sidelength,batch_size,verbose".split(","))
+    # eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
     # print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
 
@@ -425,6 +426,12 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
             
             model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
             model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
+
+            model_name = None
+            if use_model_path_name:
+                model_name, _ = os.path.splitext(os.path.basename(opt.models_filepath[arch_no]))            
+            tmp_res = _evaluate_model_wrapper(model, opt, img_dataset=image_dataset, model_name=model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0)
+            eval_info_list.extend(tmp_res)
 
             log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_rates:
