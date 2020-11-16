@@ -404,7 +404,10 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
+    print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
+
     n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
+    print(n)
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
