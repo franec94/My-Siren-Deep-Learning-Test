@@ -434,7 +434,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
 
                     )
                     eval_info_list.extend(tmp_res)
-                    pbar.update(len(opt.global_pruning_techs))
+                    pbar.update(1)
                     pass
             log_infos(info_msg = 'global_pruning_abs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
             for a_rate in opt.global_pruning_abs:
@@ -450,7 +450,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
 
                     )
                     eval_info_list.extend(tmp_res)
-                    pbar.update(len(opt.global_pruning_techs))
+                    pbar.update(1)
                     pass
             pass
         pass
