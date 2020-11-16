@@ -116,4 +116,4 @@ from src.archs.siren_compute_quantization import compute_quantization_dyanmic_mo
 from src.generic.dataio import Implicit2DWrapper
 from src.dash_app.custom_dash_app import get_dash_app
 
-from src.prune_techs.prune_utils import compute_pruning_evaluation, compute_prune_unstructured_results
+from src.prune_techs.prune_utils import compute_pruning_evaluation, compute_prune_unstructured_results, compute_prune_unstructured_results_from_csv_list

@@ -138,6 +138,15 @@ def main(opt):
             
             pass
         pass
+
+    eval_info_list, df = \
+        compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose = 0)
+    if eval_info_list != []:
+        df.to_csv(root_path + 'results_2.csv')
+        print(df.head(5))
+        print(df.tail(5))
+        pass
+
     pass
 
 
