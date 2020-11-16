@@ -456,6 +456,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
+                        model_name=model_name,
                         number_trials = opt.global_pruning_number_trials,
                         pruning_method=copy.deepcopy(a_prune_tech),
                         arch_hyperparams=hyper_param_dict,
