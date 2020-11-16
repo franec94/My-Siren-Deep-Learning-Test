@@ -395,20 +395,20 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     
     eval_info_list = []
     if len(opt.models_filepath) == 0:
-        print('No model to be evaluated...')
+        # print('No model to be evaluated...')
         eval_info_list, None
     
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
-    print(opt_hyperparm_list)
-    n = len(opt_hyperparm_list)
+    # print(opt_hyperparm_list)
+    # n = len(opt_hyperparm_list)
     
     HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,model_path,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
-    print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
+    # print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
 
     n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
-    print(n)
+    # print(n)
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
@@ -456,7 +456,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
         pass
 
     if eval_info_list == []:
-        print('No model to be evaluated, since no global_pruning_abs or global_pruning_rate choices available.')
+        # print('No model to be evaluated, since no global_pruning_abs or global_pruning_rate choices available.')
         return eval_info_list, None
 
     data = list(map(operator.methodcaller("_asdict"), eval_info_list))
@@ -523,7 +523,7 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
     data = list(map(operator.methodcaller("_asdict"), eval_info_list))
     df = pd.DataFrame(data = data)
 
-    print(df.head(5))
+    # print(df.head(5))
 
     def model_size_to_bpp(model_footprint, w = 256, h = 256):
         return model_footprint * 4 / (w * h)
