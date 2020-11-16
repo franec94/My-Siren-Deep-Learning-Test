@@ -430,7 +430,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
             model_name = None
             if use_model_path_name:
                 model_name, _ = os.path.splitext(os.path.basename(opt.models_filepath[arch_no]))            
-            tmp_res = _evaluate_model_wrapper(model, opt, img_dataset=image_dataset, model_name=model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0)
+            tmp_res = _evaluate_model_wrapper(model, opt = hyper_param_opt, img_dataset=image_dataset, model_name=model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0)
             eval_info_list.extend(tmp_res)
 
             log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
