@@ -493,12 +493,14 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
     `eval_info_list` - list python object.\n
     `df` - pd.DataFrame.\n
     """
+
     eval_info_list = []
     opt_copy = copy.deepcopy(opt)
     for a_file_csv in opt.csv_files:
-        df = _read_csv_data(a_file_csv=a_file_csv)
-        Columns = collections.namedtuple('Columns', df.columns)
-        for a_row in df.values[:1]:
+        df_image = _read_csv_data(a_file_csv=a_file_csv)
+        Columns = collections.namedtuple('Columns', df_image.columns)
+        for a_row in df_image.values[:1]:
+            pprint(a_row)
             a_row_rcrd = Columns._make(a_row)
             opt_copy.n_hf = [int(a_row_rcrd.hf)]
             opt_copy.n_hl = [int(a_row_rcrd.hl)]
