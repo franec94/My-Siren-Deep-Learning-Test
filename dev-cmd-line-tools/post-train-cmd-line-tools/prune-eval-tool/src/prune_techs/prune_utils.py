@@ -394,7 +394,9 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     )
     
     eval_info_list = []
-    if len(opt.models_filepath) == 0: eval_info_list, None
+    if len(opt.models_filepath) == 0:
+        print('No model to be evaluated...')
+        eval_info_list, None
     
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
     n = len(opt_hyperparm_list)
@@ -449,7 +451,9 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
             pass
         pass
 
-    if eval_info_list == []: return eval_info_list, None
+    if eval_info_list == []:
+        print('No model to be evaluated, since no global_pruning_abs or global_pruning_rate choices available.')
+        return eval_info_list, None
 
     data = list(map(operator.methodcaller("_asdict"), eval_info_list))
     df = pd.DataFrame(data = data)
