@@ -508,13 +508,13 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
     for a_file_csv in opt.csv_files:
         df_image = _read_csv_data(a_file_csv=a_file_csv)
         Columns = collections.namedtuple('Columns', df_image.columns)
-        for a_row in df_image.values[:5]:
-            pprint(a_row)
+        for a_row in df_image.values[:]:
+            # pprint(a_row)
             a_row_rcrd = Columns._make(a_row)
             opt_copy.n_hf = [int(a_row_rcrd.hf)]
             opt_copy.n_hl = [int(a_row_rcrd.hl)]
             opt_copy.models_filepath = [a_row_rcrd.path]
-            pprint(opt_copy)
+            # pprint(opt_copy)
             eval_info_list_tmp, _ = compute_prune_unstructured_results(opt = opt_copy, image_dataset = image_dataset, verbose = 0)
             eval_info_list.extend(eval_info_list_tmp)
             pass
