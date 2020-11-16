@@ -139,6 +139,7 @@ def compute_pruning_evaluation(
     arch_hyperparams: dict,
     image_dataset,
     amount = 0.2,
+    model_name = None,
     pruning_method = prune.L1Unstructured,
     number_trials: int = 10, device: str = 'cpu') -> list:
     """Compute pruning compression technique on a given model a given number of times.
@@ -176,11 +177,16 @@ def compute_pruning_evaluation(
         
         OptionModel = collections.namedtuple('OptionModel', arch_hyperparams.keys())
         opt = OptionModel._make(arch_hyperparams.values())
+
+        if model_name == None:
+            model_name = f'model.{opt.n_hf}.{opt.n_hl}.{trial_no}'
+            pass
+
         res_evaluation = _evaluate_model_wrapper(
             model = model_copied,
             opt = opt,
             img_dataset = image_dataset,
-            model_name = f'model.{opt.n_hf}.{opt.n_hl}.{trial_no}',
+            model_name = f'{model_name}',
             model_weight_path = None,
             logging=None,
             tqdm=None,
@@ -367,7 +373,7 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
 # ---------------------------------------------- #
 # Main Functions
 # ---------------------------------------------- #
-def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
+def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_model_path_name = False):
     """
     Compute pruning technique following Unstructured approach.\n
     Params
@@ -424,9 +430,13 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
             for a_rate in opt.global_pruning_rates:
                 for a_prune_tech in opt.global_pruning_techs:
                     # log_infos(info_msg = 'global_pruning_techs evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
+                    model_name = None
+                    if use_model_path_name:
+                        model_name, _ = os.path.splitext(os.path.basename(opt.models_filepath[arch_no]))
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
+                        model_name=model_name,
                         number_trials = opt.global_pruning_number_trials,
                         pruning_method=copy.deepcopy(a_prune_tech),
                         arch_hyperparams=hyper_param_dict,
@@ -515,7 +525,7 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
             opt_copy.n_hl = [int(a_row_rcrd.hl)]
             opt_copy.models_filepath = [a_row_rcrd.path]
             # pprint(opt_copy)
-            eval_info_list_tmp, _ = compute_prune_unstructured_results(opt = opt_copy, image_dataset = image_dataset, verbose = 0)
+            eval_info_list_tmp, _ = compute_prune_unstructured_results(opt = opt_copy, image_dataset = image_dataset, verbose = 0, use_model_path_name = True)
             eval_info_list.extend(eval_info_list_tmp)
             pass
         pass
