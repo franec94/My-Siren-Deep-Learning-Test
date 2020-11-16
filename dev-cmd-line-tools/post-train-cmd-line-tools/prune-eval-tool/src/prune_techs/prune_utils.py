@@ -506,6 +506,7 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
             opt_copy.n_hf = [int(a_row_rcrd.hf)]
             opt_copy.n_hl = [int(a_row_rcrd.hl)]
             opt_copy.models_filepath = [a_row_rcrd.path]
+            pprint(opt_copy)
             eval_info_list_tmp, _ = compute_prune_unstructured_results(opt = opt_copy, image_dataset = image_dataset, verbose = 0)
             eval_info_list.extend(eval_info_list_tmp)
             pass
