@@ -512,6 +512,8 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
     data = list(map(operator.methodcaller("_asdict"), eval_info_list))
     df = pd.DataFrame(data = data)
 
+    print(df.head(5))
+
     def model_size_to_bpp(model_footprint, w = 256, h = 256):
         return model_footprint * 4 / (w * h)
     df['bpp'] = list(map(model_size_to_bpp, df['footprint_byte'].values))
