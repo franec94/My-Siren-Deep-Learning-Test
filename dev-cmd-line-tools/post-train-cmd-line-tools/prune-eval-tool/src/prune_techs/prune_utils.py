@@ -399,6 +399,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
         eval_info_list, None
     
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
+    print(opt_hyperparm_list)
     n = len(opt_hyperparm_list)
     
     HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
