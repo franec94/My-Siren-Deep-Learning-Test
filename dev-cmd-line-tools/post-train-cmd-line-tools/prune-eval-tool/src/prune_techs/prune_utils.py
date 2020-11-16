@@ -450,6 +450,9 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
             for a_rate in opt.global_pruning_abs:
                 for a_prune_tech in opt.global_pruning_techs:
                     # log_infos(info_msg = 'global_pruning_rates evalauting...', header_msg = None, logging = None, tqdm = tqdm, verbose = 1)
+                    model_name = None
+                    if use_model_path_name:
+                        model_name, _ = os.path.splitext(os.path.basename(opt.models_filepath[arch_no]))
                     tmp_res = compute_pruning_evaluation(
                         model=copy.deepcopy(model),
                         amount=a_rate,
