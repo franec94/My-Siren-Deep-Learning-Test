@@ -162,11 +162,14 @@ def compute_pruning_evaluation(
         _set_seeds(seed = trial_no)
         model_copied = copy.deepcopy(model)
         parameters_to_prune = get_params_to_prune(model_copied, module_set = {torch.nn.Linear})
-        prune.global_unstructured(
-            parameters_to_prune,
-            pruning_method=pruning_method,
-            amount=amount,
-        )
+        try:
+            prune.global_unstructured(
+                parameters_to_prune,
+                pruning_method=pruning_method,
+                amount=amount,
+            )
+        except:
+            return []
         # prune.remove(module, 'weight')
         # model_copied = remove_to_prune(model = model_copied)
         if isinstance(amount, int):
