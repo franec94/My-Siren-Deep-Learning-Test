@@ -78,7 +78,9 @@ from src.generic.utils import prepare_model, get_data_ready_for_model, get_data_
 from src.generic.utils import get_size_of_model, check_device_and_weigths_to_laod, log_infos
 from src.generic.custom_argparser import DYNAMIC_QUAT_SIZES
 
-
+# ---------------------------------------------- #
+# Util Functions
+# ---------------------------------------------- #
 def get_params_to_prune(model, module_set = {torch.nn.Linear}) -> tuple:
     """Get params to be pruned.\n
     Params
@@ -132,6 +134,65 @@ def show_model_sparsity(model: torch.nn.Module) -> None:
     pass
 
 
+def compute_pruning_evaluation(
+    model: torch.nn.Module,
+    arch_hyperparams: dict,
+    image_dataset,
+    amount = 0.2,
+    pruning_method = prune.L1Unstructured,
+    number_trials: int = 10, device: str = 'cpu') -> list:
+    """Compute pruning compression technique on a given model a given number of times.
+    Params
+    ------
+    `model` - torch.nn.Module.\n
+    `arch_hyperparams` - python dictionary instance.\n
+    `image_dataset` - PyTorch Dataset.\n
+    `amount` - float percentage of weigths to be pruned randomly from each layer.\n
+    `pruning_method` - pruning technique to be adopted.\n
+    `number_trials` - number of times repeating the calculation.\n
+    `device` - str = 'cpu'.\n
+    Return
+    ------
+    `eval_info_list` - list object containing results.\n
+    """
+    eval_info_list = []
+    name_pruning_method = str(pruning_method).split(" ")[1].split(".")[-1].replace('>', '').replace("'","")
+    for trial_no in range(number_trials):
+        _set_seeds(seed = trial_no)
+        model_copied = copy.deepcopy(model)
+        parameters_to_prune = get_params_to_prune(model_copied, module_set = {torch.nn.Linear})
+        prune.global_unstructured(
+            parameters_to_prune,
+            pruning_method=pruning_method,
+            amount=amount,
+        )
+        # prune.remove(module, 'weight')
+        # model_copied = remove_to_prune(model = model_copied)
+        if isinstance(amount, int):
+            model_type = f'{name_pruning_method}_{amount:.0f}'
+        else:
+            model_type = f'{name_pruning_method}_{amount:.2f}'
+        arch_hyperparams['model_type'] = model_type
+        
+        OptionModel = collections.namedtuple('OptionModel', arch_hyperparams.keys())
+        opt = OptionModel._make(arch_hyperparams.values())
+        res_evaluation = _evaluate_model_wrapper(
+            model = model_copied,
+            opt = opt,
+            img_dataset = image_dataset,
+            model_name = f'model.{opt.n_hf}.{opt.n_hl}.{trial_no}',
+            model_weight_path = None,
+            logging=None,
+            tqdm=None,
+            verbose=0)
+
+        eval_info_list.extend(res_evaluation)
+        pass
+    return eval_info_list
+
+# ---------------------------------------------- #
+# Local Util Functions
+# ---------------------------------------------- #
 def _evaluate_model_wrapper(model, opt, img_dataset, model_name, model_weight_path = None, logging=None, tqdm=None, verbose=0):
     """Evaluate model after training.
     Params
@@ -191,61 +252,29 @@ def _evaluate_model_wrapper(model, opt, img_dataset, model_name, model_weight_pa
     return eval_info_list
 
 
-def compute_pruning_evaluation(
-    model: torch.nn.Module,
-    arch_hyperparams: dict,
-    image_dataset,
-    amount = 0.2,
-    pruning_method = prune.L1Unstructured,
-    number_trials: int = 10, device: str = 'cpu') -> list:
-    """Compute pruning compression technique on a given model a given number of times.
-    Params
-    ------
-    `model` - torch.nn.Module.\n
-    `arch_hyperparams` - python dictionary instance.\n
-    `image_dataset` - PyTorch Dataset.\n
-    `amount` - float percentage of weigths to be pruned randomly from each layer.\n
-    `pruning_method` - pruning technique to be adopted.\n
-    `number_trials` - number of times repeating the calculation.\n
-    `device` - str = 'cpu'.\n
+def _read_csv_data(a_file_csv):
+    """Read input csv data.
+    Param
+    -----
+    `a_file_csv` - str object python, input csv file path.\n
     Return
     ------
-    `eval_info_list` - list object containing results.\n
+    `cropped_images_df` - pd.DatFrame.\n
     """
-    eval_info_list = []
-    name_pruning_method = str(pruning_method).split(" ")[1].split(".")[-1].replace('>', '').replace("'","")
-    for trial_no in range(number_trials):
-        _set_seeds(seed = trial_no)
-        model_copied = copy.deepcopy(model)
-        parameters_to_prune = get_params_to_prune(model_copied, module_set = {torch.nn.Linear})
-        prune.global_unstructured(
-            parameters_to_prune,
-            pruning_method=pruning_method,
-            amount=amount,
-        )
-        # prune.remove(module, 'weight')
-        # model_copied = remove_to_prune(model = model_copied)
-        if isinstance(amount, int):
-            model_type = f'{name_pruning_method}_{amount:.0f}'
-        else:
-            model_type = f'{name_pruning_method}_{amount:.2f}'
-        arch_hyperparams['model_type'] = model_type
-        
-        OptionModel = collections.namedtuple('OptionModel', arch_hyperparams.keys())
-        opt = OptionModel._make(arch_hyperparams.values())
-        res_evaluation = _evaluate_model_wrapper(
-            model = model_copied,
-            opt = opt,
-            img_dataset = image_dataset,
-            model_name = f'model.{opt.n_hf}.{opt.n_hl}.{trial_no}',
-            model_weight_path = None,
-            logging=None,
-            tqdm=None,
-            verbose=0)
 
-        eval_info_list.extend(res_evaluation)
+    # - Read data from src file
+    runs_df = pd.read_csv(a_file_csv)
+
+    if 'Unnamed: 0' in runs_df.columns:
+        runs_df = runs_df.drop(['Unnamed: 0'], axis = 1)
         pass
-    return eval_info_list
+    cropped_images_df = runs_df[~runs_df['cropped_heigth'].isna()][~runs_df['cropped_width'].isna()]
+
+    # - Sort data
+    attrs_for_sorting = "timestamp,hf,hl".split(",")
+    cropped_images_df = cropped_images_df.sort_values(by = attrs_for_sorting)
+
+    return cropped_images_df
 
 
 def _set_seeds(seed):
@@ -335,7 +364,22 @@ def _get_data_for_train(img_dataset, sidelength, batch_size):
     return train_dataloader, val_dataloader
 
 
+# ---------------------------------------------- #
+# Main Functions
+# ---------------------------------------------- #
 def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
+    """
+    Compute pruning technique following Unstructured approach.\n
+    Params
+    ------
+    `opt` - namespace python object.\n
+    `image_dataset` - PyTorch Dataset.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
+    Return
+    ------
+    `eval_info_list` - list python object.\n
+    `df` - pd.DataFrame.\n
+    """
     opt_dict = collections.OrderedDict(
         n_hf=opt.n_hf,
         n_hl=opt.n_hl,
@@ -356,7 +400,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,dynamic_quant,sidelength,batch_size,verbose".split(","))
     eval_field_names = "model_name,model_type,mse,psnr_db,ssim,eta_seconds,footprint_byte,footprint_percent".split(",")
 
-    n = n * (len(opt.global_pruning_techs) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
+    n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
@@ -432,4 +476,62 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0):
     df['prune_amount'] = list(map(model_type_to_prune_amount, df['model_type'].values))
 
     df = df.drop(["model_type"], axis = 1)
+    return eval_info_list, df
+
+
+def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose = 0):
+    """
+    Compute pruning technique following Unstructured approach.\n
+    Params
+    ------
+    `opt` - namespace python object.\n
+    `image_dataset` - PyTorch Dataset.\n
+    `verbose` - int python object, for deciding verbose strategy, available options: 0 = no info displayed to tqdm, 1 = info displayed to tqdm object.\n
+    Return
+    ------
+    `eval_info_list` - list python object.\n
+    `df` - pd.DataFrame.\n
+    """
+    eval_info_list = []
+    opt_copy = copy.deepcopy(opt)
+    for a_file_csv in opt.csv_files:
+        df = _read_csv_data(a_file_csv=a_file_csv)
+        for a_row in df.values:
+            Columns = collections.namedtuple('Columns', df.columns)
+            a_row_rcrd = Columns._make(a_row)
+            opt_copy.n_hf = [int(a_row_rcrd.hf)]
+            opt_copy.n_hl = [int(a_row_rcrd.hl)]
+            eval_info_list_tmp, _ = compute_prune_unstructured_results(opt, image_dataset = image_dataset, verbose = 0)
+            eval_info_list.extend(eval_info_list_tmp)
+            pass
+        pass
+
+    data = list(map(operator.methodcaller("_asdict"), eval_info_list))
+    df = pd.DataFrame(data = data)
+
+    def model_size_to_bpp(model_footprint, w = 256, h = 256):
+        return model_footprint * 4 / (w * h)
+    df['bpp'] = list(map(model_size_to_bpp, df['footprint_byte'].values))
+
+    def model_type_to_quant_tech(model_type):
+        return model_type.split("_")[0]
+    df['quant_tech'] = list(map(model_type_to_quant_tech, df['model_type'].values))
+
+    def model_type_to_quant_tech_2(model_type):
+        if model_type == 'Basic': return model_type
+        quant_tech_2 = model_type.split("_")[0]
+        value = int(float(model_type.split("_")[1]))
+        if value != 0:
+            return quant_tech_2 + "_" + "abs"
+        return quant_tech_2 + "_" + "rate"
+    df['quant_tech_2'] = list(map(model_type_to_quant_tech_2, df['model_type'].values))
+
+    def model_type_to_prune_amount(model_type):
+        if model_type == 'Basic':
+            return np.nan
+        return float(model_type.split("_")[1])
+    df['prune_amount'] = list(map(model_type_to_prune_amount, df['model_type'].values))
+
+    df = df.drop(["model_type"], axis = 1)
+
     return eval_info_list, df

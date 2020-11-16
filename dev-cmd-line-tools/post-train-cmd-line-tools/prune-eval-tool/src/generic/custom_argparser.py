@@ -29,8 +29,11 @@ def get_cmd_line_opts():
     parser.add_argument('--image_filepath', type=str, default=None, required=False, dest='image_filepath',
                help='Path to input image to be compressed (default: None). If not specified, It is used cameramen image as target image to be compressed.',
     )
-    parser.add_argument('--models_filepath', type=str,  nargs='+', required=True, dest='models_filepath',
-               help='Path to input model\'s weigths.',
+    parser.add_argument('--models_filepath', type=str,  nargs='+', required=False, dest='models_filepath', default=[],
+               help='Path to input model\'s weigths (default: empty list, means no architecture will be evaluated).',
+    )
+    parser.add_argument('--csv_files',  nargs='+', type=str, required=False, default=[], dest='csv_files',
+        help='List of csv files with metadata about trains done. (default: [], empty list, means no architecture will be evaluated from csv files).'
     )
 
     # Options for building Model, via hyper-params.
