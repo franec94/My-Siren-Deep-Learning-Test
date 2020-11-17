@@ -436,9 +436,9 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
     else:
         n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
         pass
-    
+
     # print(n)
-    with tqdm(total=n) as pbar:
+    with tqdm(total=int(n)) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
             # --- Get hyperparams as Namedtuple
             hyper_param_list = []
