@@ -324,3 +324,11 @@ def check_unstructured_prune_tech(opt):
                 raise Exception(f"unstructured tech '{global_pruning_tech}' provided is not allowed.")
             opt.global_pruning_techs = global_pruning_tech_list
     return opt
+
+
+def check_whether_to_use_linspace_strategy(opt, model):
+    if opt.global_abs_linspace == 0: return opt
+    model_size = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    opt.global_pruning_abs = np.linspace(1, model_size, num=opt.global_abs_linspace)
+    return opt
+

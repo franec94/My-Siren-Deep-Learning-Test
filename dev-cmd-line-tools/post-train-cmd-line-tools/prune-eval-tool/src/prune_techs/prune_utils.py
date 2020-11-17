@@ -78,6 +78,8 @@ from src.generic.utils import prepare_model, get_data_ready_for_model, get_data_
 from src.generic.utils import get_size_of_model, check_device_and_weigths_to_laod, log_infos
 from src.generic.custom_argparser import DYNAMIC_QUAT_SIZES
 
+from src.generic.functions import check_whether_to_use_linspace_strategy
+
 # ---------------------------------------------- #
 # Util Functions
 # ---------------------------------------------- #
@@ -417,7 +419,24 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
 
     # print(n, len(opt.global_pruning_rates), len(opt.global_pruning_abs), len(opt.global_pruning_techs))
 
-    n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
+    
+    if opt.global_abs_linspace != 0:
+        tot = 0
+        for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
+            hyper_param_list = []
+            for a_key in opt_dict.keys():
+                hyper_param_list.append(hyper_param_dict[f'{a_key}'])
+            hyper_param_opt = HyperParams._make(hyper_param_list)
+            model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
+            model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
+            opt = check_whether_to_use_linspace_strategy(opt, model)
+            tot += opt.global_pruning_abs
+            pass
+        n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + tot)
+    else:
+        n = n * (len(opt.global_pruning_rates) * len(opt.global_pruning_techs) + len(opt.global_pruning_abs) * len(opt.global_pruning_techs))
+        pass
+    
     # print(n)
     with tqdm(total=n) as pbar:
         for arch_no, hyper_param_dict in enumerate(opt_hyperparm_list):
@@ -429,6 +448,7 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
             
             model = prepare_model(arch_hyperparams=hyper_param_dict, device='cpu')
             model = check_device_and_weigths_to_laod(model_fp32=model, device='cpu', model_path=opt.models_filepath[arch_no])
+            opt = check_whether_to_use_linspace_strategy(opt, model)
 
             model_name = None
             if use_model_path_name:
