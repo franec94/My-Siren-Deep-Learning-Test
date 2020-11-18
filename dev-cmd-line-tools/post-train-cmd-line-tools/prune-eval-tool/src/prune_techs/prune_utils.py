@@ -510,18 +510,18 @@ def compute_prune_unstructured_results(opt, image_dataset, verbose = 0, use_mode
         return model_footprint * 4 / (w * h)
     df['bpp'] = list(map(model_size_to_bpp, df['footprint_byte'].values))
 
-    def model_type_to_quant_tech(model_type):
+    def model_type_to_prune_tech(model_type):
         return model_type.split("_")[0]
-    df['quant_tech'] = list(map(model_type_to_quant_tech, df['model_type'].values))
+    df['prune_tech'] = list(map(model_type_to_prune_tech, df['model_type'].values))
 
-    def model_type_to_quant_tech_2(model_type):
+    def model_type_to_prune_tech_2(model_type):
         if model_type == 'Basic': return model_type
-        quant_tech_2 = model_type.split("_")[0]
+        prune_tech_2 = model_type.split("_")[0]
         value = int(float(model_type.split("_")[1]))
         if value != 0:
-            return quant_tech_2 + "_" + "abs"
-        return quant_tech_2 + "_" + "rate"
-    df['quant_tech_2'] = list(map(model_type_to_quant_tech_2, df['model_type'].values))
+            return prune_tech_2 + "_" + "abs"
+        return prune_tech_2 + "_" + "rate"
+    df['prune_tech_2'] = list(map(model_type_to_prune_tech_2, df['model_type'].values))
 
     def model_type_to_prune_amount(model_type):
         if model_type == 'Basic':
@@ -573,18 +573,18 @@ def compute_prune_unstructured_results_from_csv_list(opt, image_dataset, verbose
         return model_footprint * 4 / (w * h)
     df['bpp'] = list(map(model_size_to_bpp, df['footprint_byte'].values))
 
-    def model_type_to_quant_tech(model_type):
+    def model_type_to_prune_tech(model_type):
         return model_type.split("_")[0]
-    df['quant_tech'] = list(map(model_type_to_quant_tech, df['model_type'].values))
+    df['prune_tech'] = list(map(model_type_to_prune_tech, df['model_type'].values))
 
-    def model_type_to_quant_tech_2(model_type):
+    def model_type_to_prune_tech_2(model_type):
         if model_type == 'Basic': return model_type
-        quant_tech_2 = model_type.split("_")[0]
+        prune_tech_2 = model_type.split("_")[0]
         value = int(float(model_type.split("_")[1]))
         if value != 0:
-            return quant_tech_2 + "_" + "abs"
-        return quant_tech_2 + "_" + "rate"
-    df['quant_tech_2'] = list(map(model_type_to_quant_tech_2, df['model_type'].values))
+            return prune_tech_2 + "_" + "abs"
+        return prune_tech_2 + "_" + "rate"
+    df['prune_tech_2'] = list(map(model_type_to_prune_tech_2, df['model_type'].values))
 
     def model_type_to_prune_amount(model_type):
         if model_type == 'Basic':
