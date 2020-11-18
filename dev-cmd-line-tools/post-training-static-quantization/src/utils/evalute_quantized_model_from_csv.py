@@ -346,7 +346,8 @@ def evaluate_post_train_quantized_models_by_csv_2(a_file_csv, args, device = 'cp
     # RecordTuple = collections.namedtuple('RecordTuple', field_names)
 
     # fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim".split(",")
-    fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
+    # fields_name = "model_filename,hidden_layers,hidden_features,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
+    fields_name = "model_name,n_hl,n_hf,sidelength,quant_tech,mse,psnr,ssim,eta_seconds,model_size".split(",")
     InfoResults = collections.namedtuple('InfoResults', fields_name)
 
     # --- Adjust quat techs adopted, if any,
