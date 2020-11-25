@@ -31,10 +31,10 @@ def get_cmd_line_opts():
     )
 
     # Regularization Options
-    parser.add_argument('--lambda_L_1', required=False, type=float, default=None, dest="lambda_L_1",
-        help='Is this option is set, then L1-norm regularization is enabled and the value of such an option describes how much weigths L1-norm as regularization term (Default: None, that is not L1-norm exploited).'
+    parser.add_argument('--lambda_L_1', nargs='+', required=False, type=float, default=[0.0], dest="lambda_L_1",
+        help='Is this option is set, then L1-norm regularization is enabled and the value of such an option describes how much weigths L1-norm as regularization term (Default: 0.0, that is not L1-norm exploited).'
     )
-    parser.add_argument('--lambda_L_2', required=False, type=float, default=0.0, dest="lambda_L_2",
+    parser.add_argument('--lambda_L_2', nargs='+', required=False, type=float, default=[0.0], dest="lambda_L_2",
         help='Is this option is set, then L1-norm regularization is enabled and the value of such an option describes how much weigths L2-norm as regularization term (Default: 0.0, that is not weigth decay exploited).'
     )
 

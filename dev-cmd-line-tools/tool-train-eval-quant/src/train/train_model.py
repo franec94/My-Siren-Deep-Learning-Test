@@ -415,7 +415,7 @@ def _train_loop(
         for epoch in range(epochs):
             optim.zero_grad()
 
-            if lambda_L_1 != None and lambda_L_1 != 0:
+            if lambda_L_1 != 0:
                 regularization_loss = 0
                 for param in model.parameters():
                     regularization_loss += torch.sum(torch.abs(param))
@@ -488,7 +488,10 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
         seed=opt.seed,
         dynamic_quant=[opt.dynamic_quant],
         sidelength=opt.sidelength,
+        lambda_L_1=opt.lambda_L_1,
+        weight_decay=opt.lambda_L_2,
         batch_size=opt.batch_size,
+
         verbose=[opt.verbose]
     )
     opt_hyperparm_list = list(ParameterGrid(opt_dict))
@@ -563,8 +566,8 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     steps_til_summary=None,
                     epochs_til_checkpoint=None,
                     log_tensorboard_flag=True,
-                    lambda_L_1=opt.lambda_L_1,
-                    weight_decay=opt.lambda_L_2,
+                    lambda_L_1=hyper_param_opt.lambda_L_1,
+                    weight_decay=hyper_param_opt.weight_decay,
                     save_results_flag=save_results_flag)
             stop_time = time.time() - start_time_to
             stop_times.append(stop_time)
