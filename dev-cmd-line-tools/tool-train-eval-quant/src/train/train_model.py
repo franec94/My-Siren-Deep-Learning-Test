@@ -420,7 +420,11 @@ def _train_loop(
             if lambda_L_1 != 0:
                 regularization_loss = 0
                 for param in model.parameters():
-                    regularization_loss += torch.sum(torch.abs(param))
+                    
+                    tmp_p = torch.sum(torch.abs(param))
+                    regularization_loss += tmp_p
+                    print("tmp_p", tmp_p, "regularization_loss", regularization_loss)
+                    pass
                 train_loss, _ = loss_fn(model_output, gt) + lambda_L_1 * regularization_loss
             else:
                 train_loss = loss_fn(model_output, gt)    
