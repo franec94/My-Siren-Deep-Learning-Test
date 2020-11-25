@@ -418,7 +418,7 @@ def _train_loop(
             
             model_output, _ = model(model_input)
             if lambda_L_1 != 0:
-                print(lambda_L_1)
+                # print(lambda_L_1)
                 regularization_loss = sum(param.abs().sum() for param in model.parameters())
                 train_loss = loss_fn(model_output, gt) + lambda_L_1 * regularization_loss
             else:
