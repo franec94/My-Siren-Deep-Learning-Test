@@ -33,6 +33,8 @@ def _get_number_archs(opt):
         seed=opt.seed,
         dynamic_quant=[opt.dynamic_quant],
         sidelength=opt.sidelength,
+        lambda_L_1=opt.lambda_L_1,
+        weight_decay=opt.lambda_L_2,
         batch_size=opt.batch_size,
         verbose=[opt.verbose]
     )
