@@ -95,7 +95,7 @@ from src.generic.functions import log_data_via_pickle
 # Global variables
 # --------------------------------------------- #
 
-HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dynamic_quant,sidelength,batch_size,verbose".split(","))
+HyperParams = collections.namedtuple('HyperParams', "n_hf,n_hl,lr,epochs,seed,dynamic_quant,sidelength,lambda_L_1,weight_decay,batch_size,verbose".split(","))
 
 # ----------------------------------------------------------------------------------------------- #
 # Functions
