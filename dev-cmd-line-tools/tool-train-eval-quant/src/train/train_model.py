@@ -415,15 +415,17 @@ def _train_loop(
         for epoch in range(epochs):
             optim.zero_grad()
 
+            
+            model_output, _ = model(model_input)
             if lambda_L_1 != 0:
                 regularization_loss = 0
                 for param in model.parameters():
                     regularization_loss += torch.sum(torch.abs(param))
-                model_output, _ = model(model_input) + lambda_L_1 * regularization_loss
+                train_loss, _ = loss_fn(model_output, gt) + lambda_L_1 * regularization_loss
             else:
-                model_output, _ = model(model_input)
+                train_loss = loss_fn(model_output, gt)    
                 pass
-            train_loss = loss_fn(model_output, gt)
+            
             if calc_metrices:    
                 val_psnr, val_mssim = compute_desired_metrices(model_output, gt)
                 train_scores.append([train_loss.item(), val_psnr, val_mssim])
