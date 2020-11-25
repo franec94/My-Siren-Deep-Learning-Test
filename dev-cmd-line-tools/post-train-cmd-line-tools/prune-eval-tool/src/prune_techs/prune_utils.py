@@ -1,3 +1,8 @@
+"""
+Useful links:
+ - Pruning Notebook:\n
+    - https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/f40ae04715cdb214ecba048c12f8dddf/pruning_tutorial.ipynb.\n
+"""
 from __future__ import print_function
 from __future__ import division
 

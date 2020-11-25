@@ -3,6 +3,7 @@ import configargparse
 DYNAMIC_QUAT_SIZES = "qint8,qfloat16".split(",")
 
 UNSTR_PRUNE_TECHS = 'L1Unstructured,RandomUnstructured'.split(",")
+STR_PRUNE_TECHS = 'random_structured'.split(",")
 
 
 def get_cmd_line_opts():

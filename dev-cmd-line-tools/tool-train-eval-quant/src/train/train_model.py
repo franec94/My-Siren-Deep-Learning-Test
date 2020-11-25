@@ -375,6 +375,8 @@ def _train_loop(
     epochs_til_checkpoint=None,
     log_tensorboard_flag=False,
     save_results_flag=False,
+    weight_decay = 0.0,
+    lambda_L_1 = None,
     ):
     """
     Performe training on a given input model, specifing onto which device the training process will be done.
@@ -383,7 +385,7 @@ def _train_loop(
     model.train()
 
     if optim == None:
-        optim = torch.optim.Adam(lr=lr, params=model.parameters())
+        optim = torch.optim.Adam(lr=lr, params=model.parameters(), weight_decay = weight_decay)
     
     # - Local variable.
     train_scores = []
@@ -412,7 +414,15 @@ def _train_loop(
             get_data_ready_for_model(model_input, gt, device = device)
         for epoch in range(epochs):
             optim.zero_grad()
-            model_output, _ = model(model_input)
+
+            if lambda_L_1 != None and lambda_L_1 != 0:
+                regularization_loss = 0
+                for param in model.parameters():
+                    regularization_loss += torch.sum(torch.abs(param))
+                model_output, _ = model(model_input) + lambda_L_1 * regularization_loss
+            else:
+                model_output, _ = model(model_input)
+                pass
             train_loss = loss_fn(model_output, gt)
             if calc_metrices:    
                 val_psnr, val_mssim = compute_desired_metrices(model_output, gt)
@@ -553,6 +563,8 @@ def train_model(opt, image_dataset, model_dir = '.', save_results_flag = False):
                     steps_til_summary=None,
                     epochs_til_checkpoint=None,
                     log_tensorboard_flag=True,
+                    lambda_L_1=opt.lambda_L_1,
+                    weight_decay=opt.lambda_L_2,
                     save_results_flag=save_results_flag)
             stop_time = time.time() - start_time_to
             stop_times.append(stop_time)
